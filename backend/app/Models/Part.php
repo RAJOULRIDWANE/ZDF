@@ -14,8 +14,8 @@ class Part extends Model
         'zone',
         'category',
         'price',
-        'stock', // Optional: Good to have if you track inventory later
-        'reference' // Optional: If you use part numbers
+        'stock_quantity', // Matches your migration
+        'reference_number' // Matches your migration
     ];
 
     /**
@@ -24,7 +24,7 @@ class Part extends Model
     public function repairs()
     {
         return $this->belongsToMany(Repair::class, 'repair_part')
-                    ->withPivot('quantity', 'price') // Crucial for history
+                    ->withPivot('quantity', 'price') 
                     ->withTimestamps();
     }
 }

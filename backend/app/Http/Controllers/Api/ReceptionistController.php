@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\Repair;
+use App\Models\Service;
 use App\Http\Resources\RepairResource;
 
 class ReceptionistController extends Controller
@@ -17,7 +18,6 @@ class ReceptionistController extends Controller
         $mechanics = User::whereIn('role', ['Mechanic', 'mechanic', 'MECHANIC'])
                         ->get(['id', 'name']);
 
-        // UPDATED: with('services')
         $repairs = Repair::with(['vehicle.client', 'mechanic', 'services']) 
             ->orderBy('created_at', 'desc')
             ->get();
@@ -51,33 +51,35 @@ class ReceptionistController extends Controller
         return response()->json($vehicles);
     }
 
-    // --- UPDATED: storeJob handles multiple services ---
     public function storeJob(Request $request)
     {
         // 1. Validate
         $validated = $request->validate([
             'vehicle_id'    => 'required',
             'mechanic_id'   => 'required',
-            'service_ids'   => 'required|array', // Must be an array
-            'service_ids.*' => 'exists:services,id', // Each ID must exist
+            'service_ids'   => 'required|array', 
+            'service_ids.*' => 'exists:services,id',
             'description'   => 'nullable', 
             'cost'          => 'required', 
             'date_end'      => 'required|date'
         ]);
 
-        // 2. Create Repair (Without service_id)
+        // 2. Create Repair
         $repair = Repair::create([
             'vehicle_id'     => $validated['vehicle_id'],
             'mechanic_id'    => $validated['mechanic_id'],
             'description'    => $validated['description'] ?? 'Standard Service',
             'cost'           => $validated['cost'],
+            'original_cost'  => $validated['cost'], // Save original cost
             'status'         => 'Pending',
             'date_entry'     => now(),
             'date_end'       => $validated['date_end'],
+            // Invoice number is usually generated after job is done/approved, 
+            // but if you generate it here, that's fine too.
             'invoice_number' => 'INV-' . strtoupper(uniqid()), 
         ]);
         
-        // 3. Attach Services to Pivot Table
+        // 3. Attach Services
         $repair->services()->attach($validated['service_ids']);
 
         // 4. Load Relationships
@@ -89,10 +91,13 @@ class ReceptionistController extends Controller
         ]);
     }
 
+    
+
     public function updateStatus(Request $request, $id)
     {
+        // UPDATED: Added new statuses to validation
         $request->validate([
-            'status' => 'required|in:Pending,In Progress,Completed,Canceled,Delivered'
+            'status' => 'required|in:Pending,Diagnosing,Estimate Sent,Estimate Accepted,Negotiation Requested,In Progress,Completed,Canceled,Delivered,Waiting for Parts'
         ]);
 
         $repair = Repair::findOrFail($id);
@@ -112,11 +117,56 @@ class ReceptionistController extends Controller
         ]);
     }
 
+    /**
+     * NEW: Handle Negotiation & Generate Invoice
+     */
+    public function handleNegotiation(Request $request, $id)
+    {
+        $repair = Repair::findOrFail($id);
+
+        $request->validate([
+            'decision' => 'required|in:approve,reject' 
+        ]);
+
+        if ($repair->status !== 'Negotiation Requested') {
+            return response()->json(['message' => 'No active negotiation for this job.'], 400);
+        }
+
+        if ($request->decision === 'approve') {
+            // Apply 5% Discount
+            $discount = $repair->original_cost * 0.05;
+            $repair->cost = $repair->original_cost - $discount;
+            $repair->discount_amount = $discount;
+            $repair->negotiation_status = 'Approved';
+            $message = "Discount approved! New price: " . $repair->cost;
+        } else {
+            // Reject: Revert to original price
+            $repair->cost = $repair->original_cost;
+            $repair->discount_amount = 0;
+            $repair->negotiation_status = 'Rejected';
+            $message = "Discount rejected. Price remains: " . $repair->cost;
+        }
+
+        // Finalize the Job
+        $repair->status = 'In Progress'; // Work begins immediately after decision
+        
+        // Generate Invoice Number if not exists
+        if (!$repair->invoice_number) {
+            $repair->invoice_number = 'INV-' . strtoupper(uniqid()); 
+        }
+        
+        $repair->save();
+
+        return response()->json([
+            'message' => $message,
+            'repair' => new RepairResource($repair)
+        ]);
+    }
+
     public function deleteJob($id)
     {
          $repair = Repair::find($id);
          if($repair) {
-             // Detach services before deleting (if not using cascade on DB)
              $repair->services()->detach(); 
              $repair->delete();
              return response()->json(['message' => 'Deleted']);
@@ -138,7 +188,6 @@ class ReceptionistController extends Controller
     {
         $client = User::findOrFail($clientId);
 
-        // UPDATED: with('services')
         $repairs = Repair::whereHas('vehicle', function($q) use ($clientId) {
                 $q->where('user_id', $clientId);
             })
@@ -148,20 +197,18 @@ class ReceptionistController extends Controller
 
         return response()->json([
             'client' => $client,
-            'repairs' => $repairs 
+            'repairs' => RepairResource::collection($repairs)
         ]);
     }
 
     public function show($id)
     {
-        // UPDATED: with('services')
         $repair = Repair::with(['vehicle.client', 'mechanic', 'services'])->findOrFail($id);
         return new RepairResource($repair);
     }
 
     public function getInvoiceDetails($id)
     {
-        // UPDATED: with('services')
         $repair = Repair::with([
             'vehicle.client', 
             'mechanic', 
@@ -174,7 +221,6 @@ class ReceptionistController extends Controller
 
     public function invoice($id)
     {
-        // UPDATED: with('services')
         $repair = Repair::with([
             'vehicle.client', 
             'mechanic', 

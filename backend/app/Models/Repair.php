@@ -9,17 +9,23 @@ use App\Models\Part;
 class Repair extends Model
 {
     use HasFactory;
+    
+    protected $guarded = []; // Allows all fields to be filled (easier for development)
 
     protected $fillable = [
         'vehicle_id',
         'mechanic_id',
-        // 'service_id', <--- REMOVED (Now in pivot table)
-        'description',
-        'mechanic_notes',
-        'cost',
+        'description',       // Receptionist's initial notes
+        'mechanic_notes',    // New: Mechanic's findings
         'status',
+        'is_diagnostic',     // New: Boolean flag
         'date_entry',
         'date_end',
+        'cost',              // Current Total
+        'original_cost',     // New: Price before negotiation
+        'discount_amount',   // New
+        'negotiation_status',// New
+        'negotiation_count', // New
         'invoice_number'
     ];
 
@@ -33,11 +39,9 @@ class Repair extends Model
         return $this->belongsTo(User::class, 'mechanic_id');
     }
 
-    // --- UPDATED: Has Many Services ---
-    // ... inside Repair class
     public function services() {
-        // Ensure this table name 'repair_service' matches your database
         return $this->belongsToMany(Service::class, 'repair_service')
+                    ->withPivot('price_at_booking')
                     ->withTimestamps();
     }
 
