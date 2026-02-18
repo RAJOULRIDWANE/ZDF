@@ -3,14 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\ContactDetails; // <--- Import your new model
+use App\Models\ContactDetails;
+use App\Mail\ContactMail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class ContactDetailsController extends Controller
 {
     public function store(Request $request)
     {
-        // 1. Validate the input
         $validator = Validator::make($request->all(), [
             'name'    => 'required|string|max:191',
             'email'   => 'required|email|max:191',
@@ -25,7 +26,6 @@ class ContactDetailsController extends Controller
             ], 422);
         }
 
-        // 2. Save to Database
         $contact = ContactDetails::create([
             'name'    => $request->name,
             'email'   => $request->email,
@@ -33,14 +33,22 @@ class ContactDetailsController extends Controller
             'message' => $request->message,
         ]);
 
-        if($contact) {
+        if ($contact) {
+            // Send the email
+            Mail::to('mecapro.info@gmail.com')->send(new ContactMail([
+                'name'    => $request->name,
+                'email'   => $request->email,
+                'phone'   => $request->phone,
+                'message' => $request->message,
+            ]));
+
             return response()->json([
-                'status' => 200,
+                'status'  => 200,
                 'message' => 'Message Sent Successfully'
             ], 200);
         } else {
             return response()->json([
-                'status' => 500,
+                'status'  => 500,
                 'message' => 'Something went wrong'
             ], 500);
         }

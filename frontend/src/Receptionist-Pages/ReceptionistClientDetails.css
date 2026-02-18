@@ -456,3 +456,17 @@ tr:hover {
         padding: 8px 6px;
     }
 }
+
+.accept-reduction{
+    background: #e0f2fe;
+}
+.accept-reduction i{
+    color: #0284c7;
+}
+.decline-reduction{
+      background: #ee9da7;
+}
+
+.decline-reduction i{
+    color: red;
+}

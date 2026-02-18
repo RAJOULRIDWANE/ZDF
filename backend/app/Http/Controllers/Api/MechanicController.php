@@ -86,25 +86,48 @@ class MechanicController extends Controller
             DB::beginTransaction();
 
             $repair->mechanic_notes = $request->mechanic_notes;
+            
+            // Capture if it's already a diagnostic job
+            $isDiagnosticJob = $repair->is_diagnostic;
+
             $repair->services()->detach(); 
             
             $totalCost = 0;
+            $hasDiagnosticService = false;
+            
             foreach ($request->service_ids as $serviceId) {
                 $service = Service::find($serviceId);
                 $repair->services()->attach($serviceId, ['price_at_booking' => $service->price]);
                 $totalCost += $service->price;
+                
+                // Check if this is the diagnostic service
+                if (stripos($service->name, 'General Diagnostic') !== false || $service->zone === 'diagnostic') {
+                    $hasDiagnosticService = true;
+                    $isDiagnosticJob = true; // Update flag if mechanic selected it
+                }
+            }
+
+            // FORCE ADD General Diagnostic if it's a diagnostic job but missing
+            if ($isDiagnosticJob && !$hasDiagnosticService) {
+                $diagnosticService = Service::where('name', 'like', '%General Diagnostic%')->first();
+                if ($diagnosticService) {
+                    $repair->services()->attach($diagnosticService->id, ['price_at_booking' => 50]); // Ensure 50 MAD
+                    $totalCost += 50;
+                    $hasDiagnosticService = true;
+                }
             }
 
             $repair->cost = $totalCost;
             $repair->original_cost = $totalCost;
+            $repair->is_diagnostic = $isDiagnosticJob; // Persist flag
             $repair->status = 'Estimate Sent';
             $repair->save();
 
             DB::commit();
 
             return response()->json([
-                'message' => 'Estimate sent to client successfully!',
-                'repair'  => $repair->load('services')
+                'message' => 'Estimate sent successfully',
+                'repair' => new RepairResource($repair)
             ]);
 
         } catch (\Exception $e) {

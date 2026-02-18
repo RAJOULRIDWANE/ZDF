@@ -16,7 +16,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'phone', // Added: Useful for the dashboard contact info
+        'phone', // Added: Useful for the dashboard contact inf
+        'is_verified',
     ];
 
     protected $hidden = [
@@ -29,6 +30,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_verified' => 'boolean',
         ];
     }
 

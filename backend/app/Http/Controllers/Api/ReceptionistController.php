@@ -64,6 +64,14 @@ class ReceptionistController extends Controller
             'date_end'      => 'required|date'
         ]);
 
+        // Check if "General Diagnostic" is in the selected services
+        $isDiagnostic = Service::whereIn('id', $validated['service_ids'])
+            ->where(function($query) {
+                $query->where('name', 'LIKE', '%General Diagnostic%')
+                      ->orWhere('zone', 'diagnostic');
+            })
+            ->exists();
+
         // 2. Create Repair
         $repair = Repair::create([
             'vehicle_id'     => $validated['vehicle_id'],
@@ -72,6 +80,7 @@ class ReceptionistController extends Controller
             'cost'           => $validated['cost'],
             'original_cost'  => $validated['cost'], // Save original cost
             'status'         => 'Pending',
+            'is_diagnostic'  => $isDiagnostic, // Set diagnostic flag
             'date_entry'     => now(),
             'date_end'       => $validated['date_end'],
             // Invoice number is usually generated after job is done/approved, 
@@ -228,6 +237,6 @@ class ReceptionistController extends Controller
             'parts' 
         ])->findOrFail($id);
 
-        return response()->json($repair);
+        return new RepairResource($repair);
     }
 }

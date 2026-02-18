@@ -1,0 +1,239 @@
+/* --- Wrapper --- */
+.ma-v2-wrapper {
+  font-family: 'Inter', 'Segoe UI', sans-serif; /* Modern font stack */
+  color: #1a1a1a;
+  background-color: #fff;
+  line-height: 1.6;
+}
+
+/* --- Hero Section --- */
+.ma-v2-hero {
+  padding: 100px 20px 80px;
+  text-align: center;
+  background-color: #f4f7f6;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.ma-v2-subtitle {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #666;
+  margin-bottom: 15px;
+  background: #e0e0e0;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.ma-v2-hero h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 20px;
+  color: #222;
+}
+
+.text-blue {
+  color: #005DFFFF; /* MecaPro Blue */
+}
+
+.ma-v2-hero p {
+  font-size: 1.25rem;
+  color: #555;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* --- Container --- */
+.ma-v2-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* --- Comparison Section --- */
+.ma-v2-comparison {
+  padding: 80px 0;
+}
+
+.ma-v2-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.ma-v2-text-block h2 {
+  font-size: 2.2rem;
+  margin-bottom: 20px;
+}
+
+.comparison-list {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.comparison-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 1.05rem;
+  padding: 10px 0;
+}
+
+.comparison-item.bad {
+  color: #999;
+  text-decoration: line-through;
+}
+
+.comparison-item.bad i {
+  color: #dc3545; /* Red X */
+  min-width: 25px;
+  text-decoration: none !important;
+  display: inline-block;
+}
+
+.comparison-item.good {
+  color: #222;
+  font-weight: 600;
+}
+
+.comparison-item.good i {
+  color: #28a745; /* Green Check */
+  min-width: 25px;
+}
+
+.image-placeholder-tech {
+  background: linear-gradient(135deg, #005DFFFF, #002a72);
+  height: 400px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 20px 40px rgba(0, 93, 255, 0.2);
+}
+
+.image-placeholder-tech i {
+  font-size: 120px;
+  color: rgba(255,255,255,0.2);
+}
+
+/* --- Standards Section (Dark) --- */
+.ma-v2-standards {
+  background-color: #111;
+  color: white;
+  padding: 100px 0;
+}
+
+.standards-header {
+  margin-bottom: 60px;
+}
+
+.standards-header h2 {
+  font-size: 2.5rem;
+}
+
+.blue-bar {
+  width: 80px;
+  height: 4px;
+  background-color: #005DFFFF;
+  margin-top: 20px;
+}
+
+.standards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+
+.standard-card {
+  background: #1a1a1a;
+  padding: 40px 30px;
+  border-radius: 2px;
+  border-top: 2px solid #333;
+  transition: border-color 0.3s;
+}
+
+.standard-card:hover {
+  border-top: 2px solid #005DFFFF;
+}
+
+.card-number {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #333;
+  margin-bottom: 20px;
+  line-height: 1;
+}
+
+.standard-card h3 {
+  font-size: 1.4rem;
+  margin-bottom: 15px;
+  color: #fff;
+}
+
+.standard-card p {
+  color: #aaa;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* --- CTA Section --- */
+.ma-v2-cta {
+  padding: 100px 20px;
+  text-align: center;
+  background: #fff;
+}
+
+.ma-v2-cta h2 {
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  color: #222;
+}
+
+.ma-v2-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.btn-solid {
+  background-color: #005DFFFF;
+  color: white;
+  padding: 15px 40px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 0.2s;
+}
+
+.btn-solid:hover {
+  background-color: #0046c0;
+  transform: translateY(-2px);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: #333;
+  border: 1px solid #ccc;
+  padding: 15px 40px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-outline:hover {
+  border-color: #000;
+  color: #000;
+}
+
+/* --- Mobile Responsive --- */
+@media (max-width: 768px) {
+  .ma-v2-hero h1 { font-size: 2.5rem; }
+  .ma-v2-grid-2col { grid-template-columns: 1fr; }
+  .standards-grid { grid-template-columns: 1fr; }
+  .image-placeholder-tech { height: 250px; }
+}

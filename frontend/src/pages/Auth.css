@@ -181,3 +181,72 @@
     padding-inline: 1.75rem;
   }
 }
+
+
+/* ===== Alerts ===== */
+.auth-alert {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.auth-alert-error {
+  color: #e74c3c;
+  background-color: #fadbd8;
+}
+
+.auth-alert-success {
+  color: #27ae60;
+  background-color: #d5f4e6;
+}
+
+/* ===== Email Info ===== */
+.auth-email-info {
+  text-align: center;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+/* ===== OTP Input ===== */
+.otp-input {
+  text-align: center;
+  font-size: 24px;
+  letter-spacing: 8px;
+  font-weight: bold;
+}
+
+/* ===== Resend Section ===== */
+.auth-resend-wrapper {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.auth-resend-text {
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.auth-resend-timer {
+  color: #999;
+}
+
+.auth-resend-btn {
+  background: none;
+  border: none;
+  color: #3498db;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 14px;
+}
+
+.auth-resend-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== Footer spacing ===== */
+.auth-footer-spacing {
+  margin-top: 20px;
+}

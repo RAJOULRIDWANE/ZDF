@@ -1,18 +1,20 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom"; // ✅ Added useLocation
 import { useState } from "react";
 import axios from "axios";
 import './Auth.css'
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 function Login() { 
+  const navigate = useNavigate();
+  const location = useLocation(); // ✅ NEW
+  
+  // ✅ NEW: Get verification success message
+  const verificationMessage = location.state?.message;
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  
-  // --- ADDED STATE FOR VISIBILITY ---
   const [showPassword, setShowPassword] = useState(false); 
-  
-  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -42,7 +44,6 @@ function Login() {
       });
       localStorage.setItem('USER_ROLE', user.role); 
 
-
       // --- 4. REDIRECT ---
       if (user.role === 'client') {
         navigate('/client/dashboard');
@@ -60,6 +61,15 @@ function Login() {
 
     } catch (err) {
       console.error(err);
+      
+      // ✅ NEW: Handle unverified users - redirect to OTP page
+      if (err.response?.data?.requires_verification) {
+        navigate('/verifyemail', { 
+          state: { email: err.response.data.email }
+        });
+        return;
+      }
+      
       if (err.response) {
         setError(err.response.data.message || "Login failed");
       } else {
@@ -87,8 +97,33 @@ function Login() {
             </div>
             <h2>Welcome Back!</h2>
             
+            {/* ✅ NEW: Verification Success Message */}
+            {verificationMessage && (
+              <div style={{ 
+                color: '#27ae60', 
+                backgroundColor: '#d5f4e6',
+                padding: '12px',
+                borderRadius: '8px',
+                marginBottom: '15px',
+                textAlign: 'center' 
+              }}>
+                {verificationMessage}
+              </div>
+            )}
+            
             {/* Display Error Message here */}
-            {error && <p style={{color: 'red', textAlign: 'center'}}>{error}</p>}
+            {error && (
+              <div style={{
+                color: '#e74c3c', 
+                backgroundColor: '#fadbd8',
+                padding: '12px',
+                borderRadius: '8px',
+                marginBottom: '15px',
+                textAlign: 'center'
+              }}>
+                {error}
+              </div>
+            )}
 
             <form className="auth-form" onSubmit={handleLogin}> 
               <label className="auth-field">
@@ -104,15 +139,14 @@ function Login() {
               
               <label className="auth-field">
                 <span>Password</span>
-                {/* --- ADDED WRAPPER FOR RELATIVE POSITIONING --- */}
                 <div style={{ position: 'relative' }}>
                   <input 
-                    type={showPassword ? "text" : "password"} // TOGGLE TYPE HERE
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter your password" 
                     value={password} 
                     onChange={(e) => setPassword(e.target.value)} 
                     required
-                    style={{ paddingRight: '40px' }} // Make space for the icon
+                    style={{ paddingRight: '40px' }}
                   />
                   <button 
                     type="button" 
@@ -125,7 +159,8 @@ function Login() {
               </label>
               
               <div className="auth-extra-row">
-                <button type="button" className="auth-link-button small">   {' '} <Link to="/forgot-password">  Forgot password? </Link>
+                <button type="button" className="auth-link-button small">
+                  <Link to="/forgot-password">Forgot password?</Link>
                 </button>
               </div>
               
@@ -145,4 +180,4 @@ function Login() {
   )
 }
 
-export default Login
+export default Login;

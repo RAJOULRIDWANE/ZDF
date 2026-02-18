@@ -27,7 +27,6 @@
   width: 47px;
   height: 47px;
   border-radius: 999px;
-  background: #bde0fe;
 }
 
 .navbar-logo-mark .logo{
@@ -69,7 +68,7 @@
   gap: 0.75rem;
 }
 
-.btn-outline {
+.navbar-actions .btn-outline {
   border-radius: 999px;
   border: 1px solid #d0d7e6;
   background: #fff;
@@ -79,7 +78,7 @@
   cursor: pointer;
 }
 
-.btn-primary {
+.navbar-actions .btn-primary {
   border-radius: 999px;
   border: none;
   background: linear-gradient(135deg, #2563eb, #3b82f6);
@@ -90,7 +89,7 @@
   box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
 }
 
-.btn-primary:hover {
+.navbar-actions .btn-primary:hover {
   opacity: 0.95;
 }
 
@@ -102,4 +101,120 @@
   .navbar-links {
     display: none;
   }
+}
+
+/* LANGUAGE SWITCHER DROPDOWN */
+.language-switcher {
+  position: relative;
+}
+
+.language-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: white;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.language-trigger:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.language-trigger:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.language-flag {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.language-code {
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+
+.language-arrow {
+  transition: transform 0.2s;
+  color: #94a3b8;
+}
+
+.language-arrow.open {
+  transform: rotate(180deg);
+}
+
+/* DROPDOWN MENU */
+.language-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 6px;
+  animation: dropdownFadeIn 0.2s ease-out;
+  z-index: 1000;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+.language-option:hover {
+  background: #f1f5f9;
+}
+
+.language-option.active {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+
+.language-option .language-flag {
+  font-size: 1.2rem;
+}
+
+.language-option .language-label {
+  flex: 1;
+  font-weight: 500;
+}
+
+.language-check {
+  color: #3b82f6;
+  width: 16px;
+  height: 16px;
 }

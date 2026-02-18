@@ -1,11 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import "./Home.css";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 function Home({ onNavigate }) {
-
-
+  const { t } = useTranslation();
 
   return (
     <main className="page-content home-page">
@@ -14,17 +14,15 @@ function Home({ onNavigate }) {
         <div className="hero-inner">
           <div className="hero-text">
             <h1>
-              Professional Repair &amp;
-              <br />
-              Maintenance Services
+              {t("home.hero_title")}
             </h1>
             <p>
-              Smooth rides start with smart maintenance – care for your car today!
+              {t("home.hero_subtitle")}
             </p>
             <div className="hero-actions">
-              <button type="button" className="btn-primary">  {' '} <Link to="/login"> Get Started </Link>
+              <button type="button" className="btn-primary">  {' '} <Link to="/login"> {t("home.get_started")} </Link>
               </button>
-              <button type="button" className="btn-outline" > {' '} <Link to="/contact"> Call us now </Link>
+              <button type="button" className="btn-outline" > {' '} <Link to="/contact"> {t("home.call_us")} </Link>
               </button>
             </div>
           </div>
@@ -33,10 +31,9 @@ function Home({ onNavigate }) {
 
       <section className="services-section">
         <div className="section-inner">
-          <h2>Our Services</h2>
+          <h2>{t("home.our_services")}</h2>
           <p className="section-subtitle">
-            We offer a complete range of automotive services to keep your vehicle in
-            optimal condition.
+            {t("home.services_subtitle")}
           </p>
 
           <div className="card-grid">
@@ -45,10 +42,9 @@ function Home({ onNavigate }) {
               <div className="card-icon">
                 <i className="fa-solid fa-oil-can"></i>
               </div>
-              <h3>Oil Change</h3>
+              <h3>{t("home.oil_change")}</h3>
               <p>
-                Regular oil changes to keep your engine running smoothly and
-                efficiently.
+                {t("home.oil_change_desc")}
               </p>
             </article>
            
@@ -56,10 +52,9 @@ function Home({ onNavigate }) {
               <div className="card-icon">
                 <i className="fa-solid fa-car-burst"></i>
               </div>
-              <h3>Brake Services</h3>
+              <h3>{t("home.brakes")}</h3>
               <p>
-                Inspection, repair, and replacement of brake systems for your
-                safety.
+                {t("home.brakes_desc")}
               </p>
             </article>
            
@@ -67,9 +62,9 @@ function Home({ onNavigate }) {
               <div className="card-icon">
                 <i className="fa-solid fa-gauge-high"></i>
                 </div>
-              <h3>Engine Diagnostics</h3>
+              <h3>{t("home.engine")}</h3>
               <p>
-                Computer diagnostics to quickly detect and resolve engine issues.
+                {t("home.engine_desc")}
               </p>
             </article>
            
@@ -77,10 +72,9 @@ function Home({ onNavigate }) {
               <div className="card-icon">
                 <i className="fa-solid fa-car"></i>
                 </div>
-              <h3>Tire Services</h3>
+              <h3>{t("home.tires")}</h3>
               <p>
-                Rotation, balancing, alignment, and replacement for maximum
-                performance.
+                {t("home.tires_desc")}
               </p>
             </article>
            
@@ -88,9 +82,9 @@ function Home({ onNavigate }) {
               <div className="card-icon">
                 <i className="fa-solid fa-car-battery"></i>
               </div>
-              <h3>Battery Services</h3>
+              <h3>{t("home.battery")}</h3>
               <p>
-                Testing and replacement to prevent unexpected breakdowns.
+                {t("home.battery_desc")}
               </p>
             </article>
            
@@ -98,15 +92,15 @@ function Home({ onNavigate }) {
               <div className="card-icon">
                 <i className="fa-solid fa-fan"></i>
                 </div>
-              <h3>A/C Services</h3>
+              <h3>{t("home.ac")}</h3>
               <p>
-                Inspection, recharge, and repair to keep your cabin comfortable.
+                {t("home.ac_desc")}
               </p>
             </article>
           
           </div>
           <div className="section-cta">
-            <button type="button" className="btn-primary"> {' '} <Link to="/services"> View all services </Link>
+            <button type="button" className="btn-primary"> {' '} <Link to="/services"> {t("home.view_all")} </Link>
             </button>
           </div>
         </div>
@@ -114,39 +108,38 @@ function Home({ onNavigate }) {
 
       <section className="why-section">
         <div className="section-inner">
-          <h2>Why Choose Us</h2>
+          <h2>{t("home.why_choose_us")}</h2>
           <p className="section-subtitle">
-            We are committed to providing exceptional service and building
-            long-term relationships with our customers.
+            {t("home.why_subtitle")}
           </p>
           <div className="card-grid">
             <article className="info-card">
               <div className="card-icon">
-                <i class="fa-solid fa-screwdriver-wrench"></i>
+                <i className="fa-solid fa-screwdriver-wrench"></i>
               </div>
-              <h3>Expert Mechanics</h3>
-              <p>Certified technicians with years of experience.</p>
+              <h3>{t("home.expert_mechanics")}</h3>
+              <p>{t("home.expert_desc")}</p>
             </article>
             <article className="info-card">
               <div className="card-icon">
-                <i class="fa-solid fa-hourglass-end"></i>
+                <i className="fa-solid fa-hourglass-end"></i>
               </div>
-              <h3>Fast Turnaround</h3>
-              <p>Quick diagnostics and services to save you time.</p>
+              <h3>{t("home.fast_turnaround")}</h3>
+              <p>{t("home.fast_desc")}</p>
             </article>
             <article className="info-card">
               <div className="card-icon">
-                <i class="fa-solid fa-shield-halved"></i>  
+                <i className="fa-solid fa-shield-halved"></i>  
               </div>
-              <h3>Secure Warranty</h3>
-              <p>Reliable warranty coverage on all major services.</p>
+              <h3>{t("home.secure_warranty")}</h3>
+              <p>{t("home.warranty_desc")}</p>
             </article>
             <article className="info-card">
               <div className="card-icon">
-                <i class="fa-solid fa-dollar-sign"></i>
+                <i className="fa-solid fa-dollar-sign"></i>
               </div>
-              <h3>Affordable Pricing</h3>
-              <p>Transparent pricing with no hidden fees.</p>
+              <h3>{t("home.affordable_pricing")}</h3>
+              <p>{t("home.pricing_desc")}</p>
             </article>
           </div>
         </div>

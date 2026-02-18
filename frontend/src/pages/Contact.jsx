@@ -5,6 +5,9 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 
 
 const Contact = () => {
+
+  const [isLoading, setIsLoading] = useState(false);
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -30,6 +33,7 @@ const Contact = () => {
     }
   };
 
+  
   // --- UPDATED VALIDATION LOGIC ---
   const validateForm = () => {
     const newErrors = {};
@@ -72,12 +76,14 @@ const Contact = () => {
     return newErrors;
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const newErrors = validateForm();
-    
+
     if (Object.keys(newErrors).length === 0) {
+      setIsLoading(true); // 👈 disable button
+
       const dataToSend = {
         name: formData.name,
         email: formData.email,
@@ -90,27 +96,22 @@ const Contact = () => {
 
         if (res.data.status === 200) {
           setSubmitted(true);
-          setFormData({
-            name: '',
-            email: '',
-            phone: '',
-            message: ''
-          });
-          
-          setTimeout(() => {
-            setSubmitted(false);
-          }, 3000);
+          setFormData({ name: '', email: '', phone: '', message: '' });
+          setTimeout(() => setSubmitted(false), 3000);
         }
       } catch (err) {
         console.error("Error sending message:", err);
         if (err.response && err.response.data.errors) {
-            setErrors(err.response.data.errors);
+          setErrors(err.response.data.errors);
         }
+      } finally {
+        setIsLoading(false); // 👈 re-enable button always
       }
     } else {
       setErrors(newErrors);
     }
   };
+
 
   return (
     <div className="contact-page">
@@ -194,8 +195,8 @@ const Contact = () => {
               {errors.message && <span className="error-message">{errors.message}</span>}
             </div>
 
-            <button type="submit" className="submit-button">
-              Send Message
+            <button type="submit" className="submit-button" disabled={isLoading}>
+              {isLoading ? 'Sending...' : 'Send Message'}
             </button>
           </form>
 

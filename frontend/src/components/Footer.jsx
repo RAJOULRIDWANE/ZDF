@@ -1,5 +1,5 @@
-import {Link} from "react-router-dom";
-import MECHANIC from "../../public/images/MECHANIC.png";
+import { Link } from "react-router-dom";
+import MECHANIC from "/images/MECHANIC.png";
 import './Footer.css'
 
 function Footer() {
@@ -9,7 +9,7 @@ function Footer() {
         <div className="footer-top">
           <div className="footer-brand">
             <div className="footer-logo-mark">
-              <img src={MECHANIC} alt="MecaPro logo" className="logo"/>
+              <img src={MECHANIC} alt="MecaPro logo" className="logo" />
             </div>
             <span className="footer-logo-text">MecaPro</span>
           </div>

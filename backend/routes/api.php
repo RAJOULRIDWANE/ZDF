@@ -19,6 +19,8 @@ use App\Http\Controllers\Api\InvoiceController;
 */
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/verifyemail', [AuthController::class, 'verifyemail']); // ✅ Already here
+Route::post('/resend-otp', [AuthController::class, 'resendOtp']); // ✅ Already here
 Route::post('/contact', [ContactDetailsController::class, 'store']);
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink']);
 Route::post('/reset-password', [ForgotPasswordController::class, 'reset']);
@@ -36,9 +38,8 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-    Route::post('/repairs/{id}/invoice', [InvoiceController::class, 'generate']); // Create Bill
-    Route::post('/invoices/{id}/pay', [InvoiceController::class, 'pay']);       // Pay Bill
-
+    Route::post('/repairs/{id}/invoice', [InvoiceController::class, 'generate']);
+    Route::post('/invoices/{id}/pay', [InvoiceController::class, 'pay']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
@@ -51,23 +52,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/jobs/{id}/approve', [ClientController::class, 'approveJob']);
     Route::post('/jobs/{id}/negotiate', [ClientController::class, 'negotiateJob']);
 
-
-
     // --- MECHANIC ROUTES ---
     Route::prefix('mechanic')->group(function () {
         Route::get('/jobs', [MechanicController::class, 'getMyRepairs']);
         Route::get('/jobs/{id}', [MechanicController::class, 'show']);
         Route::patch('/jobs/{id}', [MechanicController::class, 'updateStatus']);
-        
-        // NEW: Submit Estimate
         Route::post('/jobs/{id}/estimate', [MechanicController::class, 'submitEstimate']);
-        
         Route::post('/parts-request', [MechanicController::class, 'requestParts']);
-
         Route::get('/parts', [MechanicController::class, 'getParts']);
         Route::post('/jobs/{id}/parts', [MechanicController::class, 'addParts']);
         Route::post('/jobs/{id}/complete', [MechanicController::class, 'completeJob']);
-
     });
 
     // --- RECEPTIONIST ROUTES ---
@@ -85,14 +79,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/jobs/{id}/negotiate', [ReceptionistController::class, 'handleNegotiation']);
     });
     
-    Route::middleware(['auth:sanctum', 'role:client'])->prefix('client')->group(function () {
-    // This allows the client to see ONLY their own repairs
-    Route::get('/repairs', function (Request $request) {
-        $repairs = \App\Models\Repair::whereHas('vehicle', function($query) use ($request) {
-            $query->where('client_id', $request->user()->id);
-        })->with(['vehicle', 'services', 'parts'])->get();
-        
-        return \App\Http\Resources\RepairResource::collection($repairs);
+    Route::middleware(['auth:sanctum'])->prefix('client')->group(function () {
+        Route::get('/repairs', function (Request $request) {
+            $repairs = \App\Models\Repair::whereHas('vehicle', function($query) use ($request) {
+                $query->where('user_id', $request->user()->id);
+            })->with(['vehicle', 'services', 'parts'])->get();
+            
+            return \App\Http\Resources\RepairResource::collection($repairs);
+        });
     });
-});
 });

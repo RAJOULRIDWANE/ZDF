@@ -21,12 +21,15 @@ class RepairResource extends JsonResource
             'date_end' => $this->date_end,
             'invoice_number' => $this->invoice_number,
             'created_at' => $this->created_at,
+            'is_diagnostic' => $this->is_diagnostic ?? false,
 
             // --- VEHICLE (Hyper-Safe Check) ---
             'vehicle' => $this->vehicle ? [
                 'id' => $this->vehicle->id,
                 'make' => $this->vehicle->make,
                 'model' => $this->vehicle->model,
+                'type' => $this->vehicle->type, // Added type
+                'year' => $this->vehicle->year,
                 'plate_number' => $this->vehicle->plate_number ?? $this->vehicle->license_plate ?? 'N/A',
                 'client_id' => $this->vehicle->client_id ?? $this->vehicle->user_id ?? null,
                 'owner_name' => ($this->vehicle->client) ? $this->vehicle->client->name : 'Guest'

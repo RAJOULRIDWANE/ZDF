@@ -3,112 +3,237 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\EmailVerification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Validation\Rules;
-
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OtpMail;
 
 class AuthController extends Controller
 {
-
-
-    // 1. REGISTER USER
+    // 1. REGISTER USER (With OTP in separate table)
     public function register(Request $request)
     {
-        // Validate the incoming data
         $fields = $request->validate([
-            'name' => 'required|string',
+            'name' => 'required|string|max:255',
             'email' => 'required|string|email|unique:users,email',
-            'password' => 'required|string|confirmed',
+            'password' => 'required|string|confirmed|min:6',
             'role' => 'sometimes|string|in:client,mechanic,supervisor,receptionist,parts_manager'
-            
         ]);
 
-        // Create the user in the database
+        // Create the user (NOT verified yet)
         $user = User::create([
             'name' => $fields['name'],
             'email' => $fields['email'],
             'password' => Hash::make($fields['password']),
             'role' => $request->role ?? 'client',
+            'is_verified' => false,
         ]);
 
-        // Create a token for this user
-        $token = $user->createToken('myapptoken')->plainTextToken;
+        // Generate 6-digit OTP
+        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        // Return the user and token as JSON
+        // Delete any existing OTP for this email (cleanup)
+        EmailVerification::where('email', $user->email)->delete();
+
+        // Store OTP in separate table
+        EmailVerification::create([
+            'email' => $user->email,
+            'otp' => $otp,
+            'expires_at' => now()->addMinutes(10),
+        ]);
+
+        // Send OTP email using custom view
+        try {
+            Mail::to($user->email)->send(new OtpMail($user->name, $otp));
+        } catch (\Exception $e) {
+            // If email fails, cleanup user and OTP
+            $user->delete();
+            EmailVerification::where('email', $user->email)->delete();
+            
+            return response()->json([
+                'message' => 'Failed to send verification email. Please try again.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
         return response()->json([
-            'user' => $user,
-            'token' => $token
+            'message' => 'Registration successful! Please check your email for the verification code.',
+            'email' => $user->email,
         ], 201);
     }
 
-    // 2. LOGIN USER
-    public function login(Request $request)
+    // 2. VERIFY OTP
+    public function verifyemail(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email',
+        'otp' => 'required|string|size:6'
+    ]);
+
+    // Find user
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user) {
+        return response()->json(['message' => 'User not found.'], 404);
+    }
+
+    // Check if already verified
+    if ($user->is_verified) {
+        return response()->json(['message' => 'Email already verified. Please login.'], 400);
+    }
+
+    // Find OTP record
+    $otpRecord = EmailVerification::where('email', $request->email)
+        ->latest()
+        ->first();
+
+    if (!$otpRecord) {
+        return response()->json(['message' => 'No verification code found. Please request a new one.'], 404);
+    }
+
+    // Check if expired
+    if ($otpRecord->isExpired()) {
+        $otpRecord->delete();
+        return response()->json(['message' => 'Verification code has expired. Please request a new one.'], 400);
+    }
+
+    // Validate OTP
+    if (!$otpRecord->isValid($request->otp)) {
+        return response()->json(['message' => 'Invalid verification code.'], 400);
+    }
+
+    // Mark user as verified
+    $user->is_verified = true; // ✅ Try direct assignment
+    $user->email_verified_at = now();
+    $user->save(); // ✅ Use save() instead of update()
+
+    // Delete the OTP record (one-time use)
+    $otpRecord->delete();
+
+    return response()->json([
+        'message' => 'Email verified successfully! You can now login.',
+        'user' => $user
+    ], 200);
+}
+
+    // 3. RESEND OTP
+    public function resendOtp(Request $request)
     {
-        $fields = $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string'
+        $request->validate([
+            'email' => 'required|email'
         ]);
 
-        // Check email
-        $user = User::where('email', $fields['email'])->first();
+        $user = User::where('email', $request->email)->first();
 
-        // Check password
-        if (!$user || !Hash::check($fields['password'], $user->password)) {
-            return response()->json([
-                'message' => 'Bad credentials'
-            ], 401);
+        if (!$user) {
+            return response()->json(['message' => 'User not found.'], 404);
         }
 
-        // Create token
-        $token = $user->createToken('myapptoken')->plainTextToken;
+        if ($user->is_verified) {
+            return response()->json(['message' => 'Email already verified. Please login.'], 400);
+        }
+
+        // Generate new OTP
+        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        // Delete old OTP and create new one
+        EmailVerification::where('email', $user->email)->delete();
+        
+        EmailVerification::create([
+            'email' => $user->email,
+            'otp' => $otp,
+            'expires_at' => now()->addMinutes(10),
+        ]);
+
+        // Send new OTP email
+        try {
+            Mail::to($user->email)->send(new OtpMail($user->name, $otp));
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to send verification email.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
 
         return response()->json([
-            'user' => $user,
-            'token' => $token
+            'message' => 'New verification code sent to your email.'
         ], 200);
     }
 
+    // 4. LOGIN USER (Check verification)
+    public function login(Request $request)
+{
+    $fields = $request->validate([
+        'email' => 'required|string|email',
+        'password' => 'required|string'
+    ]);
 
+    $user = User::where('email', $fields['email'])->first();
+
+    if (!$user || !Hash::check($fields['password'], $user->password)) {
+        return response()->json(['message' => 'Bad credentials'], 401);
+    }
+
+    // ✅ Refresh user from database to ensure latest data
+    $user->refresh();
+
+
+
+    // Check if email is verified
+    if (!$user->is_verified) {
+        return response()->json([
+            'message' => 'Please verify your email before logging in.',
+            'email' => $user->email,
+            'requires_verification' => true
+        ], 403);
+    }
+
+    $token = $user->createToken('myapptoken')->plainTextToken;
+
+    return response()->json([
+        'user' => $user,
+        'token' => $token
+    ], 200);
+}
+
+    // 5. CHANGE PASSWORD
     public function changePassword(Request $request)
     {
-        // 1. Validate the input
-        // 'confirmed' checks if 'newPassword' matches 'newPassword_confirmation'
         $request->validate([
             'currentPassword' => 'required',
-            'newPassword'     => ['required', 'confirmed', 'min:6'],
+            'newPassword' => ['required', 'confirmed', 'min:6'],
         ]);
 
-        // 2. Get the currently authenticated user
         $user = $request->user();
 
-        // 3. Check if the Current Password matches the database
         if (!Hash::check($request->currentPassword, $user->password)) {
             return response()->json([
                 'message' => 'The provided current password is incorrect.'
-            ], 400); // Bad Request
+            ], 400);
         }
 
-        // 4. Update the password
         $user->update([
             'password' => Hash::make($request->newPassword)
         ]);
 
-        // 5. Return success
         return response()->json([
             'message' => 'Password updated successfully!'
         ], 200);
     }
 
-    // 3. LOGOUT USER
+    // 6. LOGOUT USER
     public function logout(Request $request)
     {
-        // Delete the token that was used to authenticate the current request
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json([
-            'message' => 'Logged out'
-        ]);
+        return response()->json(['message' => 'Logged out']);
+    }
+
+    // 7. CREATE STAFF (Keep your existing method)
+    public function createStaff(Request $request)
+    {
+        // Add your existing createStaff logic here if you have one
+        // Otherwise you can remove this method
     }
 }

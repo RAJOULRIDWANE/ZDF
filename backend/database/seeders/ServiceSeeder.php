@@ -10,6 +10,9 @@ class ServiceSeeder extends Seeder
     public function run()
     {
         $services = [
+            // --- DIAGNOSTIC ---
+            ['name' => 'General Diagnostic', 'zone' => 'diagnostic', 'price' => 50], // Base diagnostic fee
+            
             // --- ENGINE ZONE ---
             ['name' => 'Oil Change', 'zone' => 'engine', 'price' => 450],
             ['name' => 'Battery Change', 'zone' => 'engine', 'price' => 1000],

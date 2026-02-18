@@ -24,6 +24,7 @@ return new class extends Migration
             'parts_manager', 
             'supervisor'
             ])->default('client');
+            $table->boolean('is_verified')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

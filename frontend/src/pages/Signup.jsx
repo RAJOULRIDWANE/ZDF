@@ -40,31 +40,16 @@ function Signup() {
     setLoading(true);
 
     try {
-      // --- API CALL ---
-      // We assume standard users are 'client'. 
-      // If you updated AuthController to accept roles, you can add role: 'client' here.
       const response = await axios.post('http://127.0.0.1:8000/api/register', formData);
 
       console.log("Signup Success:", response.data);
 
-      // --- AUTO LOGIN LOGIC ---
-      // Save the data immediately so they don't have to log in again
-      const token = response.data.token;
-      const user = response.data.user;
-
-      localStorage.setItem('ACCESS_TOKEN', token);
-      
-      // Save role specifically for the ProtectedRoute
-      // New signups are usually clients by default
-      localStorage.setItem('USER_ROLE', user.role || 'client'); 
-      
-      // Save individual fields (clean storage pattern)
-      Object.keys(user).forEach(key => {
-        localStorage.setItem(key, user[key]);
+      navigate('/verifyemail', { 
+        state: { 
+          email: formData.email,
+          message: response.data.message 
+        }
       });
-
-      // --- REDIRECT ---
-      navigate('/client-dashboard');
 
     } catch (err) {
       console.error("Signup Error:", err);
@@ -73,6 +58,8 @@ function Signup() {
       if (err.response && err.response.status === 422) {
         // Validation Errors (e.g., Email taken, passwords don't match)
         setErrors(err.response.data.errors);
+      } else if (err.response?.data?.message) {
+        setGeneralError(err.response.data.message);
       } else {
         // Network or Server Errors
         setGeneralError("Something went wrong. Is the server running?");
@@ -103,7 +90,14 @@ function Signup() {
             
             {/* General Error Message */}
             {generalError && (
-              <div style={{ color: 'red', textAlign: 'center', marginBottom: '10px' }}>
+              <div style={{ 
+                color: '#e74c3c', 
+                backgroundColor: '#fadbd8',
+                padding: '12px',
+                borderRadius: '8px',
+                marginBottom: '15px',
+                textAlign: 'center' 
+              }}>
                 {generalError}
               </div>
             )}
