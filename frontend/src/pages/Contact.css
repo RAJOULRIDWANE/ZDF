@@ -1,0 +1,277 @@
+/* Main Contact Page Container */
+.contact-page {
+  min-height: 100vh;
+  background: #f3f4f6; /* Light gray background to match app */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Contact Header Section */
+.contact-header {
+  background: #1E3A8A; /* Brand Navy */
+  color: white;
+  padding: 4rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Optional: Adds a subtle shine/overlay effect like the Auth Hero */
+.contact-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.contact-header-content {
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.contact-header-content h1 {
+  font-size: 2.75rem;
+  margin-bottom: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.contact-header-content p {
+  font-size: 1.15rem;
+  opacity: 0.8;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Form Section */
+.contact-form-section {
+  padding: 4rem 2rem;
+  margin-top: -3rem; /* Pulls content up slightly over the header */
+}
+
+.contact-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.contact-container h2 {
+  font-size: 1.8rem;
+  color: #001532;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.form-description {
+  color: #6b7280;
+  margin-bottom: 2rem;
+}
+
+/* Success Message */
+.success-message {
+  background: #ecfdf5;
+  border: 1px solid #10b981;
+  color: #065f46;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Contact Form Card */
+.contact-form {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 12px;
+  /* Matches the shadow from your Login card */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  margin-bottom: 3rem;
+  border: 1px solid #e5e7eb;
+}
+
+/* Form Group */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.form-group textarea {
+  min-height: 150px;
+  max-width: 100%;
+  min-width: 100%;
+}
+
+
+/* Input & Textarea Styling - Matches Auth Forms */
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #9ca3af;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #001532;
+  box-shadow: 0 0 7px 1px  #bbdefb;
+}
+
+/* Error States */
+.form-group input.error,
+.form-group textarea.error {
+  border-color: #ef4444;
+  background: #fff5f5;
+}
+
+.form-group input.error:focus,
+.form-group textarea.error:focus {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 0.4rem;
+  font-weight: 500;
+}
+
+/* Submit Button - Matches .btn-primary */
+.submit-button {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
+}
+
+.submit-button:hover {
+  background-color: #002352; /* Slightly lighter navy on hover */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 21, 50, 0.25);
+}
+
+.submit-button:active {
+  transform: translateY(0);
+}
+
+/* Contact Info Grid */
+.contact-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+/* Contact Info Item */
+.contact-info-item {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.contact-info-item .info-icon i{
+  font-size: 30px;
+}
+
+.contact-info-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Info Icon */
+.info-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 64px;
+  height: 64px;
+  background: #e0edff; 
+  border-radius: 50%;
+  margin-bottom: 1.25rem;
+  color: #001532;
+}
+
+/* Force SVGs to match Brand Navy */
+.info-icon svg path {
+  fill: #001532; 
+}
+
+/* Contact Info Text */
+.contact-info-item h3 {
+  color: #111827;
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.contact-info-item p {
+  color: #6b7280;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .contact-header {
+    padding: 3rem 1.5rem;
+  }
+
+  .contact-header-content h1 {
+    font-size: 2rem;
+  }
+  
+  .contact-form-section {
+    margin-top: 0;
+    padding: 2rem 1rem;
+  }
+
+  .contact-form {
+    padding: 1.5rem;
+  }
+  
+  .contact-info-grid {
+    grid-template-columns: 1fr;
+  }
+}

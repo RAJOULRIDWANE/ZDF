@@ -1,0 +1,865 @@
+/* =========================================
+   SCOPED VARIABLES & CONTAINER
+   ========================================= */
+
+.repair-details-container {
+  --primary-color: #3b82f6; /* Modern Blue */
+  --secondary-color: #64748b; /* Slate Grey */
+  --bg-color: #f8fafc;
+  --card-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --success-color: #22c55e;
+  --text-dark: #1e293b;
+  --text-light: #64748b;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --transition-base: 0.2s ease;
+
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  color: var(--text-dark);
+  position: relative;
+  line-height: 1.6;
+}
+
+.repair-details-container .loading-state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-light);
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  animation: repairFadeIn 0.5s ease-in;
+}
+
+.repair-details-container .section-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--border-color);
+  color: var(--text-light);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.repair-details-container .spinner-mini {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 16px;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--primary-color);
+  border-radius: 50%;
+  animation: repairSpin 0.8s linear infinite;
+}
+
+.repair-details-container .repair-content-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* =========================================
+   SECTIONS & HEADINGS
+   ========================================= */
+
+.repair-details-container .vehicle-info-section, 
+.repair-details-container .services-section, 
+.repair-details-container .summary-section {
+  background: var(--card-bg);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: 32px;
+  margin-bottom: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+
+.repair-details-container h2 i {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+}
+
+.repair-details-container h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 16px;
+}
+
+/* =========================================
+   INFO GRID & INPUTS
+   ========================================= */
+
+.repair-details-container .info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.repair-details-container .info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.repair-details-container .info-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.repair-details-container .info-item label {
+  font-size: 0.813rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.repair-details-container .info-item input, 
+.repair-details-container .info-item textarea {
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: #f8fafc;
+  font-size: 1rem;
+  color: var(--text-dark);
+  resize: none;
+  transition: all var(--transition-base);
+  font-family: inherit;
+}
+
+.repair-details-container .info-item input:focus,
+.repair-details-container .info-item textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background-color: var(--card-bg);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.repair-details-container .info-item textarea {
+  min-height: 100px;
+}
+
+/* Service Badges */
+.repair-details-container .service-badges-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.repair-details-container .service-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: #e0f2fe;
+  color: #0284c7;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+}
+
+/* =========================================
+   SEARCH & FILTERS
+   ========================================= */
+
+.repair-details-container .services-header {
+  margin-bottom: 24px;
+}
+
+.repair-details-container .search-wrapper {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.repair-details-container .search-input {
+  width: 100%;
+  padding: 14px 18px 14px 48px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  font-size: 1rem;
+  transition: all var(--transition-base);
+  background: #f8fafc;
+}
+
+.repair-details-container .search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background-color: var(--card-bg);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.repair-details-container .search-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+  font-size: 1.1rem;
+}
+
+.repair-details-container .zone-filter {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.repair-details-container .zone-filter button {
+  padding: 10px 20px;
+  border: 2px solid var(--border-color);
+  background: white;
+  border-radius: 24px;
+  cursor: pointer;
+  font-size: 0.938rem;
+  font-weight: 500;
+  transition: all var(--transition-base);
+  text-transform: capitalize;
+  color: var(--text-dark);
+}
+
+.repair-details-container .zone-filter button.active, 
+.repair-details-container .zone-filter button:hover {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+/* Category Headers */
+.repair-details-container .category-header {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-color);
+  position: relative;
+}
+
+.repair-details-container .category-header::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 60px;
+  height: 2px;
+  background: var(--primary-color);
+}
+
+/* =========================================
+   SERVICE CARDS
+   ========================================= */
+
+.repair-details-container .service-category-group {
+  margin-bottom: 36px;
+}
+
+.repair-details-container .service-category-group .services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.repair-details-container .service-card {
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-base);
+  background: white;
+}
+
+.repair-details-container .service-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.repair-details-container .service-card.selected {
+  border-color: var(--primary-color);
+  background-color: #e3f2fd;
+}
+
+.repair-details-container .service-info h3 {
+  font-size: 1.063rem;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  color: var(--text-dark);
+  line-height: 1.4;
+}
+
+.repair-details-container .service-zone {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #e2e8f0;
+  padding: 4px 12px;
+  border-radius: 12px;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.repair-details-container .service-card.selected .service-zone {
+  background: var(--primary-color);
+  color: white;
+}
+
+.repair-details-container .selected-checkmark {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: repairCheckPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.repair-details-container .selected-checkmark i {
+  color: #ffffff;
+  font-size: 0.938rem;
+}
+
+/* =========================================
+   MAIN BUTTONS
+   ========================================= */
+
+.repair-details-container .btn-submit {
+  width: 100%;
+  padding: 16px 24px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-md);
+}
+
+.repair-details-container .btn-submit i {
+  color: white;
+  font-size: 1.125rem;
+}
+
+.repair-details-container .btn-submit:hover {
+  background-color: #2563eb;
+}
+
+.repair-details-container .btn-submit:disabled {
+  background: var(--secondary-color);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* =========================================
+   SUMMARY SECTION & LISTS
+   ========================================= */
+
+.repair-details-container .summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.repair-details-container .badge-count {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.repair-details-container .summary-list-header,
+.repair-details-container .summary-item-row {
+  display: grid;
+  grid-template-columns: 1fr 140px 160px 60px;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.repair-details-container .summary-list-header {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border: 2px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.repair-details-container .summary-item-row {
+  background-color: #fff;
+  transition: all var(--transition-base);
+  border-left: 2px solid var(--border-color);
+  border-right: 2px solid var(--border-color);
+}
+
+.repair-details-container .summary-item-row:last-child {
+  border-bottom: 2px solid var(--border-color);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.repair-details-container .summary-item-row:hover {
+  background-color: #f8fafc;
+}
+
+.repair-details-container .item-name {
+  font-weight: 500;
+  color: var(--text-dark);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.repair-details-container .item-zone-tag {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 0.813rem;
+  font-weight: 600;
+  text-align: center;
+  width: fit-content;
+  justify-self: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* =========================================
+   QUANTITY BOX & REMOVE BUTTONS
+   ========================================= */
+
+.repair-details-container .qty-input-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: #f1f5f9;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  justify-self: center;
+}
+
+.repair-details-container .qty-label {
+  font-size: 0.75rem;
+  color: var(--text-medium);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.repair-details-container .qty-custom-input {
+  width: 65px;
+  padding: 6px 10px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  font-weight: 600;
+  font-size: 1rem;
+  outline: none;
+  background: white;
+  transition: all var(--transition-base);
+}
+
+.repair-details-container .qty-custom-input:focus {
+  border-color: var(--primary-color);
+  background-color: #fff;
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.repair-details-container .btn-remove {
+  background-color: #ffebee;
+  color: #d32f2f;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+  justify-self: center;
+}
+
+.repair-details-container .btn-remove:hover {
+  background-color: #ffcdd2;
+  transform: scale(1.1);
+}
+
+.repair-details-container .btn-remove i {
+  font-size: 0.938rem;
+  color: #ef233c;
+}
+
+.repair-details-container .summary-footer {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid var(--border-color);
+}
+
+.repair-details-container .total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background-color: #f8f9fa;
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+  border: 2px solid var(--border-color);
+}
+
+.repair-details-container .total-row span:first-child {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.repair-details-container .total-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+/* =========================================
+   NAVIGATION (Back Link)
+   ========================================= */
+
+.repair-details-container .back-link-container {
+  margin-bottom: 24px;
+}
+
+.repair-details-container .back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background-color: var(--primary-color);
+  border: none;
+  border-radius: var(--radius-lg);
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--transition-base);
+}
+
+.repair-details-container .back-link:hover {
+  background-color: #2563eb;
+}
+
+.repair-details-container .back-link i {
+  font-size: 1rem;
+}
+
+/* =========================================
+   LOADING STATES
+   ========================================= */
+
+.repair-details-container .loading-state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+  width: 100%;
+  color: var(--text-light);
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  animation: repairFadeIn 0.5s ease-in;
+}
+
+.repair-details-container .section-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--border-color);
+  color: var(--text-light);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.repair-details-container .spinner-mini {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 16px;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--primary-color);
+  border-radius: 50%;
+  animation: repairSpin 0.8s linear infinite;
+}
+
+/* =========================================
+   CONFIRMATION VIEW
+   ========================================= */
+
+.repair-details-container .confirmation-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 40px 20px;
+}
+
+.repair-details-container .confirmation-success {
+  background: white;
+  padding: 48px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
+  border: 1px solid var(--border-color);
+}
+
+.repair-details-container .success-icon {
+  font-size: 4rem;
+  color: var(--success-color);
+  margin-bottom: 24px;
+  animation: repairCheckPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.repair-details-container .confirmation-success h2 {
+  font-size: 2rem;
+  color: var(--text-dark);
+  margin-bottom: 32px;
+  justify-content: center;
+}
+
+.repair-details-container .request-summary {
+  background: var(--bg-color);
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.repair-details-container .request-summary p {
+  margin-bottom: 12px;
+  color: var(--text-medium);
+}
+
+.repair-details-container .request-summary h4 {
+  margin: 20px 0 16px 0;
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.repair-details-container .request-summary ul {
+  list-style: none;
+  padding: 0;
+}
+
+.repair-details-container .request-summary li {
+  padding: 10px;
+  background: white;
+  margin-bottom: 8px;
+  border-radius: var(--radius-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border-color);
+}
+
+.repair-details-container .qty-pill {
+  background: var(--primary-color);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.repair-details-container .confirmation-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.repair-details-container .btn-primary,
+.repair-details-container .btn-secondary {
+  padding: 14px 28px;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all var(--transition-base);
+  border: 2px solid transparent;
+  text-decoration: none;
+}
+
+.repair-details-container .btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.repair-details-container .btn-primary:hover {
+  background-color: #2563eb;
+}
+
+.repair-details-container .btn-secondary {
+  background: white;
+  color: var(--text-dark);
+  border-color: var(--border-color);
+}
+
+.repair-details-container .btn-secondary:hover {
+  background-color: var(--bg-color);
+  border-color: var(--primary-color);
+}
+
+/* =========================================
+   SCOPED ANIMATIONS
+   ========================================= */
+
+@keyframes repairSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes repairFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes repairCheckPop {
+  0% { transform: scale(0); opacity: 0; }
+  80% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* =========================================
+   RESPONSIVE DESIGN
+   ========================================= */
+
+@media (max-width: 768px) {
+  .repair-details-container .repair-content-wrapper {
+    padding: 20px 16px;
+  }
+
+  .repair-details-container .vehicle-info-section,
+  .repair-details-container .services-section,
+  .repair-details-container .summary-section {
+    padding: 20px;
+  }
+
+  .repair-details-container h2 {
+    font-size: 1.5rem;
+  }
+
+  .repair-details-container .info-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .repair-details-container .summary-list-header,
+  .repair-details-container .summary-item-row {
+    grid-template-columns: 1fr 80px 120px 50px;
+    gap: 12px;
+    padding: 12px 16px;
+    font-size: 0.875rem;
+  }
+
+  .repair-details-container .zone-filter {
+    gap: 8px;
+  }
+
+  .repair-details-container .zone-filter button {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+  }
+
+  .repair-details-container .service-category-group .services-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .repair-details-container .confirmation-success {
+    padding: 32px 24px;
+  }
+
+  .repair-details-container .confirmation-actions {
+    flex-direction: column;
+  }
+
+  .repair-details-container .btn-primary,
+  .repair-details-container .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* =========================================
+   ACCESSIBILITY
+   ========================================= */
+
+.repair-details-container *:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.repair-details-container button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Print styles */
+@media print {
+  .repair-details-container .back-link-container,
+  .repair-details-container .btn-submit {
+    display: none;
+  }
+}
+.dashboard-container .loading-state,
+.repair-details-container .loading-state {
+  position: fixed;        /* Makes it stay in place relative to the viewport */
+  top: 50%;              /* Moves it 50% from the top of the screen */
+  left: 50%;             /* Moves it 50% from the left of the screen */
+  transform: translate(-50%, -50%);  /* Shifts it back by half its own width/height */
+}

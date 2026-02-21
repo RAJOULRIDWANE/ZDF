@@ -1,0 +1,90 @@
+.footer {
+  border-top: 1px solid #e5e9f2;
+  background: #ffffff;
+  margin-top: 3rem;
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 2rem;
+}
+
+.footer-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 3rem;
+  align-items: flex-start;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.footer-logo-mark {
+  width: 47px;
+  height: 47px;
+  border-radius: 999px;
+}
+
+.footer-logo-mark .logo{
+  margin-left: 1px;
+}
+
+
+.footer-logo-text {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  color: #1b2559;
+}
+
+.footer-columns {
+  display: flex;
+  gap: 3rem;
+}
+
+.footer-column h4 {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+.footer-column .link {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  color: #4b5563;
+  transition: 0.3s ease;
+}
+
+.footer-column .link:hover {
+  color: #005DFFFF;
+}
+
+.Services2{
+  margin-top: 34px;
+}
+
+.Services1 {
+  display: flex;
+  gap: 30px;
+}
+
+.footer-bottom {
+  margin-top: 2rem;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+@media (max-width: 768px) {
+  .footer-top {
+    flex-direction: column;
+  }
+
+  .footer-columns {
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+}

@@ -1,0 +1,152 @@
+/* UserProfile.css */
+
+/* --- 1. Layout & Wrapper --- */
+.profile-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 30px; /* Space between the two cards */
+  max-width: 700px; /* Keeps the form readable, not too wide */
+  margin: 0 auto;   /* Centers the cards horizontally */
+  padding-bottom: 40px;
+}
+
+/* --- 2. Card Styling --- */
+.profile-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  overflow: hidden; /* Ensures header background doesn't bleed out */
+}
+
+.card-header {
+  background-color: #f8fafc;
+  padding: 20px 30px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-content {
+  padding: 30px;
+}
+
+/* --- 3. Form Inputs --- */
+.form-group {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #334155;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* --- 4. Locked / Read-Only Fields --- */
+.form-control.locked-input {
+  background-color: #f1f5f9;
+  color: #64748b;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+  font-weight: 500;
+}
+
+.lock-icon {
+  position: absolute;
+  right: 15px;
+  top: 38px; /* Aligns with the input field */
+  font-size: 14px;
+}
+
+/* --- 5. Split Row (For New/Confirm Password) --- */
+.row-split {
+  display: flex;
+  gap: 20px;
+}
+
+/* On mobile, stack them */
+@media (max-width: 600px) {
+  .row-split {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+/* --- 6. Feedback Messages --- */
+.message-box {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.message-box.error {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fee2e2;
+}
+
+.message-box.success {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #dcfce7;
+}
+
+/* --- 7. Button --- */
+.update-btn {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-size: 14px;
+}
+
+.update-btn:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.fa-lock{
+  color: #6c757d;
+  font-size: 15px;
+  margin-top: 5px;
+}
+
+.back-link-container{
+  margin-top: 50px;
+}
