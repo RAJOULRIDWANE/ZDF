@@ -352,7 +352,10 @@
         "secure_warranty": "Secure Warranty",
         "warranty_desc": "Reliable warranty coverage on all major services.",
         "affordable_pricing": "Affordable Pricing",
-        "pricing_desc": "Transparent pricing with no hidden fees."
+        "pricing_desc": "Transparent pricing with no hidden fees.",
+        "trusted_brands": "Trusted Brands",
+        "brands_subtitle": "We work with industry-leading parts and equipment manufacturers"
+
     },
     "about": {
         "title": "Who We Are",

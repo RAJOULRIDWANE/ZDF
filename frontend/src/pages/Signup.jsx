@@ -88,7 +88,6 @@ function Signup() {
             
             <h2>Create Account</h2>
             
-            {/* General Error Message */}
             {generalError && (
               <div style={{ 
                 color: '#e74c3c', 
@@ -106,7 +105,7 @@ function Signup() {
               
               {/* NAME */}
               <label className="auth-field">
-                <span>Full Name</span>
+                Full Name <span> * </span>
                 <input 
                   type="text" 
                   name="name" 
@@ -120,7 +119,7 @@ function Signup() {
 
               {/* EMAIL */}
               <label className="auth-field">
-                <span>Email</span>
+                Email <span> * </span>
                 <input 
                   type="email" 
                   name="email"
@@ -134,7 +133,7 @@ function Signup() {
 
               {/* PASSWORD */}
               <label className="auth-field">
-                <span>Password</span>
+                Password <span> *  </span>
                 <input 
                   type="password" 
                   name="password"
@@ -148,7 +147,7 @@ function Signup() {
 
               {/* CONFIRM PASSWORD */}
               <label className="auth-field">
-                <span>Confirm Password</span>
+                Confirm Password <span> * </span>
                 <input 
                   type="password" 
                   name="password_confirmation"

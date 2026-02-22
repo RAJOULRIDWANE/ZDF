@@ -1,90 +1,173 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@700;800&display=swap');
+
+/* ─────────────────────────────────────────
+   FOOTER SHELL
+───────────────────────────────────────── */
 .footer {
-  border-top: 1px solid #e5e9f2;
-  background: #ffffff;
-  margin-top: 3rem;
+  background: var(--black);
+  border-top: 1px solid var(--border);
+  position: relative;
+}
+
+/* Red accent line */
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--red);
 }
 
 .footer-inner {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 2rem;
+  padding: 80px 6vw 32px;
 }
 
+/* ─────────────────────────────────────────
+   FOOTER TOP
+───────────────────────────────────────── */
 .footer-top {
   display: flex;
   justify-content: space-between;
-  gap: 3rem;
-  align-items: flex-start;
+  gap: 80px;
+  flex-wrap: wrap;
+  padding-bottom: 56px;
+  border-bottom: 1px solid var(--border);
 }
 
+/* ─────────────────────────────────────────
+   BRAND
+───────────────────────────────────────── */
 .footer-brand {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 12px;
 }
 
 .footer-logo-mark {
-  width: 47px;
-  height: 47px;
-  border-radius: 999px;
+  width: 42px;
+  height: 42px;
+  background: var(--red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  clip-path: polygon(0 0,
+      calc(100% - 6px) 0,
+      100% 6px,
+      100% 100%,
+      6px 100%,
+      0 calc(100% - 6px));
 }
 
-.footer-logo-mark .logo{
-  margin-left: 1px;
+.footer-logo-mark img {
+  width: 24px;
+  height: 24px;
+  filter: brightness(0) invert(1);
 }
-
 
 .footer-logo-text {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 700;
-  color: #1b2559;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  letter-spacing: 0.12em;
+  color: var(--white);
 }
 
+/* ─────────────────────────────────────────
+   COLUMNS
+───────────────────────────────────────── */
 .footer-columns {
   display: flex;
-  gap: 3rem;
+  gap: 80px;
+  flex-wrap: wrap;
 }
 
 .footer-column h4 {
-  margin: 0 0 0.75rem;
-  font-size: 0.95rem;
-  color: #6b7280;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--white);
+  margin-bottom: 20px;
+  position: relative;
+  padding-top: 12px;
 }
 
+/* Red underline accent */
+.footer-column h4::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 26px;
+  height: 2px;
+  background: var(--red);
+}
+
+/* ─────────────────────────────────────────
+   LINKS
+───────────────────────────────────────── */
 .footer-column .link {
   display: block;
-  margin-bottom: 0.4rem;
-  font-size: 0.9rem;
-  color: #4b5563;
-  transition: 0.3s ease;
+  font-family: 'Barlow', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--muted);
+  text-decoration: none;
+  margin-bottom: 10px;
+  transition: color 0.2s, transform 0.2s;
 }
 
 .footer-column .link:hover {
-  color: #005DFFFF;
+  color: var(--white);
+  transform: translateX(4px);
 }
 
-.Services2{
-  margin-top: 34px;
-}
-
+/* Services grid */
 .Services1 {
-  display: flex;
-  gap: 30px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
 }
 
+/* ─────────────────────────────────────────
+   FOOTER BOTTOM
+───────────────────────────────────────── */
 .footer-bottom {
-  margin-top: 2rem;
-  font-size: 0.8rem;
-  color: #9ca3af;
+  margin-top: 28px;
+  text-align: center;
 }
 
-@media (max-width: 768px) {
+.footer-bottom span {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
+/* ─────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────── */
+@media (max-width: 900px) {
   .footer-top {
     flex-direction: column;
+    gap: 48px;
   }
 
   .footer-columns {
-    flex-wrap: wrap;
-    gap: 1.5rem;
+    gap: 48px;
+  }
+}
+
+@media (max-width: 600px) {
+  .Services1 {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .footer-inner {
+    padding: 64px 5vw 28px;
   }
 }

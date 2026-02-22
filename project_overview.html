@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Garage Management System — Project Overview</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --blue: #2563eb;
+            --blue-light: #eff6ff;
+            --green: #16a34a;
+            --green-light: #f0fdf4;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+            --orange: #ea580c;
+            --red: #dc2626;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: var(--gray-900);
+            line-height: 1.65;
+            font-size: 11pt;
+            background: #fff;
+            padding: 50px 60px;
+        }
+
+        /* --- PDF Page Break Rules (avoid splitting elements) --- */
+        h2,
+        h3,
+        h4 {
+            page-break-after: avoid;
+            break-after: avoid;
+        }
+
+        @media print {
+            body {
+                padding: 0 30px;
+                font-size: 10pt;
+            }
+
+            .download-btn {
+                display: none !important;
+            }
+        }
+
+        /* --- Cover --- */
+        .cover {
+            text-align: center;
+            padding: 100px 0 60px;
+            border-bottom: 3px solid var(--blue);
+            margin-bottom: 40px;
+        }
+
+        .cover-icon {
+            font-size: 60px;
+            margin-bottom: 16px;
+        }
+
+        .cover h1 {
+            font-size: 32pt;
+            font-weight: 800;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .cover .subtitle {
+            font-size: 14pt;
+            color: var(--gray-500);
+            font-weight: 400;
+        }
+
+        .cover .date {
+            margin-top: 24px;
+            font-size: 10pt;
+            color: var(--gray-500);
+        }
+
+        /* --- Headings --- */
+        h2 {
+            font-size: 18pt;
+            font-weight: 700;
+            color: var(--blue);
+            margin: 40px 0 16px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid var(--blue-light);
+        }
+
+        h3 {
+            font-size: 13pt;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin: 24px 0 10px;
+        }
+
+        h4 {
+            font-size: 11pt;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin: 16px 0 6px;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        /* --- Tables --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 20px;
+            font-size: 10pt;
+        }
+
+        th {
+            background: var(--gray-900);
+            color: #fff;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 12px;
+        }
+
+        td {
+            padding: 7px 12px;
+            border-bottom: 1px solid var(--gray-200);
+            vertical-align: top;
+        }
+
+        tr:nth-child(even) td {
+            background: var(--gray-50);
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            background: var(--gray-100);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 9pt;
+            color: var(--blue);
+        }
+
+        /* --- Status Flow --- */
+        .status-flow {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 14px 0 20px;
+            text-align: center;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin: 6px 0;
+        }
+
+        .flow-step {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 9pt;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .flow-arrow {
+            color: var(--gray-300);
+            font-size: 14pt;
+            margin: 0 2px;
+            font-weight: 700;
+        }
+
+        .s-pending {
+            background: #f59e0b;
+        }
+
+        .s-diagnosing {
+            background: #8b5cf6;
+        }
+
+        .s-estimate {
+            background: #3b82f6;
+        }
+
+        .s-accepted {
+            background: #06b6d4;
+        }
+
+        .s-negotiate {
+            background: #ec4899;
+        }
+
+        .s-progress {
+            background: #2563eb;
+        }
+
+        .s-waiting {
+            background: #f97316;
+        }
+
+        .s-completed {
+            background: #16a34a;
+        }
+
+        .s-delivered {
+            background: #059669;
+        }
+
+        .s-canceled {
+            background: #dc2626;
+        }
+
+        /* --- Feature Cards --- */
+        .role-section {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 14px 0 20px;
+        }
+
+        .role-header {
+            font-size: 14pt;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        /* --- ER Model --- */
+        .er-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin: 14px 0 20px;
+        }
+
+        .er-box {
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .er-box-title {
+            background: var(--gray-900);
+            color: #fff;
+            font-weight: 700;
+            padding: 6px 12px;
+            font-size: 10pt;
+        }
+
+        .er-box ul {
+            list-style: none;
+            padding: 8px 12px;
+            font-size: 9pt;
+        }
+
+        .er-box li {
+            padding: 2px 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .er-box li:last-child {
+            border: none;
+        }
+
+        .field-type {
+            color: var(--gray-500);
+            font-size: 8pt;
+            margin-left: 4px;
+        }
+
+        .field-pk {
+            color: var(--blue);
+            font-weight: 600;
+        }
+
+        .field-fk {
+            color: var(--orange);
+            font-weight: 600;
+        }
+
+        /* --- Endpoint method badges --- */
+        .method {
+            display: inline-block;
+            width: 52px;
+            text-align: center;
+            padding: 2px 0;
+            border-radius: 3px;
+            font-size: 8pt;
+            font-weight: 700;
+            color: #fff;
+            margin-right: 4px;
+        }
+
+        .m-get {
+            background: #16a34a;
+        }
+
+        .m-post {
+            background: #2563eb;
+        }
+
+        .m-patch {
+            background: #f59e0b;
+            color: #000;
+        }
+
+        .m-put {
+            background: #8b5cf6;
+        }
+
+        .m-delete {
+            background: #dc2626;
+        }
+
+        /* --- Status badge --- */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 9pt;
+            font-weight: 600;
+        }
+
+        .badge-done {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .badge-stub {
+            background: var(--gray-100);
+            color: var(--gray-500);
+        }
+
+        /* --- Lists --- */
+        ul.features {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul.features li {
+            padding: 4px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        ul.features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        .toc {
+            margin: 20px 0 30px;
+        }
+
+        .toc ol {
+            padding-left: 20px;
+        }
+
+        .toc li {
+            padding: 3px 0;
+            font-size: 11pt;
+        }
+
+        .hr {
+            border-top: 1px solid var(--gray-200);
+            margin: 30px 0;
+        }
+
+        /* --- Download Button --- */
+        .download-btn {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 11pt;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        .download-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .download-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"></script>
+</head>
+
+<body>
+
+    <!-- ============== COVER ============== -->
+    <div class="cover">
+        <div class="cover-icon">🔧</div>
+        <h1>Garage Management System</h1>
+        <p class="subtitle">SYSTME-APPs — Full-Stack Project Overview</p>
+        <p class="date">Generated: February 20, 2026</p>
+    </div>
+
+    <!-- ============== TOC ============== -->
+    <div class="toc">
+        <h3>Table of Contents</h3>
+        <ol>
+            <li>Project Concept</li>
+            <li>Technology Stack</li>
+            <li>System Architecture</li>
+            <li>User Roles &amp; Features</li>
+            <li>Repair Lifecycle (Workflow)</li>
+            <li>Data Model</li>
+            <li>Authentication &amp; Security</li>
+            <li>Internationalization (i18n)</li>
+            <li>Frontend Page Map</li>
+            <li>API Endpoints</li>
+            <li>Notable Features</li>
+            <li>Development Status</li>
+        </ol>
+    </div>
+
+    <div class="hr"></div>
+
+    <!-- ============== 1. CONCEPT ============== -->
+    <h2>1. Project Concept</h2>
+    <p>
+        This is a <strong>full-stack Garage / Auto-Repair Management System</strong> designed to digitize and streamline
+        the entire lifecycle of vehicle repair operations — from client intake, through diagnostics &amp; estimation,
+        to invoicing &amp; delivery.
+    </p>
+    <p>
+        The system supports <strong>5 distinct user roles</strong>, each with a dedicated dashboard, ensuring every
+        stakeholder in the garage workflow has the right tools at their fingertips. The platform also features a
+        public-facing website for potential customers, with full internationalization in 3 languages.
+    </p>
+
+    <!-- ============== 2. TECH STACK ============== -->
+    <h2>2. Technology Stack</h2>
+    <table>
+        <tr>
+            <th>Layer</th>
+            <th>Technology</th>
+            <th>Details</th>
+        </tr>
+        <tr>
+            <td><strong>Backend</strong></td>
+            <td>Laravel 12 + PHP 8.2</td>
+            <td>REST API with Sanctum token-based authentication</td>
+        </tr>
+        <tr>
+            <td><strong>Frontend</strong></td>
+            <td>React 19 + Vite 7</td>
+            <td>Single Page Application with role-based routing</td>
+        </tr>
+        <tr>
+            <td><strong>Database</strong></td>
+            <td>SQLite</td>
+            <td>14 migrations, relational schema with pivot tables</td>
+        </tr>
+        <tr>
+            <td><strong>Auth</strong></td>
+            <td>Laravel Sanctum</td>
+            <td>Token-based API authentication with OTP email verification</td>
+        </tr>
+        <tr>
+            <td><strong>Styling</strong></td>
+            <td>Vanilla CSS</td>
+            <td>Per-page and per-component CSS files</td>
+        </tr>
+        <tr>
+            <td><strong>i18n</strong></td>
+            <td>i18next</td>
+            <td>English, French, Arabic with RTL support</td>
+        </tr>
+        <tr>
+            <td><strong>PDF</strong></td>
+            <td>jsPDF</td>
+            <td>Client-side estimate &amp; invoice PDF generation</td>
+        </tr>
+        <tr>
+            <td><strong>Icons</strong></td>
+            <td>Font Awesome + Remix Icons</td>
+            <td>Rich UI iconography</td>
+        </tr>
+        <tr>
+            <td><strong>HTTP Client</strong></td>
+            <td>Axios</td>
+            <td>API communication from frontend</td>
+        </tr>
+        <tr>
+            <td><strong>Debugging</strong></td>
+            <td>Laravel Telescope</td>
+            <td>Request/query introspection in development</td>
+        </tr>
+    </table>
+
+    <!-- ============== 3. ARCHITECTURE ============== -->
+    <h2>3. System Architecture</h2>
+    <div class="status-flow" style="text-align: left;">
+        <p><strong>Frontend (React SPA)</strong> communicates with the <strong>Backend (Laravel API)</strong> via Axios
+            HTTP requests, authenticated with Sanctum Bearer tokens stored in localStorage.</p>
+        <br>
+        <p><strong>Request Flow:</strong></p>
+        <div class="flow-row" style="justify-content: flex-start;">
+            <span class="flow-step" style="background: #3b82f6;">React Component</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step" style="background: #6366f1;">Axios + Token</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step" style="background: #7c3aed;">Laravel Route</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step" style="background: #9333ea;">Sanctum Middleware</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step" style="background: #a855f7;">Controller</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step" style="background: #c084fc;">Eloquent Model</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step" style="background: #059669;">SQLite DB</span>
+        </div>
+        <br>
+        <p><strong>Backend Controllers:</strong> AuthController, ReceptionistController, MechanicController,
+            ClientController, InvoiceController, ServiceController, VehicleController, ForgotPasswordController,
+            ContactDetailsController</p>
+        <br>
+        <p><strong>Frontend Structure:</strong> Role-based page folders (Client-Pages, Mechanic-Pages,
+            Receptionist-Pages, Supervisor-Pages, PartsManager-Pages) + shared components (Navbar, DashboardNavbar,
+            Footer) + public pages</p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- ============== 4. USER ROLES ============== -->
+    <h2>4. User Roles &amp; Features</h2>
+
+    <!-- CLIENT -->
+    <div class="role-section">
+        <p class="role-header">👤 Client</p>
+        <table>
+            <tr>
+                <th>Feature</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>Dashboard</td>
+                <td>View all vehicles and associated repair jobs with status tracking</td>
+            </tr>
+            <tr>
+                <td>Add Vehicle</td>
+                <td>Modal to register new vehicles (make, model, license plate, year)</td>
+            </tr>
+            <tr>
+                <td>View Repairs</td>
+                <td>Track repair status with color-coded badges for each stage</td>
+            </tr>
+            <tr>
+                <td>Approve Estimate</td>
+                <td>Accept a mechanic's cost estimate to authorize work to begin</td>
+            </tr>
+            <tr>
+                <td>Negotiate Price</td>
+                <td>Request a discount on an estimate (triggers receptionist review)</td>
+            </tr>
+            <tr>
+                <td>Download Estimate PDF</td>
+                <td>Client-side PDF with garage branding, full service/parts breakdown</td>
+            </tr>
+            <tr>
+                <td>Download Invoice PDF</td>
+                <td>Final invoice PDF with payment details, discounts, and totals</td>
+            </tr>
+            <tr>
+                <td>Profile Management</td>
+                <td>View/edit profile information, change password</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- MECHANIC -->
+    <div class="role-section">
+        <p class="role-header">🔧 Mechanic</p>
+        <table>
+            <tr>
+                <th>Feature</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>Job Dashboard</td>
+                <td>View all assigned repairs with KPI summary cards (pending, in-progress, completed)</td>
+            </tr>
+            <tr>
+                <td>Status Updates</td>
+                <td>Update job status via custom dropdown (Pending → Diagnosing → In Progress → Completed)</td>
+            </tr>
+            <tr>
+                <td>Diagnostic Mode</td>
+                <td>Special workflow for diagnostic-flagged jobs with automatic diagnostic service attachment</td>
+            </tr>
+            <tr>
+                <td>Submit Estimate</td>
+                <td>Select services from catalog, add mechanic notes, calculate total, send estimate to client</td>
+            </tr>
+            <tr>
+                <td>Parts Management</td>
+                <td>Browse parts inventory, add parts to repair job (auto-decrements stock quantity)</td>
+            </tr>
+            <tr>
+                <td>Complete Job</td>
+                <td>Mark repair as completed — triggers automatic client notification</td>
+            </tr>
+            <tr>
+                <td>Repair Details Page</td>
+                <td>Deep-dive per job: services cart, parts request with quantity selector, full repair history</td>
+            </tr>
+            <tr>
+                <td>Profile Management</td>
+                <td>View/edit profile information, change password</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- RECEPTIONIST -->
+    <div class="role-section">
+        <p class="role-header">📋 Receptionist</p>
+        <table>
+            <tr>
+                <th>Feature</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>Dashboard</td>
+                <td>KPI overview cards (total repairs, pending, in-progress, completed counts)</td>
+            </tr>
+            <tr>
+                <td>Client Search</td>
+                <td>Live autocomplete search for existing clients by name</td>
+            </tr>
+            <tr>
+                <td>Create Repair Job</td>
+                <td>Full job creation: select client → vehicle → mechanic → services → schedule date → submit</td>
+            </tr>
+            <tr>
+                <td>Service Catalog</td>
+                <td>Browse and select services with zone-based categorization and pricing</td>
+            </tr>
+            <tr>
+                <td>Client Details Page</td>
+                <td>View all repairs for a specific client with status badges and actions</td>
+            </tr>
+            <tr>
+                <td>Update Status</td>
+                <td>Mark jobs as Delivered, Canceled, or other statuses</td>
+            </tr>
+            <tr>
+                <td>Negotiation Handling</td>
+                <td>Approve (automatic 5% discount applied) or reject client discount requests</td>
+            </tr>
+            <tr>
+                <td>Generate Estimate PDF</td>
+                <td>Professional PDF with garage branding, service item table, and totals</td>
+            </tr>
+            <tr>
+                <td>Download Invoice</td>
+                <td>Invoice PDF with parts, services, discount breakdown, and payment info</td>
+            </tr>
+            <tr>
+                <td>Repair Visualizer</td>
+                <td>Interactive car silhouette diagram showing repair zones mapped to services</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- SUPERVISOR & PARTS MANAGER -->
+    <div class="role-section">
+        <p class="role-header">👨‍💼 Supervisor &amp; 📦 Parts Manager</p>
+        <p>Dashboard stubs have been created and are ready for future feature expansion. Route protection and navigation
+            are already in place.</p>
+    </div>
+
+    <!-- ============== 5. REPAIR LIFECYCLE ============== -->
+    <h2>5. Repair Lifecycle (Workflow)</h2>
+    <div class="status-flow">
+        <!-- Main flow -->
+        <div class="flow-row">
+            <span class="flow-step s-pending">Pending</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step s-diagnosing">Diagnosing</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step s-estimate">Estimate Sent</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step s-accepted">Estimate Accepted</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step s-progress">In Progress</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step s-completed">Completed</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step s-delivered">Delivered</span>
+        </div>
+        <br>
+        <p style="font-size: 9pt; color: #6b7280;"><strong>Alternative paths:</strong></p>
+        <div class="flow-row">
+            <span class="flow-step s-estimate">Estimate Sent</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step s-negotiate">Negotiation Requested</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step s-progress">In Progress</span>
+        </div>
+        <div class="flow-row" style="margin-top: 6px;">
+            <span class="flow-step s-progress">In Progress</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step s-waiting">Waiting for Parts</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step s-progress">In Progress</span>
+        </div>
+        <div class="flow-row" style="margin-top: 6px;">
+            <span class="flow-step s-pending">Pending</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step s-canceled">Canceled</span>
+        </div>
+    </div>
+
+    <table>
+        <tr>
+            <th>Status</th>
+            <th>Set By</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><code>Pending</code></td>
+            <td>Receptionist</td>
+            <td>Job has been created and assigned to a mechanic</td>
+        </tr>
+        <tr>
+            <td><code>Diagnosing</code></td>
+            <td>Mechanic</td>
+            <td>Mechanic is actively diagnosing the vehicle</td>
+        </tr>
+        <tr>
+            <td><code>Estimate Sent</code></td>
+            <td>Mechanic</td>
+            <td>Estimate with services and costs has been sent to the client</td>
+        </tr>
+        <tr>
+            <td><code>Estimate Accepted</code></td>
+            <td>Client</td>
+            <td>Client has approved the estimate</td>
+        </tr>
+        <tr>
+            <td><code>Negotiation Requested</code></td>
+            <td>Client</td>
+            <td>Client has requested a discount on the estimate</td>
+        </tr>
+        <tr>
+            <td><code>In Progress</code></td>
+            <td>Mechanic / Receptionist</td>
+            <td>Repair work is actively underway</td>
+        </tr>
+        <tr>
+            <td><code>Waiting for Parts</code></td>
+            <td>Mechanic</td>
+            <td>Work is paused while waiting for parts</td>
+        </tr>
+        <tr>
+            <td><code>Completed</code></td>
+            <td>Mechanic</td>
+            <td>Repair is finished; client is notified</td>
+        </tr>
+        <tr>
+            <td><code>Delivered</code></td>
+            <td>Receptionist</td>
+            <td>Vehicle has been returned to client after payment</td>
+        </tr>
+        <tr>
+            <td><code>Canceled</code></td>
+            <td>Receptionist</td>
+            <td>Job has been canceled</td>
+        </tr>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- ============== 6. DATA MODEL ============== -->
+    <h2>6. Data Model</h2>
+    <p>The database uses SQLite with 14 migrations. Core entities are linked through foreign keys and many-to-many pivot
+        tables.</p>
+
+    <div class="er-grid">
+        <div class="er-box">
+            <div class="er-box-title">👤 User (users)</div>
+            <ul>
+                <li><span class="field-pk">id</span> <span class="field-type">PK</span></li>
+                <li>name <span class="field-type">string</span></li>
+                <li>email <span class="field-type">string, unique</span></li>
+                <li>password <span class="field-type">hashed</span></li>
+                <li>role <span class="field-type">client | mechanic | receptionist | supervisor | parts_manager</span>
+                </li>
+                <li>phone <span class="field-type">string</span></li>
+                <li>is_verified <span class="field-type">boolean</span></li>
+            </ul>
+        </div>
+
+        <div class="er-box">
+            <div class="er-box-title">🚗 Vehicle (vehicles)</div>
+            <ul>
+                <li><span class="field-pk">id</span> <span class="field-type">PK</span></li>
+                <li><span class="field-fk">user_id</span> <span class="field-type">FK → users</span></li>
+                <li>license_plate <span class="field-type">string</span></li>
+                <li>make <span class="field-type">string</span></li>
+                <li>model <span class="field-type">string</span></li>
+                <li>year <span class="field-type">int</span></li>
+                <li>type <span class="field-type">string</span></li>
+            </ul>
+        </div>
+
+        <div class="er-box">
+            <div class="er-box-title">🔧 Repair (repairs)</div>
+            <ul>
+                <li><span class="field-pk">id</span> <span class="field-type">PK</span></li>
+                <li><span class="field-fk">vehicle_id</span> <span class="field-type">FK → vehicles</span></li>
+                <li><span class="field-fk">mechanic_id</span> <span class="field-type">FK → users</span></li>
+                <li>description <span class="field-type">text</span></li>
+                <li>mechanic_notes <span class="field-type">text</span></li>
+                <li>status <span class="field-type">string (10 statuses)</span></li>
+                <li>is_diagnostic <span class="field-type">boolean</span></li>
+                <li>cost / original_cost <span class="field-type">decimal</span></li>
+                <li>discount_amount <span class="field-type">decimal</span></li>
+                <li>negotiation_status <span class="field-type">string</span></li>
+                <li>invoice_number <span class="field-type">string</span></li>
+                <li>date_entry / date_end <span class="field-type">date</span></li>
+            </ul>
+        </div>
+
+        <div class="er-box">
+            <div class="er-box-title">🛠️ Service (services)</div>
+            <ul>
+                <li><span class="field-pk">id</span> <span class="field-type">PK</span></li>
+                <li>name <span class="field-type">string</span></li>
+                <li>zone <span class="field-type">string (engine, body, lights...)</span></li>
+                <li>price <span class="field-type">decimal</span></li>
+            </ul>
+        </div>
+
+        <div class="er-box">
+            <div class="er-box-title">📦 Part (parts)</div>
+            <ul>
+                <li><span class="field-pk">id</span> <span class="field-type">PK</span></li>
+                <li>name <span class="field-type">string</span></li>
+                <li>zone / category <span class="field-type">string</span></li>
+                <li>price <span class="field-type">decimal</span></li>
+                <li>stock_quantity <span class="field-type">int</span></li>
+                <li>reference_number <span class="field-type">string</span></li>
+            </ul>
+        </div>
+
+        <div class="er-box">
+            <div class="er-box-title">🧾 Invoice (invoices)</div>
+            <ul>
+                <li><span class="field-pk">id</span> <span class="field-type">PK</span></li>
+                <li><span class="field-fk">repair_id</span> <span class="field-type">FK → repairs</span></li>
+                <li>invoice_number <span class="field-type">string</span></li>
+                <li>total_amount <span class="field-type">decimal</span></li>
+                <li>paid_amount <span class="field-type">decimal</span></li>
+                <li>status <span class="field-type">Unpaid | Paid</span></li>
+                <li>payment_method <span class="field-type">Cash</span></li>
+                <li>paid_at <span class="field-type">datetime</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <h4>Pivot Tables</h4>
+    <table>
+        <tr>
+            <th>Table</th>
+            <th>Connects</th>
+            <th>Extra Columns</th>
+        </tr>
+        <tr>
+            <td><code>repair_service</code></td>
+            <td>Repair ↔ Service</td>
+            <td><code>price_at_booking</code></td>
+        </tr>
+        <tr>
+            <td><code>part_repair</code></td>
+            <td>Repair ↔ Part</td>
+            <td><code>quantity</code>, <code>price</code></td>
+        </tr>
+    </table>
+
+    <!-- ============== 7. AUTH ============== -->
+    <h2>7. Authentication &amp; Security</h2>
+    <table>
+        <tr>
+            <th>Feature</th>
+            <th>Implementation</th>
+        </tr>
+        <tr>
+            <td>Registration</td>
+            <td>Email + password. User created as <code>is_verified: false</code>. 6-digit OTP emailed.</td>
+        </tr>
+        <tr>
+            <td>OTP Verification</td>
+            <td>OTP stored in <code>email_verifications</code> table. Expires in 10 minutes. One-time use.</td>
+        </tr>
+        <tr>
+            <td>Resend OTP</td>
+            <td>Deletes old OTP, generates new 6-digit code, re-sends email.</td>
+        </tr>
+        <tr>
+            <td>Login</td>
+            <td>Validates credentials + verification status. Returns Sanctum personal access token.</td>
+        </tr>
+        <tr>
+            <td>Route Protection</td>
+            <td>React <code>ProtectedRoute</code> component checks token + role. Redirects if unauthorized.</td>
+        </tr>
+        <tr>
+            <td>Change Password</td>
+            <td>Validates current password before allowing update.</td>
+        </tr>
+        <tr>
+            <td>Forgot Password</td>
+            <td>Email-based reset link with a secure token.</td>
+        </tr>
+        <tr>
+            <td>Staff Creation</td>
+            <td>API endpoint for creating mechanic, receptionist, supervisor, or parts_manager accounts.</td>
+        </tr>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- ============== 8. I18N ============== -->
+    <h2>8. Internationalization (i18n)</h2>
+    <table>
+        <tr>
+            <th>Language</th>
+            <th>Code</th>
+            <th>Translation File</th>
+            <th>RTL</th>
+        </tr>
+        <tr>
+            <td>🇬🇧 English</td>
+            <td><code>en</code></td>
+            <td>locales/en.json (23 KB)</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>🇫🇷 French</td>
+            <td><code>fr</code></td>
+            <td>locales/fr.json (25 KB)</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>🇸🇦 Arabic</td>
+            <td><code>ar</code></td>
+            <td>locales/ar.json (30 KB)</td>
+            <td>✅ Yes</td>
+        </tr>
+    </table>
+    <ul class="features">
+        <li>Language detection: localStorage → cookie → HTML tag → path → subdomain</li>
+        <li>Selection persisted in localStorage</li>
+        <li>Arabic activates RTL layout automatically via <code>document.documentElement.dir</code></li>
+        <li>All public pages and dashboard UI elements are fully translated</li>
+    </ul>
+
+    <!-- ============== 9. FRONTEND PAGES ============== -->
+    <h2>9. Frontend Page Map</h2>
+
+    <h3>Public Pages</h3>
+    <table>
+        <tr>
+            <th>Page</th>
+            <th>Route</th>
+            <th>File</th>
+        </tr>
+        <tr>
+            <td>Home</td>
+            <td><code>/</code></td>
+            <td>pages/Home.jsx</td>
+        </tr>
+        <tr>
+            <td>About</td>
+            <td><code>/about</code></td>
+            <td>pages/About.jsx</td>
+        </tr>
+        <tr>
+            <td>More About</td>
+            <td><code>/moreabout</code></td>
+            <td>pages/MoreAbout.jsx</td>
+        </tr>
+        <tr>
+            <td>Services</td>
+            <td><code>/services</code></td>
+            <td>pages/Services.jsx</td>
+        </tr>
+        <tr>
+            <td>Contact</td>
+            <td><code>/contact</code></td>
+            <td>pages/Contact.jsx</td>
+        </tr>
+        <tr>
+            <td>Login</td>
+            <td><code>/login</code></td>
+            <td>pages/Login.jsx</td>
+        </tr>
+        <tr>
+            <td>Signup</td>
+            <td><code>/signup</code></td>
+            <td>pages/Signup.jsx</td>
+        </tr>
+        <tr>
+            <td>Verify Email</td>
+            <td><code>/verifyemail</code></td>
+            <td>pages/VerifyEmail.jsx</td>
+        </tr>
+        <tr>
+            <td>Forgot Password</td>
+            <td><code>/forgot-password</code></td>
+            <td>pages/ForgotPassword.jsx</td>
+        </tr>
+        <tr>
+            <td>Reset Password</td>
+            <td><code>/reset-password/:token</code></td>
+            <td>pages/ResetPassword.jsx</td>
+        </tr>
+    </table>
+
+    <h3>Protected Dashboards</h3>
+    <table>
+        <tr>
+            <th>Role</th>
+            <th>Route</th>
+            <th>File</th>
+        </tr>
+        <tr>
+            <td>Client</td>
+            <td><code>/client/dashboard</code></td>
+            <td>Client-Pages/ClientDashboard.jsx</td>
+        </tr>
+        <tr>
+            <td>Mechanic</td>
+            <td><code>/mechanic/dashboard</code></td>
+            <td>Mechanic-Pages/MechanicDashboard.jsx</td>
+        </tr>
+        <tr>
+            <td>Mechanic Detail</td>
+            <td><code>/mechanic/repair/:jobId</code></td>
+            <td>Mechanic-Pages/Repairdetails.jsx</td>
+        </tr>
+        <tr>
+            <td>Receptionist</td>
+            <td><code>/receptionist/dashboard</code></td>
+            <td>Receptionist-Pages/ReceptionistDashboard.jsx</td>
+        </tr>
+        <tr>
+            <td>Receptionist Client</td>
+            <td><code>/receptionist/client/:id/:name</code></td>
+            <td>Receptionist-Pages/ReceptionistClientDetails.jsx</td>
+        </tr>
+        <tr>
+            <td>Repair Visualizer</td>
+            <td><code>/track-repair/:repairId</code></td>
+            <td>Receptionist-Pages/RepairVisualizer.jsx</td>
+        </tr>
+        <tr>
+            <td>Supervisor</td>
+            <td><code>/supervisor/dashboard</code></td>
+            <td>Supervisor-Pages/SupervisorDashboard.jsx</td>
+        </tr>
+        <tr>
+            <td>Parts Manager</td>
+            <td><code>/partsmanager/dashboard</code></td>
+            <td>PartsManager-Pages/PartsManagerDashboard.jsx</td>
+        </tr>
+        <tr>
+            <td>Profile (all roles)</td>
+            <td><code>/:role/profile</code></td>
+            <td>pages/UserProfile.jsx</td>
+        </tr>
+    </table>
+
+    <h3>Shared Components</h3>
+    <table>
+        <tr>
+            <th>Component</th>
+            <th>Used On</th>
+        </tr>
+        <tr>
+            <td>Navbar</td>
+            <td>All public pages (Home, About, Services, Contact, Auth)</td>
+        </tr>
+        <tr>
+            <td>Footer</td>
+            <td>All public pages</td>
+        </tr>
+        <tr>
+            <td>DashboardNavbar</td>
+            <td>All protected dashboard pages</td>
+        </tr>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- ============== 10. API ENDPOINTS ============== -->
+    <h2>10. API Endpoints</h2>
+
+    <h3>Public Endpoints</h3>
+    <table>
+        <tr>
+            <th style="width:70px">Method</th>
+            <th>Endpoint</th>
+            <th>Purpose</th>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/api/register</code></td>
+            <td>Register new user (sends OTP email)</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/api/login</code></td>
+            <td>Login (returns Sanctum token)</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/api/verifyemail</code></td>
+            <td>Verify email with 6-digit OTP</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/api/resend-otp</code></td>
+            <td>Resend verification OTP</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/api/contact</code></td>
+            <td>Submit contact form message</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/api/forgot-password</code></td>
+            <td>Send password reset link via email</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/api/reset-password</code></td>
+            <td>Reset password with token</td>
+        </tr>
+        <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td><code>/api/services</code></td>
+            <td>List all available services</td>
+        </tr>
+    </table>
+
+    <h3>Protected — General</h3>
+    <table>
+        <tr>
+            <th style="width:70px">Method</th>
+            <th>Endpoint</th>
+            <th>Purpose</th>
+        </tr>
+        <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td><code>/api/user</code></td>
+            <td>Get current authenticated user</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/api/logout</code></td>
+            <td>Logout & delete current token</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/api/change-password</code></td>
+            <td>Change user password</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/api/staff</code></td>
+            <td>Create staff account</td>
+        </tr>
+        <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td><code>/api/vehicles</code></td>
+            <td>List all vehicles</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/api/vehicles</code></td>
+            <td>Register a new vehicle</td>
+        </tr>
+        <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td><code>/api/client/vehicles</code></td>
+            <td>Get client's vehicles</td>
+        </tr>
+        <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td><code>/api/client/repairs</code></td>
+            <td>Get client's repairs with services & parts</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/api/jobs/:id/approve</code></td>
+            <td>Client approves a job estimate</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/api/jobs/:id/negotiate</code></td>
+            <td>Client requests discount negotiation</td>
+        </tr>
+    </table>
+
+    <h3>Protected — Mechanic (<code>/api/mechanic/...</code>)</h3>
+    <table>
+        <tr>
+            <th style="width:70px">Method</th>
+            <th>Endpoint</th>
+            <th>Purpose</th>
+        </tr>
+        <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td><code>/jobs</code></td>
+            <td>Get all repairs assigned to the mechanic</td>
+        </tr>
+        <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td><code>/jobs/:id</code></td>
+            <td>Get specific job details with services & parts</td>
+        </tr>
+        <tr>
+            <td><span class="method m-patch">PATCH</span></td>
+            <td><code>/jobs/:id</code></td>
+            <td>Update job status</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/jobs/:id/estimate</code></td>
+            <td>Submit diagnostic &amp; estimate</td>
+        </tr>
+        <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td><code>/parts</code></td>
+            <td>Browse available parts inventory</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/jobs/:id/parts</code></td>
+            <td>Add part to job (decrements stock)</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/jobs/:id/complete</code></td>
+            <td>Mark job as completed (notifies client)</td>
+        </tr>
+    </table>
+
+    <h3>Protected — Receptionist (<code>/api/receptionist/...</code>)</h3>
+    <table>
+        <tr>
+            <th style="width:70px">Method</th>
+            <th>Endpoint</th>
+            <th>Purpose</th>
+        </tr>
+        <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td><code>/dashboard</code></td>
+            <td>Dashboard data (user info, mechanics list, all repairs)</td>
+        </tr>
+        <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td><code>/clients/search</code></td>
+            <td>Search clients by name (autocomplete)</td>
+        </tr>
+        <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td><code>/clients/:id/vehicles</code></td>
+            <td>Get vehicles for a specific client</td>
+        </tr>
+        <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td><code>/clients-summary</code></td>
+            <td>All clients with repair counts</td>
+        </tr>
+        <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td><code>/client/:id/repairs</code></td>
+            <td>Get all repairs for a client</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/jobs</code></td>
+            <td>Create new repair job</td>
+        </tr>
+        <tr>
+            <td><span class="method m-delete">DELETE</span></td>
+            <td><code>/jobs/:id</code></td>
+            <td>Delete a job and detach services</td>
+        </tr>
+        <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td><code>/repair/:id</code></td>
+            <td>Get single repair details</td>
+        </tr>
+        <tr>
+            <td><span class="method m-put">PUT</span></td>
+            <td><code>/repairs/:id/status</code></td>
+            <td>Update repair status</td>
+        </tr>
+        <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td><code>/repairs/:id/invoice</code></td>
+            <td>Get invoice data for a repair</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/jobs/:id/negotiate</code></td>
+            <td>Approve or reject discount request</td>
+        </tr>
+    </table>
+
+    <h3>Protected — Invoice</h3>
+    <table>
+        <tr>
+            <th style="width:70px">Method</th>
+            <th>Endpoint</th>
+            <th>Purpose</th>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/api/repairs/:id/invoice</code></td>
+            <td>Generate final invoice (calculates services + parts - discount)</td>
+        </tr>
+        <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td><code>/api/invoices/:id/pay</code></td>
+            <td>Process cash payment &amp; mark repair as Delivered</td>
+        </tr>
+    </table>
+
+    <!-- ============== 11. NOTABLE FEATURES ============== -->
+    <h2>11. Notable Features</h2>
+
+    <h3>🚗 Repair Visualizer</h3>
+    <p>An interactive car silhouette (accessible from the receptionist dashboard) that maps service
+        <strong>zones</strong> onto a visual diagram. Each zone (engine, body, lights, wheels) highlights based on the
+        repair's associated services, providing an at-a-glance view of what areas of the vehicle are being worked on.
+        Currently supports sedan vehicle type with front, back, top, and bottom views.
+    </p>
+
+    <h3>📄 PDF Generation (Client-Side)</h3>
+    <p>Both estimates and invoices are generated using <code>jsPDF</code> directly in the browser:</p>
+    <ul class="features">
+        <li>Professional layout with garage branding and logo</li>
+        <li>Service line items with descriptions and prices</li>
+        <li>Parts breakdown with quantity and unit price columns</li>
+        <li>Discount information (if negotiated)</li>
+        <li>Subtotal, discount, and final total calculations</li>
+        <li>Available from both client and receptionist dashboards</li>
+    </ul>
+
+    <h3>💰 Price Negotiation System</h3>
+    <p>A two-step negotiation flow between clients and receptionists:</p>
+    <ul class="features">
+        <li>Client requests a discount after receiving an estimate</li>
+        <li>Repair status changes to "Negotiation Requested"</li>
+        <li>Receptionist reviews and approves (5% automatic discount) or rejects</li>
+        <li>Original price is preserved; discount amount tracked separately</li>
+        <li>Work automatically begins after receptionist decision</li>
+    </ul>
+
+    <h3>🔔 Notifications</h3>
+    <p>When a mechanic marks a job as completed, the vehicle owner (client) is automatically notified via Laravel's
+        built-in notification system using the <code>RepairCompleted</code> notification class.</p>
+
+    <h3>🔍 Diagnostic Workflow</h3>
+    <p>Jobs can be flagged as diagnostic. When a mechanic submits an estimate for a diagnostic job, the system
+        automatically ensures the "General Diagnostic" service (50 MAD) is included, even if the mechanic forgot to
+        select it. The <code>is_diagnostic</code> flag persists throughout the repair lifecycle.</p>
+
+    <div class="page-break"></div>
+
+    <!-- ============== 12. STATUS ============== -->
+    <h2>12. Development Status</h2>
+    <table>
+        <tr>
+            <th>Component</th>
+            <th>Status</th>
+        </tr>
+        <tr>
+            <td>Authentication (Register, OTP, Login, Reset Password)</td>
+            <td><span class="badge badge-done">✅ Complete</span></td>
+        </tr>
+        <tr>
+            <td>Public Website (Home, About, Services, Contact)</td>
+            <td><span class="badge badge-done">✅ Complete</span></td>
+        </tr>
+        <tr>
+            <td>Receptionist Dashboard &amp; Job Management</td>
+            <td><span class="badge badge-done">✅ Complete</span></td>
+        </tr>
+        <tr>
+            <td>Mechanic Dashboard &amp; Repair Workflow</td>
+            <td><span class="badge badge-done">✅ Complete</span></td>
+        </tr>
+        <tr>
+            <td>Client Dashboard &amp; Vehicle Management</td>
+            <td><span class="badge badge-done">✅ Complete</span></td>
+        </tr>
+        <tr>
+            <td>Estimate &amp; Invoice PDF Generation</td>
+            <td><span class="badge badge-done">✅ Complete</span></td>
+        </tr>
+        <tr>
+            <td>Price Negotiation System</td>
+            <td><span class="badge badge-done">✅ Complete</span></td>
+        </tr>
+        <tr>
+            <td>Parts Inventory &amp; Stock Management</td>
+            <td><span class="badge badge-done">✅ Complete</span></td>
+        </tr>
+        <tr>
+            <td>Repair Visualizer (Car Diagram)</td>
+            <td><span class="badge badge-done">✅ Complete</span></td>
+        </tr>
+        <tr>
+            <td>i18n (English, French, Arabic + RTL)</td>
+            <td><span class="badge badge-done">✅ Complete</span></td>
+        </tr>
+        <tr>
+            <td>Email Notifications (Repair Completed)</td>
+            <td><span class="badge badge-done">✅ Complete</span></td>
+        </tr>
+        <tr>
+            <td>Supervisor Dashboard</td>
+            <td><span class="badge badge-stub">⬜ Stub Only</span></td>
+        </tr>
+        <tr>
+            <td>Parts Manager Dashboard</td>
+            <td><span class="badge badge-stub">⬜ Stub Only</span></td>
+        </tr>
+    </table>
+
+    <div class="hr"></div>
+    <p style="text-align: center; color: var(--gray-500); font-size: 9pt; margin-top: 30px;">
+        <strong>SYSTME-APPs</strong> — Garage Management System — Project Overview Document<br>
+        Generated February 20, 2026
+    </p>
+
+    <!-- Download PDF Button -->
+    <button class="download-btn" id="downloadBtn" onclick="downloadPDF()">
+        <svg viewBox="0 0 24 24">
+            <path d="M5 20h14v-2H5v2zm7-18v12l4-4h3L12 17 5 10h3l1-1V2h6z" />
+        </svg>
+        Download as PDF
+    </button>
+
+    <script>
+        function downloadPDF() {
+            const btn = document.getElementById('downloadBtn');
+            const originalHTML = btn.innerHTML;
+
+            // Show loading state
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Generating...';
+
+            // Hide the button during capture
+            btn.style.display = 'none';
+
+            // Insert page-break divs BEFORE each h2 (except the first)
+            const headings = document.querySelectorAll('h2');
+            const breakDivs = [];
+            headings.forEach(function (h, i) {
+                if (i > 0) {
+                    const breakDiv = document.createElement('div');
+                    breakDiv.className = 'pdf-page-break';
+                    breakDiv.style.height = '0';
+                    breakDiv.style.overflow = 'hidden';
+                    h.parentNode.insertBefore(breakDiv, h);
+                    breakDivs.push(breakDiv);
+                }
+            });
+
+            const options = {
+                margin: [12, 10, 12, 10],
+                filename: 'Garage_Management_System_Overview.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css'], before: '.pdf-page-break', avoid: ['.role-section', '.status-flow', '.er-box', '.toc'] }
+            };
+
+            html2pdf()
+                .set(options)
+                .from(document.body)
+                .save()
+                .then(function () {
+                    // Clean up break divs
+                    breakDivs.forEach(function (d) { d.remove(); });
+                    // Restore button
+                    btn.style.display = 'flex';
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                })
+                .catch(function (err) {
+                    console.error('PDF generation failed:', err);
+                    breakDivs.forEach(function (d) { d.remove(); });
+                    btn.style.display = 'flex';
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                    alert('PDF generation failed. Please try again.');
+                });
+        }
+    </script>
+
+</body>
+
+</html>

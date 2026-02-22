@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import "./Home.css";
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import PartnerCarousel from "../components/PartnerCarousel";
+
 
 function Home({ onNavigate }) {
   const { t } = useTranslation();
@@ -37,7 +39,7 @@ function Home({ onNavigate }) {
           </p>
 
           <div className="card-grid">
-          
+
             <article className="info-card">
               <div className="card-icon">
                 <i className="fa-solid fa-oil-can"></i>
@@ -47,7 +49,7 @@ function Home({ onNavigate }) {
                 {t("home.oil_change_desc")}
               </p>
             </article>
-           
+
             <article className="info-card">
               <div className="card-icon">
                 <i className="fa-solid fa-car-burst"></i>
@@ -57,27 +59,27 @@ function Home({ onNavigate }) {
                 {t("home.brakes_desc")}
               </p>
             </article>
-           
+
             <article className="info-card">
               <div className="card-icon">
                 <i className="fa-solid fa-gauge-high"></i>
-                </div>
+              </div>
               <h3>{t("home.engine")}</h3>
               <p>
                 {t("home.engine_desc")}
               </p>
             </article>
-           
+
             <article className="info-card">
               <div className="card-icon">
                 <i className="fa-solid fa-car"></i>
-                </div>
+              </div>
               <h3>{t("home.tires")}</h3>
               <p>
                 {t("home.tires_desc")}
               </p>
             </article>
-           
+
             <article className="info-card">
               <div className="card-icon">
                 <i className="fa-solid fa-car-battery"></i>
@@ -87,17 +89,17 @@ function Home({ onNavigate }) {
                 {t("home.battery_desc")}
               </p>
             </article>
-           
+
             <article className="info-card">
               <div className="card-icon">
                 <i className="fa-solid fa-fan"></i>
-                </div>
+              </div>
               <h3>{t("home.ac")}</h3>
               <p>
                 {t("home.ac_desc")}
               </p>
             </article>
-          
+
           </div>
           <div className="section-cta">
             <button type="button" className="btn-primary"> {' '} <Link to="/services"> {t("home.view_all")} </Link>
@@ -106,6 +108,11 @@ function Home({ onNavigate }) {
         </div>
       </section>
 
+      <PartnerCarousel />
+
+
+      <div style={{ padding: '40px 0' }}>
+      </div>
       <section className="why-section">
         <div className="section-inner">
           <h2>{t("home.why_choose_us")}</h2>
@@ -129,7 +136,7 @@ function Home({ onNavigate }) {
             </article>
             <article className="info-card">
               <div className="card-icon">
-                <i className="fa-solid fa-shield-halved"></i>  
+                <i className="fa-solid fa-shield-halved"></i>
               </div>
               <h3>{t("home.secure_warranty")}</h3>
               <p>{t("home.warranty_desc")}</p>
