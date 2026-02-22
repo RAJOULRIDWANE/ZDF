@@ -7,7 +7,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Repair;
 use App\Models\Service;
-use App\Models\Part; 
+use App\Models\Part;
+use App\Models\PartRequest;
 use App\Http\Resources\RepairResource;
 use Illuminate\Support\Facades\DB;
 
@@ -147,13 +148,13 @@ class MechanicController extends Controller
     }
 
     /**
-     * Add a Part to the Job (consumes inventory)
+     * Request a Part for a Job (creates a PartRequest — awaits Parts Manager approval)
      */
     public function addParts(Request $request, $id)
     {
         $request->validate([
-            'part_id' => 'required|exists:parts,id',
-            'quantity' => 'required|integer|min:1'
+            'part_id'  => 'required|exists:parts,id',
+            'quantity' => 'required|integer|min:1',
         ]);
 
         $repair = Repair::findOrFail($id);
@@ -162,26 +163,32 @@ class MechanicController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $part = Part::find($request->part_id);
-        
-        // Check stock
-        if ($part->stock_quantity < $request->quantity) {
-             return response()->json(['message' => 'Not enough stock!'], 400);
-        }
-
-        // Attach part to repair
-        $repair->parts()->attach($request->part_id, [
-            'quantity' => $request->quantity,
-            'price' => $part->price 
+        // Create a PartRequest (Parts Manager must approve)
+        $partRequest = PartRequest::create([
+            'repair_id'   => $repair->id,
+            'mechanic_id' => $request->user()->id,
+            'part_id'     => $request->part_id,
+            'quantity'    => $request->quantity,
+            'status'      => 'Pending',
         ]);
-
-        // Decrement stock
-        $part->decrement('stock_quantity', $request->quantity);
 
         return response()->json([
-            'message' => 'Part added to job successfully',
-            'parts' => $repair->load('parts')->parts
-        ]);
+            'message'      => 'Part request submitted! Awaiting Parts Manager approval.',
+            'part_request' => $partRequest->load('part'),
+        ], 201);
+    }
+
+    /**
+     * Get all part requests submitted by this mechanic
+     */
+    public function getPartRequests(Request $request)
+    {
+        $requests = PartRequest::where('mechanic_id', $request->user()->id)
+            ->with(['part', 'repair.vehicle'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($requests);
     }
 
     /**

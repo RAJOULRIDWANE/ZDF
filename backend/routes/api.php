@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\ReceptionistController;
 use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\InvoiceController;
+use App\Http\Controllers\Api\AppointmentController;
+use App\Http\Controllers\Api\PartsManagerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,9 +60,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/jobs/{id}', [MechanicController::class, 'show']);
         Route::patch('/jobs/{id}', [MechanicController::class, 'updateStatus']);
         Route::post('/jobs/{id}/estimate', [MechanicController::class, 'submitEstimate']);
-        Route::post('/parts-request', [MechanicController::class, 'requestParts']);
         Route::get('/parts', [MechanicController::class, 'getParts']);
         Route::post('/jobs/{id}/parts', [MechanicController::class, 'addParts']);
+        Route::get('/part-requests', [MechanicController::class, 'getPartRequests']);
         Route::post('/jobs/{id}/complete', [MechanicController::class, 'completeJob']);
     });
 
@@ -84,8 +86,24 @@ Route::middleware('auth:sanctum')->group(function () {
             $repairs = \App\Models\Repair::whereHas('vehicle', function($query) use ($request) {
                 $query->where('user_id', $request->user()->id);
             })->with(['vehicle', 'services', 'parts'])->get();
-            
             return \App\Http\Resources\RepairResource::collection($repairs);
         });
+        Route::post('/appointments', [AppointmentController::class, 'store']);
+        Route::get('/appointments', [AppointmentController::class, 'clientIndex']);
+    });
+
+    // --- RECEPTIONIST APPOINTMENT ROUTES ---
+    Route::prefix('receptionist')->group(function () {
+        Route::get('/appointments', [AppointmentController::class, 'receptionistIndex']);
+        Route::post('/appointments/{id}/approve', [AppointmentController::class, 'approve']);
+        Route::post('/appointments/{id}/decline', [AppointmentController::class, 'decline']);
+    });
+
+    // --- PARTS MANAGER ROUTES ---
+    Route::prefix('parts-manager')->group(function () {
+        Route::get('/dashboard', [PartsManagerController::class, 'dashboard']);
+        Route::get('/requests', [PartsManagerController::class, 'requests']);
+        Route::post('/requests/{id}/approve', [PartsManagerController::class, 'approve']);
+        Route::post('/requests/{id}/decline', [PartsManagerController::class, 'decline']);
     });
 });

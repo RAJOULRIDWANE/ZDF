@@ -127,7 +127,7 @@ function Login() {
 
             <form className="auth-form" onSubmit={handleLogin}> 
               <label className="auth-field">
-                <span>Email</span>
+                Email
                 <input 
                   type="email" 
                   placeholder="Enter your email" 
@@ -138,7 +138,7 @@ function Login() {
               </label>
               
               <label className="auth-field">
-                <span>Password</span>
+                Password
                 <div style={{ position: 'relative' }}>
                   <input 
                     type={showPassword ? "text" : "password"}

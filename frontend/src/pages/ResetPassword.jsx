@@ -7,7 +7,7 @@ function ResetPassword() {
   const { token } = useParams(); // Get token from URL path
   const [searchParams] = useSearchParams();
   const email = searchParams.get('email'); // Get email from URL query
-  
+
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -33,7 +33,7 @@ function ResetPassword() {
       });
 
       setMessage(res.data.message);
-      
+
       // Redirect to login after 3 seconds
       setTimeout(() => {
         navigate('/login');
@@ -48,8 +48,8 @@ function ResetPassword() {
     <div className="forgot-password-page">
       <div className="auth-card">
         <div className="auth-header">
-          <div className="info-icon" style={{ width: '70px', height: '70px'}}>
-            <i className="fa-solid fa-key icon-lock" style={{ fontSize: '45px'}}></i>
+          <div className="info-icon" style={{ width: '70px', height: '70px' }}>
+            <i className="fa-solid fa-key icon-lock" style={{ fontSize: '45px' }}></i>
           </div>
           <h1>Set New Password</h1>
           <p>Create a strong password for your account.</p>
@@ -59,34 +59,34 @@ function ResetPassword() {
         {error && <div className="alert error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="auth-form">
-            
+
           <div className="form-group">
             <label>New Password</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               className="form-input"
               value={password}
               placeholder='Set New Password'
-              onChange={(e) => setPassword(e.target.value)} 
-              required 
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
           </div>
 
           <div className="form-group">
             <label>Confirm Password</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               className="form-input"
-              value={confirmPassword} 
+              value={confirmPassword}
               placeholder='Confirm New Password'
-              onChange={(e) => setConfirmPassword(e.target.value)} 
-              required 
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
             />
           </div>
 
           <button type="submit" className="submit-button">Reset Password</button>
         </form>
-        
+
 
       </div>
     </div>

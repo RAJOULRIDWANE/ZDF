@@ -26,6 +26,15 @@ const ClientDashboard = () => {
     const [newVehicle, setNewVehicle] = useState({ make: '', model: '', license_plate: '', year: '', type: 'car' });
     const [submittingVehicle, setSubmittingVehicle] = useState(false);
 
+    // --- Appointment State ---
+    const [appointments, setAppointments] = useState([]);
+    const [showAppointmentModal, setShowAppointmentModal] = useState(false);
+    const [newAppointment, setNewAppointment] = useState({ vehicle_id: '', preferred_date: '', description: '' });
+    const [submittingAppointment, setSubmittingAppointment] = useState(false);
+
+    // --- Confirmation Modal State ---
+    const [confirmModal, setConfirmModal] = useState({ show: false, title: '', message: '', onConfirm: null });
+
     const showMessage = (text, type) => {
         setMessage(text);
         setMessageType(type);
@@ -45,14 +54,16 @@ const ClientDashboard = () => {
         }
 
         try {
-            const [repairRes, vehicleRes, userRes] = await Promise.all([
+            const [repairRes, vehicleRes, userRes, apptRes] = await Promise.all([
                 axios.get('http://127.0.0.1:8000/api/client/repairs', { headers: { Authorization: `Bearer ${token}` } }),
                 axios.get('http://127.0.0.1:8000/api/client/vehicles', { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get('http://127.0.0.1:8000/api/user', { headers: { Authorization: `Bearer ${token}` } })
+                axios.get('http://127.0.0.1:8000/api/user', { headers: { Authorization: `Bearer ${token}` } }),
+                axios.get('http://127.0.0.1:8000/api/client/appointments', { headers: { Authorization: `Bearer ${token}` } }),
             ]);
 
             setRepairs(repairRes.data.data || []);
             setVehicles(vehicleRes.data || []);
+            setAppointments(apptRes.data || []);
 
             setUser({
                 name: userRes.data.name,
@@ -65,7 +76,7 @@ const ClientDashboard = () => {
             setStats(prev => ({
                 ...prev,
                 vehicles: vehicleRes.data?.length || 0,
-                appointments: repairRes.data.data?.filter(r => r.status === 'Pending').length || 0,
+                appointments: (apptRes.data || []).filter(a => a.status === 'Pending').length,
                 invoices: repairRes.data.data?.filter(r => r.status === 'Completed').length || 0
             }));
 
@@ -84,6 +95,14 @@ const ClientDashboard = () => {
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    // --- Confirmation Helper ---
+    const askConfirm = (title, message, onConfirm) => {
+        setConfirmModal({ show: true, title, message, onConfirm });
+    };
+
+    const closeConfirm = () => setConfirmModal({ show: false, title: '', message: '', onConfirm: null });
+
 
     const handleApproveJob = async (repairId) => {
         if (actionLoading) return;
@@ -108,8 +127,10 @@ const ClientDashboard = () => {
             showMessage(err.response?.data?.message || 'Failed to approve job.', 'error');
         } finally {
             setActionLoading(null);
+            closeConfirm();
         }
     };
+
 
     const handleAcceptEstimate = async (repairId) => {
         if (actionLoading) return;
@@ -134,8 +155,10 @@ const ClientDashboard = () => {
             showMessage(err.response?.data?.message || 'Failed to accept estimate.', 'error');
         } finally {
             setActionLoading(null);
+            closeConfirm();
         }
     };
+
 
     const handleNegotiateJob = async (repairId) => {
         if (actionLoading) return;
@@ -160,8 +183,36 @@ const ClientDashboard = () => {
             showMessage(err.response?.data?.message || 'Failed to request discount.', 'error');
         } finally {
             setActionLoading(null);
+            closeConfirm();
         }
     };
+
+    // --- Appointment Handlers ---
+    const handleSubmitAppointment = async (e) => {
+        e.preventDefault();
+        if (!newAppointment.preferred_date) {
+            showMessage('Please select a preferred date.', 'error');
+            return;
+        }
+        setSubmittingAppointment(true);
+        const token = localStorage.getItem('ACCESS_TOKEN');
+        try {
+            await axios.post(
+                'http://127.0.0.1:8000/api/client/appointments',
+                newAppointment,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            showMessage('Appointment request submitted!', 'success');
+            setShowAppointmentModal(false);
+            setNewAppointment({ vehicle_id: '', preferred_date: '', description: '' });
+            fetchData();
+        } catch (err) {
+            showMessage(err.response?.data?.message || 'Failed to request appointment.', 'error');
+        } finally {
+            setSubmittingAppointment(false);
+        }
+    };
+
 
     const handleDownloadEstimate = async (repair) => {
         const doc = new jsPDF();
@@ -577,13 +628,13 @@ const ClientDashboard = () => {
     const getStatusType = (status) => {
         if (!status) return 'pending';
         const s = status.toLowerCase().trim().replace(/_/g, ' ');
-        
+
         if (s === 'completed') return 'completed';
         if (s === 'estimate sent' || s.includes('estimate')) return 'estimate-sent';
         if (s === 'negotiation requested' || s.includes('negotiation')) return 'negotiation';
         if (s === 'in progress' || s === 'progress') return 'in-progress';
         if (s === 'pending') return 'pending';
-        
+
         return 'pending';
     };
 
@@ -595,8 +646,15 @@ const ClientDashboard = () => {
 
 
                 <section className="dashboard-title">
-                    <h2>My Client Space</h2>
-                    <p>Manage your vehicles & appointments</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <h2>My Client Space</h2>
+                            <p>Manage your vehicles &amp; appointments</p>
+                        </div>
+                        <button className="btn-appt" onClick={() => setShowAppointmentModal(true)}>
+                            <i className="fa-solid fa-calendar-plus"></i> Request Appointment
+                        </button>
+                    </div>
                 </section>
 
                 {message && (
@@ -616,7 +674,7 @@ const ClientDashboard = () => {
                     </div>
                     <div className="stat-card">
                         <div className="stat-text">
-                            <label>Next Appointment</label>
+                            <label>Pending Appointments</label>
                             <h3>{stats.appointments}</h3>
                         </div>
                         <div className="stat-icon cal-bg"><i className="fa-solid fa-calendar"></i></div>
@@ -638,7 +696,7 @@ const ClientDashboard = () => {
                             <i className="fa-solid fa-plus"></i> Add vehicle
                         </button>
                     </div>
-                    
+
                     <div className="vehicles-display-container">
                         {vehicles.length === 0 ? (
                             <div className="vehicles-empty-state">
@@ -660,9 +718,9 @@ const ClientDashboard = () => {
                                         </div>
                                     ))}
                                 </div>
-                                
+
                                 {vehicles.length > 3 && (
-                                    <button className="all-vehicles-link" onClick={() => {/* Navigate to vehicles page later */}}>
+                                    <button className="all-vehicles-link" onClick={() => {/* Navigate to vehicles page later */ }}>
                                         All vehicles
                                     </button>
                                 )}
@@ -674,7 +732,7 @@ const ClientDashboard = () => {
                 {/* Repairs List */}
                 <section className="repairs-list">
                     <h3>My Repairs</h3>
-                    
+
                     {loading ? (
                         <div className="loading-container">
                             <i className="fa-solid fa-spinner fa-spin"></i>
@@ -699,7 +757,7 @@ const ClientDashboard = () => {
                                             )}
                                         </div>
                                         <h4>{repair.vehicle?.make} {repair.vehicle?.model}</h4>
-                                        <p className="due-date">Due: {repair.date_end ? new Date(repair.date_end).toLocaleDateString('en-GB', { 
+                                        <p className="due-date">Due: {repair.date_end ? new Date(repair.date_end).toLocaleDateString('en-GB', {
                                             year: 'numeric',
                                             month: 'short',
                                             day: 'numeric'
@@ -729,14 +787,22 @@ const ClientDashboard = () => {
                                             <button
                                                 className="btn-accept"
                                                 disabled={actionLoading === repair.id}
-                                                onClick={() => handleAcceptEstimate(repair.id)}
+                                                onClick={() => askConfirm(
+                                                    'Accept Estimate',
+                                                    'Are you sure you want to accept this estimate? Work will begin immediately.',
+                                                    () => handleAcceptEstimate(repair.id)
+                                                )}
                                             >
                                                 {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Accept'}
                                             </button>
                                             <button
                                                 className="btn-primary"
                                                 disabled={actionLoading === repair.id}
-                                                onClick={() => handleNegotiateJob(repair.id)}
+                                                onClick={() => askConfirm(
+                                                    'Request Reduction',
+                                                    'This will send a discount request to the receptionist. Continue?',
+                                                    () => handleNegotiateJob(repair.id)
+                                                )}
                                             >
                                                 {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Request Reduction'}
                                             </button>
@@ -748,7 +814,11 @@ const ClientDashboard = () => {
                                             <button className="btn-secondary" onClick={() => handleDownloadEstimate(repair)}>
                                                 Download Estimate
                                             </button>
-                                            <button className="btn-primary" disabled={actionLoading === repair.id} onClick={() => handleApproveJob(repair.id)}>
+                                            <button className="btn-primary" disabled={actionLoading === repair.id} onClick={() => askConfirm(
+                                                'Approve Estimate',
+                                                'Accept the estimate at the current price? This will start the repair work.',
+                                                () => handleApproveJob(repair.id)
+                                            )}>
                                                 {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Approve'}
                                             </button>
                                             <button className="btn-primary" disabled>Request Reduction</button>
@@ -765,9 +835,31 @@ const ClientDashboard = () => {
                         ))
                     )}
                 </section>
+
+                {/* Appointments Section */}
+                <section className="appointments-section">
+                    <h3><i className="fa-solid fa-calendar-days"></i> My Appointment Requests</h3>
+                    {loading ? null : appointments.length === 0 ? (
+                        <div className="appt-empty">No appointment requests yet.</div>
+                    ) : (
+                        <div className="appt-list">
+                            {appointments.map(appt => (
+                                <div key={appt.id} className="appt-card">
+                                    <div className="appt-info">
+                                        <p className="appt-date"><i className="fa-regular fa-calendar"></i> {new Date(appt.preferred_date).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                                        {appt.vehicle && <p className="appt-vehicle"><i className="fa-solid fa-car"></i> {appt.vehicle.make} {appt.vehicle.model}</p>}
+                                        {appt.description && <p className="appt-desc">{appt.description}</p>}
+                                        {appt.receptionist_notes && <p className="appt-notes"><i className="fa-solid fa-comment"></i> {appt.receptionist_notes}</p>}
+                                    </div>
+                                    <span className={`appt-badge appt-${appt.status.toLowerCase()}`}>{appt.status}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </section>
             </div>
 
-            {/* Modal */}
+            {/* Add Vehicle Modal */}
             {showAddVehicleModal && (
                 <div className="modal-overlay" onClick={handleCloseVehicleModal}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -775,50 +867,50 @@ const ClientDashboard = () => {
                         <form onSubmit={handleSubmitVehicle}>
                             <div className="form-group">
                                 <label>Maker <span className="required">*</span></label>
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     placeholder="e.g., Toyota"
-                                    value={newVehicle.make} 
+                                    value={newVehicle.make}
                                     onChange={(e) => setNewVehicle({ ...newVehicle, make: e.target.value })}
-                                    required 
+                                    required
                                 />
                             </div>
                             <div className="form-group">
                                 <label>Model <span className="required">*</span></label>
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     placeholder="e.g., Camry"
-                                    value={newVehicle.model} 
+                                    value={newVehicle.model}
                                     onChange={(e) => setNewVehicle({ ...newVehicle, model: e.target.value })}
-                                    required 
+                                    required
                                 />
                             </div>
                             <div className="form-group">
                                 <label>License Plate <span className="required">*</span></label>
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     placeholder="e.g., ABC-1234"
-                                    value={newVehicle.license_plate} 
+                                    value={newVehicle.license_plate}
                                     onChange={(e) => setNewVehicle({ ...newVehicle, license_plate: e.target.value.toUpperCase() })}
-                                    required 
+                                    required
                                 />
                             </div>
                             <div className="form-group">
                                 <label>Year <span className="required">*</span></label>
-                                <input 
-                                    type="number" 
+                                <input
+                                    type="number"
                                     placeholder="e.g., 2020"
-                                    value={newVehicle.year} 
+                                    value={newVehicle.year}
                                     onChange={(e) => setNewVehicle({ ...newVehicle, year: e.target.value })}
-                                    min="1900" 
+                                    min="1900"
                                     max={new Date().getFullYear() + 1}
-                                    required 
+                                    required
                                 />
                             </div>
                             <div className="form-group">
                                 <label>Type <span className="required">*</span></label>
-                                <select 
-                                    value={newVehicle.type} 
+                                <select
+                                    value={newVehicle.type}
                                     onChange={(e) => setNewVehicle({ ...newVehicle, type: e.target.value })}
                                     required
                                 >
@@ -829,17 +921,17 @@ const ClientDashboard = () => {
                                 </select>
                             </div>
                             <div className="modal-actions">
-                                <button 
-                                    type="button" 
-                                    className="cancel-btn" 
-                                    onClick={handleCloseVehicleModal} 
+                                <button
+                                    type="button"
+                                    className="cancel-btn"
+                                    onClick={handleCloseVehicleModal}
                                     disabled={submittingVehicle}
                                 >
                                     Cancel
                                 </button>
-                                <button 
-                                    type="submit" 
-                                    className="save-btn" 
+                                <button
+                                    type="submit"
+                                    className="save-btn"
                                     disabled={submittingVehicle}
                                 >
                                     {submittingVehicle ? (
@@ -852,6 +944,70 @@ const ClientDashboard = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Appointment Request Modal */}
+            {showAppointmentModal && (
+                <div className="modal-overlay" onClick={() => setShowAppointmentModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h2><i className="fa-solid fa-calendar-plus"></i> Request Appointment</h2>
+                        <form onSubmit={handleSubmitAppointment}>
+                            <div className="form-group">
+                                <label>Vehicle (optional)</label>
+                                <select
+                                    value={newAppointment.vehicle_id}
+                                    onChange={(e) => setNewAppointment({ ...newAppointment, vehicle_id: e.target.value })}
+                                >
+                                    <option value="">-- No specific vehicle --</option>
+                                    {vehicles.map(v => (
+                                        <option key={v.id} value={v.id}>{v.make} {v.model} ({v.license_plate})</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Preferred Date <span className="required">*</span></label>
+                                <input
+                                    type="date"
+                                    min={new Date().toISOString().split('T')[0]}
+                                    value={newAppointment.preferred_date}
+                                    onChange={(e) => setNewAppointment({ ...newAppointment, preferred_date: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Description / Issue</label>
+                                <textarea
+                                    placeholder="Describe the issue or reason for your visit..."
+                                    value={newAppointment.description}
+                                    onChange={(e) => setNewAppointment({ ...newAppointment, description: e.target.value })}
+                                    rows={3}
+                                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db', fontFamily: 'inherit', fontSize: '0.95rem', resize: 'vertical' }}
+                                />
+                            </div>
+                            <div className="modal-actions">
+                                <button type="button" className="cancel-btn" onClick={() => setShowAppointmentModal(false)} disabled={submittingAppointment}>Cancel</button>
+                                <button type="submit" className="save-btn" disabled={submittingAppointment}>
+                                    {submittingAppointment ? <><i className="fa-solid fa-spinner fa-spin"></i> Submitting...</> : 'Submit Request'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Confirmation Modal */}
+            {confirmModal.show && (
+                <div className="modal-overlay">
+                    <div className="modal-content confirm-modal">
+                        <div className="confirm-icon"><i className="fa-solid fa-triangle-exclamation"></i></div>
+                        <h2>{confirmModal.title}</h2>
+                        <p className="confirm-message">{confirmModal.message}</p>
+                        <div className="modal-actions">
+                            <button className="cancel-btn" onClick={closeConfirm}>Cancel</button>
+                            <button className="save-btn" onClick={confirmModal.onConfirm}>Confirm</button>
+                        </div>
                     </div>
                 </div>
             )}

@@ -1,8 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import './Repairdetails.css';
 import DashboardNavbar from '../components/DashboardNavbar';
+
+const BASE = 'http://127.0.0.1:8000/api';
+
+const MAX_PARTS = 8;
 
 const RepairDetails = () => {
     const { jobId } = useParams();
@@ -11,147 +15,53 @@ const RepairDetails = () => {
     // State
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [selectedZone, setSelectedZone] = useState('all');
-    const [selectedServices, setSelectedServices] = useState([]);
-    const [parts, setParts] = useState([]); // Kept for compatibility if needed
-    const [showConfirmation, setShowConfirmation] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
     const [user, setUser] = useState(null);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
 
-    // Static Parts Data
-    const services = [
-        { id: 1, name: 'Bloc moteur', zone: 'engine', category: 'Pièces principales' },
-        { id: 2, name: 'Culasse', zone: 'engine', category: 'Pièces principales' },
-        { id: 3, name: 'Joint de culasse', zone: 'engine', category: 'Pièces principales' },
-        { id: 4, name: 'Pistons', zone: 'engine', category: 'Pièces principales' },
-        { id: 5, name: 'Segments de piston', zone: 'engine', category: 'Pièces principales' },
-        { id: 6, name: 'Bielles', zone: 'engine', category: 'Pièces principales' },
-        { id: 7, name: 'Vilebrequin', zone: 'engine', category: 'Pièces principales' },
-        { id: 8, name: 'Arbre à cames', zone: 'engine', category: 'Pièces principales' },
-        { id: 9, name: 'Soupapes (admission / échappement)', zone: 'engine', category: 'Pièces principales' },
-        { id: 10, name: 'Ressorts de soupapes', zone: 'engine', category: 'Pièces principales' },
-        { id: 11, name: 'Injecteurs', zone: 'engine', category: 'Système d’alimentation' },
-        { id: 12, name: 'Pompe à carburant', zone: 'engine', category: 'Système d’alimentation' },
-        { id: 13, name: 'Filtre à carburant', zone: 'engine', category: 'Système d’alimentation' },
-        { id: 14, name: 'Rampe d’injection', zone: 'engine', category: 'Système d’alimentation' },
-        { id: 15, name: 'Corps papillon', zone: 'engine', category: 'Système d’alimentation' },
-        { id: 16, name: 'Bougies d’allumage', zone: 'engine', category: 'Allumage' },
-        { id: 17, name: 'Bobines d’allumage', zone: 'engine', category: 'Allumage' },
-        { id: 18, name: 'Faisceau d’allumage', zone: 'engine', category: 'Allumage' },
-        { id: 19, name: 'Capteur PMH (vilebrequin)', zone: 'engine', category: 'Allumage' },
-        { id: 20, name: 'Pompe à huile', zone: 'engine', category: 'Lubrification' },
-        { id: 21, name: 'Filtre à huile', zone: 'engine', category: 'Lubrification' },
-        { id: 22, name: 'Carter d’huile', zone: 'engine', category: 'Lubrification' },
-        { id: 23, name: 'Joint de carter', zone: 'engine', category: 'Lubrification' },
-        { id: 24, name: 'Sonde de pression d’huile', zone: 'engine', category: 'Lubrification' },
-        { id: 26, name: 'Radiateur', zone: 'engine', category: 'Refroidissement' },
-        { id: 27, name: 'Ventilateur moteur', zone: 'engine', category: 'Refroidissement' },
-        { id: 28, name: 'Thermostat (calorstat)', zone: 'engine', category: 'Refroidissement' },
-        { id: 29, name: 'Pompe à eau', zone: 'engine', category: 'Refroidissement' },
-        { id: 30, name: 'Durites de refroidissement', zone: 'engine', category: 'Refroidissement' },
-        { id: 31, name: 'Vase d’expansion', zone: 'engine', category: 'Refroidissement' },
-        { id: 32, name: 'Courroie de distribution', zone: 'engine', category: 'Distribution' },
-        { id: 33, name: 'Chaîne de distribution', zone: 'engine', category: 'Distribution' },
-        { id: 34, name: 'Galet tendeur', zone: 'engine', category: 'Distribution' },
-        { id: 35, name: 'Poulie vilebrequin', zone: 'engine', category: 'Distribution' },
-        { id: 36, name: 'Pneus', zone: 'wheels', category: 'Roues' },
-        { id: 37, name: 'Jantes', zone: 'wheels', category: 'Roues' },
-        { id: 38, name: 'Enjoliveurs', zone: 'wheels', category: 'Roues' },
-        { id: 39, name: 'Boulons / écrous de roue', zone: 'wheels', category: 'Roues' },
-        { id: 40, name: 'Valves de pneus', zone: 'wheels', category: 'Roues' },
-        { id: 41, name: 'Disques de frein', zone: 'wheels', category: 'Freinage' },
-        { id: 42, name: 'Plaquettes de frein', zone: 'wheels', category: 'Freinage' },
-        { id: 43, name: 'Étriers de frein', zone: 'wheels', category: 'Freinage' },
-        { id: 44, name: 'Flexibles de frein', zone: 'wheels', category: 'Freinage' },
-        { id: 45, name: 'Maître-cylindre', zone: 'wheels', category: 'Freinage' },
-        { id: 46, name: 'Tambours de frein (arrière)', zone: 'wheels', category: 'Freinage' },
-        { id: 47, name: 'Amortisseurs', zone: 'wheels', category: 'Suspension & direction' },
-        { id: 48, name: 'Ressorts', zone: 'wheels', category: 'Suspension & direction' },
-        { id: 49, name: 'Bras de suspension', zone: 'wheels', category: 'Suspension & direction' },
-        { id: 50, name: 'Rotules', zone: 'wheels', category: 'Suspension & direction' },
-        { id: 51, name: 'Silentblocs', zone: 'wheels', category: 'Suspension & direction' },
-        { id: 52, name: 'Barre stabilisatrice', zone: 'wheels', category: 'Suspension & direction' },
-        { id: 53, name: 'Biellette de direction', zone: 'wheels', category: 'Suspension & direction' },
-        { id: 54, name: 'Crémaillère de direction', zone: 'wheels', category: 'Suspension & direction' },
-        { id: 55, name: 'Collecteur d’échappement', zone: 'exhaust', category: 'Échappement' },
-        { id: 56, name: 'Joint de collecteur', zone: 'exhaust', category: 'Échappement' },
-        { id: 57, name: 'Catalyseur', zone: 'exhaust', category: 'Échappement' },
-        { id: 58, name: 'Filtre à particules (FAP / DPF)', zone: 'exhaust', category: 'Échappement' },
-        { id: 59, name: 'Sonde lambda', zone: 'exhaust', category: 'Échappement' },
-        { id: 60, name: 'Silencieux (avant / arrière)', zone: 'exhaust', category: 'Échappement' },
-        { id: 61, name: 'Ligne d’échappement', zone: 'exhaust', category: 'Échappement' },
-        { id: 62, name: 'Colliers d’échappement', zone: 'exhaust', category: 'Échappement' },
-        { id: 63, name: 'Supports en caoutchouc', zone: 'exhaust', category: 'Échappement' },
-        { id: 64, name: 'Phares avant', zone: 'lights', category: 'Éclairage avant' },
-        { id: 65, name: 'Ampoules (halogène, LED, xénon)', zone: 'lights', category: 'Éclairage avant' },
-        { id: 66, name: 'Clignotants avant', zone: 'lights', category: 'Éclairage avant' },
-        { id: 67, name: 'Feux de position', zone: 'lights', category: 'Éclairage avant' },
-        { id: 68, name: 'Feux arrière', zone: 'lights', category: 'Éclairage arrière' },
-        { id: 69, name: 'Feux stop', zone: 'lights', category: 'Éclairage arrière' },
-        { id: 70, name: 'Feux de recul', zone: 'lights', category: 'Éclairage arrière' },
-        { id: 71, name: 'Clignotants arrière', zone: 'lights', category: 'Éclairage arrière' },
-        { id: 72, name: 'Feux antibrouillard', zone: 'lights', category: 'Autres' },
-        { id: 73, name: 'Feu de plaque', zone: 'lights', category: 'Autres' },
-        { id: 74, name: 'Fusibles', zone: 'lights', category: 'Autres' },
-        { id: 75, name: 'Relais', zone: 'lights', category: 'Autres' },
-        { id: 76, name: 'Commodo d’éclairage', zone: 'lights', category: 'Autres' },
-        { id: 77, name: 'Pare-chocs avant / arrière', zone: 'body', category: 'Parties extérieures' },
-        { id: 78, name: 'Capot', zone: 'body', category: 'Parties extérieures' },
-        { id: 79, name: 'Ailes', zone: 'body', category: 'Parties extérieures' },
-        { id: 80, name: 'Portes', zone: 'body', category: 'Parties extérieures' },
-        { id: 81, name: 'Coffre / hayon', zone: 'body', category: 'Parties extérieures' },
-        { id: 82, name: 'Rétroviseurs', zone: 'body', category: 'Parties extérieures' },
-        { id: 83, name: 'Calandre', zone: 'body', category: 'Parties extérieures' },
-        { id: 84, name: 'Pare-brise', zone: 'body', category: 'Vitres & joints' },
-        { id: 85, name: 'Vitres latérales', zone: 'body', category: 'Vitres & joints' },
-        { id: 86, name: 'Lunette arrière', zone: 'body', category: 'Vitres & joints' },
-        { id: 87, name: 'Joints de portes', zone: 'body', category: 'Vitres & joints' },
-        { id: 88, name: 'Lève-vitres (manuel / électrique)', zone: 'body', category: 'Vitres & joints' },
-        { id: 89, name: 'Agrafes', zone: 'body', category: 'Fixations & accessoires' },
-        { id: 90, name: 'Clips', zone: 'body', category: 'Fixations & accessoires' },
-        { id: 91, name: 'Vis carrosserie', zone: 'body', category: 'Fixations & accessoires' },
-        { id: 92, name: 'Supports', zone: 'body', category: 'Fixations & accessoires' },
-        { id: 93, name: 'Garnitures intérieures', zone: 'body', category: 'Fixations & accessoires' },
-        { id: 94, name: 'Carburateur (anciens véhicules)', zone: 'engine', category: 'Système d’alimentation' },
-    ];
+    // --- Multi-Part Request State ---
+    const [availableParts, setAvailableParts] = useState([]);
+    const [submittingPart, setSubmittingPart] = useState(false);
+
+    // Each row: { id (unique key), selectedPart, qty, search, showDropdown }
+    const emptyRow = () => ({ _key: Date.now() + Math.random(), selectedPart: null, qty: 1, search: '', showDropdown: false });
+    const [partRows, setPartRows] = useState([emptyRow()]);
+
+    // Toast
+    const [message, setMessage] = useState(null);
+    const [messageType, setMessageType] = useState('');
+
+    const showMessage = (text, type) => {
+        setMessage(text);
+        setMessageType(type);
+        setTimeout(() => { setMessage(null); setMessageType(''); }, 4000);
+    };
 
     // Fetch Data
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const token = localStorage.getItem('ACCESS_TOKEN');
-                if (!token) {
-                    navigate('/login');
-                    return;
-                }
-
-                const [jobResponse, userResponse] = await Promise.all([
-                    axios.get(`http://127.0.0.1:8000/api/mechanic/jobs/${jobId}`, {
-                        headers: { Authorization: `Bearer ${token}` }
-                    }),
-                    axios.get('http://127.0.0.1:8000/api/user', {
-                        headers: { Authorization: `Bearer ${token}` }
-                    })
+                if (!token) { navigate('/login'); return; }
+                const headers = { Authorization: `Bearer ${token}` };
+                const [jobResponse, userResponse, partsResponse] = await Promise.all([
+                    axios.get(`${BASE}/mechanic/jobs/${jobId}`, { headers }),
+                    axios.get(`${BASE}/user`, { headers }),
+                    axios.get(`${BASE}/mechanic/parts`, { headers })
                 ]);
-
-                // Handle data wrapper
-                const jobData = jobResponse.data.data || jobResponse.data;
-                console.log("Job Data Processed:", jobData); 
-                
-                setJob(jobData);
+                setJob(jobResponse.data.data || jobResponse.data);
                 setUser(userResponse.data);
+                setAvailableParts(partsResponse.data || []);
             } catch (error) {
                 console.error('Failed to fetch details:', error);
                 if (error.response && (error.response.status === 401 || error.response.status === 403)) {
                     navigate('/login');
+                } else {
+                    showMessage('Failed to load job details', 'error');
                 }
             } finally {
                 setLoading(false);
             }
         };
-
         fetchData();
     }, [jobId, navigate]);
 
@@ -170,88 +80,75 @@ const RepairDetails = () => {
         return 'Unknown Client';
     };
 
-    // Filter logic
-    const filteredServices = services.filter(s => {
-        const matchZone = selectedZone === 'all' || s.zone === selectedZone;
-        const matchSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchZone && matchSearch;
-    });
-
-    // Group by category
-    const groupedServices = filteredServices.reduce((groups, service) => {
-        const category = service.category;
-        if (!groups[category]) groups[category] = [];
-        groups[category].push(service);
-        return groups;
-    }, {});
-
-    // Cart Logic
-    const toggleService = (service) => {
-        setSelectedServices(prev => {
-            const exists = prev.find(s => s.id === service.id);
-            if (exists) return prev.filter(s => s.id !== service.id);
-            return [...prev, { ...service, quantity: 1 }];
-        });
+    // ─────────────────────────────────────────
+    // PART ROW HELPERS
+    // ─────────────────────────────────────────
+    const updateRow = (index, patch) => {
+        setPartRows(prev => prev.map((row, i) => i === index ? { ...row, ...patch } : row));
     };
 
-    const updateQuantity = (id, change) => {
-        setSelectedServices(prev => prev.map(item => {
-            if (item.id === id) {
-                const newQuantity = Math.max(1, item.quantity + change);
-                return { ...item, quantity: newQuantity };
+    const addRow = () => {
+        if (partRows.length >= MAX_PARTS) return;
+        setPartRows(prev => [...prev, emptyRow()]);
+    };
+
+    const removeRow = (index) => {
+        setPartRows(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const getFilteredParts = (search) => {
+        if (!search) return availableParts;
+        const s = search.toLowerCase();
+        return availableParts.filter(p =>
+            p.name.toLowerCase().includes(s) ||
+            p.reference_number?.toLowerCase().includes(s) ||
+            p.category?.toLowerCase().includes(s)
+        );
+    };
+
+    // ─────────────────────────────────────────
+    // SUBMIT — send all rows in sequence
+    // ─────────────────────────────────────────
+    const handleSubmitPartRequests = async () => {
+        const validRows = partRows.filter(r => r.selectedPart);
+        if (validRows.length === 0) { showMessage('Please select at least one part.', 'error'); return; }
+
+        setSubmittingPart(true);
+        const token = localStorage.getItem('ACCESS_TOKEN');
+        const headers = { Authorization: `Bearer ${token}` };
+
+        let successCount = 0;
+        let errorMessages = [];
+
+        for (const row of validRows) {
+            try {
+                const res = await axios.post(
+                    `${BASE}/mechanic/jobs/${jobId}/parts`,
+                    { part_id: row.selectedPart.id, quantity: row.qty },
+                    { headers }
+                );
+                successCount++;
+            } catch (err) {
+                const errMsg = err.response?.data?.message || `Failed for ${row.selectedPart.name}`;
+                errorMessages.push(errMsg);
             }
-            return item;
-        }));
-    };
-
-    const removeItem = (id) => {
-        setSelectedServices(prev => prev.filter(item => item.id !== id));
-    };
-
-    const totalItems = selectedServices.reduce((sum, item) => sum + item.quantity, 0);
-
-    const sendPartsRequest = async () => {
-        if (selectedServices.length === 0 && parts.length === 0) {
-            alert('Please add at least one part to request');
-            return;
         }
 
-        setSubmitting(true);
-        try {
-            const token = localStorage.getItem('ACCESS_TOKEN');
-            const combinedParts = [
-                ...selectedServices.map(s => ({ name: s.name, quantity: s.quantity })),
-                ...parts.map(p => ({ name: p.name, quantity: p.quantity }))
-            ];
+        setSubmittingPart(false);
 
-            const requestData = {
-                job_id: jobId,
-                vehicle: {
-                    make: job.vehicle?.make,
-                    model: job.vehicle?.model,
-                    license_plate: job.vehicle?.plate_number || job.vehicle?.license_plate
-                },
-                parts: combinedParts,
-                notes: `Parts request for job #${jobId} - ${getClientName()}`
-            };
-
-            await axios.post('http://127.0.0.1:8000/api/mechanic/parts-request', requestData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            setShowConfirmation(true);
-        } catch (error) {
-            console.error('Failed to send parts request:', error);
-            alert('Failed to send parts request. Please try again.');
-        } finally {
-            setSubmitting(false);
+        if (successCount > 0) {
+            showMessage(`${successCount} part request${successCount > 1 ? 's' : ''} sent successfully!`, 'success');
+            setPartRows([emptyRow()]);
+        }
+        if (errorMessages.length > 0) {
+            showMessage(errorMessages[0], 'error');
         }
     };
 
     if (loading) return (
         <div className="dashboard-container">
-            <DashboardNavbar user={user || {name: 'Mechanic', role: 'Mechanic'}} />
-            <div className="loading-state">
+            <DashboardNavbar user={user || { name: 'Mechanic', role: 'Mechanic' }} />
+            <div className="loading-state" style={{ textAlign: 'center', marginTop: '50px' }}>
                 <div className="spinner-mini"></div>
                 <p>Loading job details...</p>
             </div>
@@ -261,23 +158,31 @@ const RepairDetails = () => {
     if (!job) return (
         <div className="repair-details-container">
             <DashboardNavbar user={user} onLogout={handleLogout} />
-            <div className="error-state">
+            <div className="error-state" style={{ textAlign: 'center', marginTop: '50px' }}>
                 <h2>Job not found</h2>
-                <button 
-                    className="btn-error-action"
-                    onClick={() => navigate('/mechanic/dashboard')}
-                >
+                <button className="btn-error-action" onClick={() => navigate('/mechanic/dashboard')}>
                     Return to Dashboard
                 </button>
             </div>
         </div>
     );
 
+    const isJobCompleted = job.status?.toLowerCase().includes('completed');
+    const filledRows = partRows.filter(r => r.selectedPart).length;
+
     return (
         <div className="repair-details-container">
             <header className="dashboard-header">
                 <DashboardNavbar user={user} onLogout={handleLogout} onChangePassword={() => setShowPasswordModal(true)} />
             </header>
+
+            {/* Toast Message */}
+            {message && (
+                <div className={`mech-toast ${messageType}`}>
+                    <i className={`fa-solid ${messageType === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}`}></i>
+                    <span>{message}</span>
+                </div>
+            )}
 
             <div className="repair-content-wrapper">
                 <div className="back-link-container">
@@ -286,198 +191,166 @@ const RepairDetails = () => {
                     </Link>
                 </div>
 
-                {!showConfirmation ? (
-                    <div className="repair-content">
-                        {/* --- VEHICLE INFORMATION SECTION --- */}
-                        <section className="vehicle-info-section">
-                            <h2>
-                                <i className="fa-solid fa-car"></i> Repair Information
-                            </h2>
-                            <div className="info-grid">
-                                <div className="info-item">
-                                    <label>Client Name</label>
-                                    <input type="text" value={getClientName()} readOnly />
-                                </div>
-                                <div className="info-item">
-                                    <label>Make</label>
-                                    <input type="text" value={job.vehicle?.make || 'N/A'} readOnly />
-                                </div>
-                                <div className="info-item">
-                                    <label>Model</label>
-                                    <input type="text" value={job.vehicle?.model || 'N/A'} readOnly />
-                                </div>
-                                <div className="info-item">
-                                    <label>License Plate</label>
-                                    <input type="text" value={job.vehicle?.plate_number || job.vehicle?.license_plate || 'N/A'} readOnly />
-                                </div>
-
-                                <div className="info-item full-width">
-                                    <label>Service Requested</label>
-                                    <div className="service-badges-container">
-                                        {/* FIX: Prioritize showing array of services, fallback to single service */}
-                                        {job.services && job.services.length > 0 ? (
-                                            job.services.map((s, i) => (
-                                                <span key={i} className="service-badge">
-                                                    {s.name}
-                                                </span>
-                                            ))
-                                        ) : job.service ? (
-                                            <span className="service-badge">
-                                                {job.service.name}
-                                            </span>
-                                        ) : (
-                                            'General Repair'
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="info-item full-width">
-                                    <label>Description</label>
-                                    <textarea 
-                                        value={job.description || 'No description provided'} 
-                                        readOnly 
-                                    ></textarea>
+                <div className="repair-content">
+                    {/* --- VEHICLE INFORMATION SECTION --- */}
+                    <section className="vehicle-info-section">
+                        <h2><i className="fa-solid fa-car"></i> Repair Information</h2>
+                        <div className="info-grid">
+                            <div className="info-item">
+                                <label>Client Name</label>
+                                <input type="text" value={getClientName()} readOnly />
+                            </div>
+                            <div className="info-item">
+                                <label>Make</label>
+                                <input type="text" value={job.vehicle?.make || 'N/A'} readOnly />
+                            </div>
+                            <div className="info-item">
+                                <label>Model</label>
+                                <input type="text" value={job.vehicle?.model || 'N/A'} readOnly />
+                            </div>
+                            <div className="info-item">
+                                <label>License Plate</label>
+                                <input type="text" value={job.vehicle?.plate_number || job.vehicle?.license_plate || 'N/A'} readOnly />
+                            </div>
+                            <div className="info-item full-width">
+                                <label>Service Requested</label>
+                                <div className="service-badges-container">
+                                    {job.services && job.services.length > 0 ? (
+                                        job.services.map((s, i) => <span key={i} className="service-badge">{s.name}</span>)
+                                    ) : job.service ? (
+                                        <span className="service-badge">{job.service.name}</span>
+                                    ) : (
+                                        <span className="service-badge">General Repair</span>
+                                    )}
                                 </div>
                             </div>
-                        </section>
-
-                        {/* --- PARTS SELECTION SECTION --- */}
-                        <section className="services-section">
-                            <div className="services-header">
-                                <h2><i className="fa-solid fa-toolbox"></i> Select Parts</h2>
-                                <div className="search-wrapper">
-                                    <input 
-                                        className="search-input" 
-                                        type="text" 
-                                        placeholder="Search part name..." 
-                                        value={searchQuery} 
-                                        onChange={(e) => setSearchQuery(e.target.value)} 
-                                    />
-                                    <i className="fa-solid fa-search"></i>
-                                </div>
-                            </div>
-
-                            <div className="zone-filter">
-                                {['all', 'engine', 'wheels', 'exhaust', 'lights', 'body'].map(zone => (
-                                    <button 
-                                        key={zone} 
-                                        className={selectedZone === zone ? 'active' : ''} 
-                                        onClick={() => setSelectedZone(zone)}
-                                    >
-                                        {zone}
-                                    </button>
-                                ))}
-                            </div>
-                            
-                            <div className="services-grid-container">
-                                {Object.entries(groupedServices).map(([category, items]) => (
-                                    <div key={category} className="service-category-group">
-                                        <h3 className="category-header">{category}</h3>
-                                        <div className="services-grid">
-                                            {items.map(service => {
-                                                const isSelected = selectedServices.find(s => s.id === service.id);
-                                                return (
-                                                    <div 
-                                                        key={service.id} 
-                                                        className={`service-card ${isSelected ? 'selected' : ''}`} 
-                                                        onClick={() => toggleService(service)}
-                                                    >
-                                                        <div className="service-info">
-                                                            <h3>{service.name}</h3>
-                                                            <span className="service-zone">{service.zone}</span>
-                                                        </div>
-                                                        {isSelected && (
-                                                            <div className="selected-checkmark">
-                                                                <i className="fa-solid fa-check-circle"></i>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-
-                        {/* --- SUMMARY SECTION --- */}
-                        {selectedServices.length > 0 && (
-                            <section className="summary-section">
-                                <div className="summary-header">
-                                    <h3><i className="fa-solid fa-cart-shopping"></i> Order Summary</h3>
-                                    <span className="badge-count">{selectedServices.length} Items Selected</span>
-                                </div>
-                                <div className="summary-list">
-                                    <div className="summary-list-header">
-                                        <span>Part Name</span>
-                                        <span>Zone</span>
-                                        <span>Quantity</span>
-                                        <span></span>
-                                    </div>
-                                    {selectedServices.map(item => (
-                                        <div key={item.id} className="summary-item-row">
-                                            <div><span className="item-name">{item.name}</span></div>
-                                            <div><span className="item-zone-tag">{item.zone}</span></div>
-                                            <div>
-                                                <input 
-                                                    type="number" 
-                                                    className="qty-custom-input" 
-                                                    value={item.quantity} 
-                                                    min="1" 
-                                                    onChange={(e) => updateQuantity(item.id, parseInt(e.target.value || 1) - item.quantity)}
-                                                />
-                                            </div>
-                                            <div>
-                                                <button className="btn-remove" onClick={() => removeItem(item.id)}>
-                                                    <i className="fa-solid fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="summary-footer">
-                                    <div className="total-row">
-                                        <span>Total Parts Quantity : </span>
-                                        <span className="total-number">{totalItems}</span>
-                                    </div>
-                                    <button 
-                                        className="btn-submit" 
-                                        onClick={sendPartsRequest} 
-                                        disabled={submitting}
-                                    >
-                                        <i className="fa-solid fa-paper-plane"></i> {submitting ? 'Sending Request...' : 'Confirm & Send Request'}
-                                    </button>
-                                </div>
-                            </section>
-                        )}
-                    </div>
-                ) : (
-                    /* --- CONFIRMATION VIEW --- */
-                    <div className="confirmation-container">
-                        <div className="confirmation-success">
-                            <div className="success-icon"><i className="fa-solid fa-circle-check"></i></div>
-                            <h2>Parts Request Sent Successfully!</h2>
-                            <div className="request-summary">
-                                <p><strong>Job ID:</strong> #{jobId}</p>
-                                <p><strong>Vehicle:</strong> {job.vehicle?.make} {job.vehicle?.model}</p>
-                                <h4>Parts Requested:</h4>
-                                <ul>
-                                    {selectedServices.map(part => (
-                                        <li key={part.id}>{part.name} <span className="qty-pill">x{part.quantity}</span></li>
-                                    ))}
-                                </ul>
-                            </div>
-                            <div className="confirmation-actions">
-                                <button className="btn-secondary" onClick={() => navigate('/mechanic/dashboard')}>
-                                    <i className="fa-solid fa-home"></i> Return to Dashboard
-                                </button>
-                                <button className="btn-primary" onClick={() => { setShowConfirmation(false); setSelectedServices([]); }}>
-                                    <i className="fa-solid fa-plus"></i> New Request
-                                </button>
+                            <div className="info-item full-width">
+                                <label>Description</label>
+                                <textarea value={job.description || 'No description provided'} readOnly></textarea>
                             </div>
                         </div>
-                    </div>
-                )}
+                    </section>
+
+                    {/* --- REQUEST PARTS SECTION --- */}
+                    {!isJobCompleted && (
+                        <section className="services-section">
+                            <div className="services-header">
+                                <h2><i className="fa-solid fa-screwdriver-wrench"></i> Request Parts from Inventory</h2>
+                                <p className="parts-section-subtitle">
+                                    Add up to {MAX_PARTS} parts per request — all will be sent to the Parts Manager at once.
+                                </p>
+                            </div>
+
+                            {/* Part Rows */}
+                            <div className="multi-part-list">
+                                {partRows.map((row, index) => (
+                                    <div key={row._key} className="part-row">
+                                        {/* Row number */}
+                                        <div className="part-row-num">{index + 1}</div>
+
+                                        {/* Search / Selected */}
+                                        <div className="part-row-search">
+                                            {row.selectedPart ? (
+                                                <div className="part-row-selected">
+                                                    <div className="part-row-selected-info">
+                                                        <strong>{row.selectedPart.name}</strong>
+                                                        <span className="part-row-ref">Ref: {row.selectedPart.reference_number || 'N/A'}</span>
+                                                    </div>
+                                                    <div className="part-row-selected-meta">
+                                                        <span className="part-row-price">{Number(row.selectedPart.price).toFixed(2)} MAD</span>
+                                                        <span className={`part-row-stock ${row.selectedPart.stock_quantity <= 30 ? 'low' : 'ok'}`}>
+                                                            Stock: {row.selectedPart.stock_quantity}
+                                                        </span>
+                                                    </div>
+                                                    <button className="part-row-clear" title="Clear" onClick={() => updateRow(index, { selectedPart: null, search: '' })}>
+                                                        <i className="fa-solid fa-xmark"></i>
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="part-row-input-wrap">
+                                                    <i className="fa-solid fa-search part-row-search-icon"></i>
+                                                    <input
+                                                        type="text"
+                                                        className="part-row-input"
+                                                        placeholder="Search part by name, ref, category..."
+                                                        value={row.search}
+                                                        onChange={e => updateRow(index, { search: e.target.value, showDropdown: true })}
+                                                        onFocus={() => updateRow(index, { showDropdown: true })}
+                                                        onBlur={() => setTimeout(() => updateRow(index, { showDropdown: false }), 200)}
+                                                    />
+                                                    {row.showDropdown && row.search && (
+                                                        <div className="part-row-dropdown">
+                                                            {getFilteredParts(row.search).slice(0, 12).map(part => (
+                                                                <div
+                                                                    key={part.id}
+                                                                    className="part-row-dropdown-item"
+                                                                    onMouseDown={() => updateRow(index, { selectedPart: part, search: '', showDropdown: false })}
+                                                                >
+                                                                    <div className="pdd-left">
+                                                                        <strong>{part.name}</strong>
+                                                                        <span>{part.reference_number} — {part.category || 'General'}</span>
+                                                                    </div>
+                                                                    <div className="pdd-right">
+                                                                        <span className="pdd-price">{Number(part.price).toFixed(2)} MAD</span>
+                                                                        <span className={`pdd-stock ${part.stock_quantity <= 30 ? 'low' : ''}`}>
+                                                                            Stock: {part.stock_quantity}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                            {getFilteredParts(row.search).length === 0 && (
+                                                                <div className="pdd-empty">No parts found.</div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Quantity */}
+                                        <div className="part-row-qty">
+                                            <label>Qty</label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                value={row.qty}
+                                                onChange={e => updateRow(index, { qty: Math.max(1, parseInt(e.target.value) || 1) })}
+                                                className="part-qty-input"
+                                            />
+                                        </div>
+
+                                        {/* Remove row */}
+                                        {partRows.length > 1 && (
+                                            <button className="part-row-remove" title="Remove row" onClick={() => removeRow(index)}>
+                                                <i className="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Add row + Submit */}
+                            <div className="multi-part-actions">
+                                {partRows.length < MAX_PARTS && (
+                                    <button className="btn-add-part-row" onClick={addRow}>
+                                        <i className="fa-solid fa-plus"></i> Add Another Part
+                                        <span className="row-counter">{partRows.length}/{MAX_PARTS}</span>
+                                    </button>
+                                )}
+                                <button
+                                    className="btn-submit"
+                                    onClick={handleSubmitPartRequests}
+                                    disabled={submittingPart || filledRows === 0}
+                                >
+                                    {submittingPart
+                                        ? <><i className="fa-solid fa-spinner fa-spin"></i> Sending {filledRows} request{filledRows > 1 ? 's' : ''}...</>
+                                        : <><i className="fa-solid fa-paper-plane"></i> Send {filledRows > 0 ? filledRows : ''} Part Request{filledRows > 1 ? 's' : ''}</>
+                                    }
+                                </button>
+                            </div>
+                        </section>
+                    )}
+                </div>
             </div>
         </div>
     );
