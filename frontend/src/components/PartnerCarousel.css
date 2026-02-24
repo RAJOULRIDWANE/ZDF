@@ -91,7 +91,7 @@
 }
 
 .brand-logo:hover {
-    border-color: rgba(232, 32, 42, 0.5);
+    border-color: var(--red-glow);
     transform: translateY(-4px);
 }
 
@@ -122,6 +122,11 @@
     z-index: 1;
     filter: brightness(0) invert(1);
     transition: filter 0.3s ease;
+}
+
+.light-mode .brand-logo img {
+    /* Use dark gray/black instead of white for the logos */
+    filter: none;
 }
 
 .brand-logo:hover img {

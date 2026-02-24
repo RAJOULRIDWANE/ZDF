@@ -169,7 +169,7 @@
 .badge.cancelled {
   background: var(--red-glow);
   color: var(--red);
-  border-color: rgba(232, 32, 42, 0.3);
+  border-color: var(--red-glow);
 }
 
 /* ─────────────────────────────────────────
@@ -274,7 +274,7 @@
 
 .view-btn.active {
   background: var(--red);
-  color: #fff;
+  color: var(--white);
 }
 
 /* ─────────────────────────────────────────
@@ -289,7 +289,7 @@
 
 .zone-label {
   font-size: 9px;
-  color: #fff;
+  color: var(--white);
   font-weight: 800;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
   background: rgba(0, 0, 0, 0.5);
@@ -299,17 +299,17 @@
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(232, 32, 42, 0.6);
+    box-shadow: 0 0 0 0 var(--red-glow);
     transform: scale(1);
   }
 
   70% {
-    box-shadow: 0 0 0 10px rgba(232, 32, 42, 0);
+    box-shadow: 0 0 0 10px var(--red-glow);
     transform: scale(1.02);
   }
 
   100% {
-    box-shadow: 0 0 0 0 rgba(232, 32, 42, 0);
+    box-shadow: 0 0 0 0 var(--red-glow);
     transform: scale(1);
   }
 }

@@ -165,7 +165,7 @@
 .pm-kpi-red .pm-kpi-icon {
     background: var(--red-glow);
     color: var(--red);
-    border: 1px solid rgba(232, 32, 42, 0.3);
+    border: 1px solid var(--red-glow);
 }
 
 .pm-kpi-text p {
@@ -224,12 +224,12 @@
 
 .pm-tab-active {
     background: var(--red) !important;
-    color: #fff !important;
+    color: var(--white) !important;
 }
 
 .pm-tab-badge {
     background: var(--red);
-    color: #fff;
+    color: var(--white);
     border-radius: 999px;
     font-size: 0.7rem;
     font-weight: 700;
@@ -239,7 +239,7 @@
 }
 
 .pm-tab-active .pm-tab-badge {
-    background: rgba(255, 255, 255, 0.25);
+    background: var(--border-light);
 }
 
 /* ─────────────────────────────────────────
@@ -347,7 +347,7 @@
 
 /* Low stock row highlight */
 .pm-row-low td {
-    background: rgba(232, 32, 42, 0.05) !important;
+    background: var(--red-glow) !important;
     border-left: 2px solid var(--red);
 }
 
@@ -390,6 +390,21 @@
     color: var(--red);
 }
 
+/* Low stock is ALWAYS red — it's a critical alert, even in light mode */
+body.light-mode .pm-stock-low {
+    color: #dc2626;
+}
+
+body.light-mode .pm-stock-low i {
+    color: #dc2626;
+}
+
+body.light-mode .pm-row-low td {
+    background: rgba(220, 38, 38, 0.08) !important;
+    border-left: 2px solid #dc2626;
+}
+
+
 .pm-qty-badge {
     background: rgba(139, 92, 246, 0.15);
     color: #a78bfa;
@@ -426,7 +441,7 @@
 .badge-declined {
     background: var(--red-glow);
     color: var(--red);
-    border-color: rgba(232, 32, 42, 0.3);
+    border-color: var(--red-glow);
 }
 
 /* ─────────────────────────────────────────
@@ -465,7 +480,7 @@
 .pm-btn-decline {
     background: var(--red-glow);
     color: var(--red);
-    border: 1px solid rgba(232, 32, 42, 0.3);
+    border: 1px solid var(--red-glow);
     padding: 6px 14px;
     font-family: 'Barlow Condensed', sans-serif;
     font-weight: 700;
@@ -479,7 +494,7 @@
 }
 
 .pm-btn-decline:hover:not(:disabled) {
-    background: rgba(232, 32, 42, 0.25);
+    background: var(--red-glow);
 }
 
 .pm-btn-decline:disabled {
@@ -590,7 +605,7 @@
     padding: 10px 22px;
     border: none;
     background: var(--red);
-    color: #fff;
+    color: var(--white);
     font-family: 'Barlow Condensed', sans-serif;
     font-weight: 700;
     font-size: 0.9rem;

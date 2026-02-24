@@ -322,7 +322,7 @@ tr:hover td {
     border: 1px solid;
 }
 
-.status-badge.in-progress {
+.status-badge.in_progress {
     background: var(--info-bg);
     color: var(--info);
     border-color: rgba(59, 130, 246, 0.3);
@@ -343,7 +343,7 @@ tr:hover td {
 .status-badge.cancelled {
     background: var(--red-glow);
     color: var(--red);
-    border-color: rgba(232, 32, 42, 0.3);
+    border-color: var(--red-glow);
 }
 
 .status-badge.delivered {
@@ -424,7 +424,7 @@ tr:hover td {
 .decline-reduction {
     background: var(--red-glow);
     color: var(--red);
-    border: 1px solid rgba(232, 32, 42, 0.3);
+    border: 1px solid var(--red-glow);
 }
 
 .decline-reduction i {

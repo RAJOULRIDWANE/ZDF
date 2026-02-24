@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import './Repairdetails.css';
 import DashboardNavbar from '../components/DashboardNavbar';
+import SkeletonLoader from '../components/SkeletonLoader';
 
 const BASE = 'http://127.0.0.1:8000/api';
 
@@ -148,9 +149,8 @@ const RepairDetails = () => {
     if (loading) return (
         <div className="dashboard-container">
             <DashboardNavbar user={user || { name: 'Mechanic', role: 'Mechanic' }} />
-            <div className="loading-state" style={{ textAlign: 'center', marginTop: '50px' }}>
-                <div className="spinner-mini"></div>
-                <p>Loading job details...</p>
+            <div style={{ maxWidth: 900, margin: '32px auto', padding: '0 20px' }}>
+                <SkeletonLoader type="cards" count={3} />
             </div>
         </div>
     );
@@ -313,6 +313,7 @@ const RepairDetails = () => {
                                             <input
                                                 type="number"
                                                 min="1"
+                                                max="10"
                                                 value={row.qty}
                                                 onChange={e => updateRow(index, { qty: Math.max(1, parseInt(e.target.value) || 1) })}
                                                 className="part-qty-input"

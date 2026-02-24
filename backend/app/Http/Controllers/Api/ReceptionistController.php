@@ -111,7 +111,7 @@ class ReceptionistController extends Controller
 
         $repair = Repair::findOrFail($id);
         
-        if ($request->status === 'Delivered' && $repair->status !== 'Completed') {
+        if ($request->status === 'Delivered' && strtolower($repair->status) !== 'completed') {
             return response()->json([
                 'message' => 'Only completed repairs can be marked as delivered.'
             ], 422);

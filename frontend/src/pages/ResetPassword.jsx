@@ -40,7 +40,16 @@ function ResetPassword() {
       }, 3000);
 
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong.");
+      if (err.response && err.response.data) {
+        if (err.response.data.errors) {
+          const firstError = Object.values(err.response.data.errors)[0][0];
+          setError(firstError);
+        } else {
+          setError(err.response.data.message || "Something went wrong.");
+        }
+      } else {
+        setError("Could not connect to the server.");
+      }
     }
   };
 

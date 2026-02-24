@@ -175,7 +175,7 @@
 .stat-icon.red {
     background: var(--red-glow);
     color: var(--red);
-    border: 1px solid rgba(232, 32, 42, 0.3);
+    border: 1px solid var(--red-glow);
 }
 
 .stat-card .orange i {
@@ -433,7 +433,7 @@
 
 .toggle-btn.active {
     background: var(--red);
-    color: #fff;
+    color: var(--white);
 }
 
 /* ─────────────────────────────────────────
@@ -588,7 +588,7 @@
 
 .create-estimate-btn {
     background: var(--red);
-    color: #fff;
+    color: var(--white);
     border: none;
     padding: 8px 16px;
     font-family: 'Barlow Condensed', sans-serif;
@@ -789,7 +789,7 @@
 
 .service-option.selected {
     background: var(--red-glow);
-    border: 1px solid rgba(232, 32, 42, 0.3);
+    border: 1px solid var(--red-glow);
 }
 
 .service-option input {
@@ -850,7 +850,7 @@
 .submit-btn {
     padding: 8px 20px;
     background: var(--red);
-    color: #fff;
+    color: var(--white);
     border: none;
     font-family: 'Barlow Condensed', sans-serif;
     font-weight: 700;
@@ -1065,7 +1065,7 @@ select.form-control option {
 /* Pending count badge on the button */
 .mpr-count {
     background: var(--red);
-    color: #fff;
+    color: var(--white);
     border-radius: 999px;
     font-size: 0.7rem;
     font-weight: 700;
@@ -1225,7 +1225,7 @@ select.form-control option {
 .mpr-badge-declined {
     background: var(--red-glow);
     color: var(--red);
-    border-color: rgba(232, 32, 42, 0.3);
+    border-color: var(--red-glow);
 }
 
 /* ─────────────────────────────────────────

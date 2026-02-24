@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import DashboardNavbar from '../components/DashboardNavbar';
+import SkeletonLoader from '../components/SkeletonLoader';
 import './MechanicDashboard.css';
 
 const BASE = 'http://127.0.0.1:8000/api';
@@ -329,10 +330,7 @@ const MechanicDashboard = () => {
 
                     <div className="task-list">
                         {loading ? (
-                            <div className="section-loading">
-                                <div className="spinner-mini"></div>
-                                <span>Loading jobs...</span>
-                            </div>
+                            <SkeletonLoader type="cards" count={4} />
                         ) : repairs.length === 0 ? (
                             <div className="no-tasks"><p>🎉 You have no assigned jobs at the moment.</p></div>
                         ) : (

@@ -156,7 +156,7 @@
 .message-box.error {
   background: var(--red-glow);
   color: var(--red);
-  border: 1px solid rgba(232, 32, 42, 0.3);
+  border: 1px solid var(--red-glow);
 }
 
 .message-box.success {
@@ -170,7 +170,7 @@
 ───────────────────────────────────────── */
 .update-btn {
   background: var(--red);
-  color: #fff;
+  color: var(--white);
   border: none;
   padding: 11px 28px;
   font-family: 'Barlow Condensed', sans-serif;

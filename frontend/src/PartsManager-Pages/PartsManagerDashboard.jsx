@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import DashboardNavbar from '../components/DashboardNavbar';
+import SkeletonLoader from '../components/SkeletonLoader';
 import './PartsManagerDashboard.css';
 
 const BASE = 'http://127.0.0.1:8000/api';
@@ -22,6 +23,7 @@ const PartsManagerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('inventory'); // 'inventory' | 'requests'
   const [search, setSearch] = useState('');
+  const [requestSearch, setRequestSearch] = useState(''); // NEW: for requests filter
   const [message, setMessage] = useState(null);
   const [messageType, setMessageType] = useState('');
   const [actionLoading, setActionLoading] = useState(null);
@@ -111,11 +113,16 @@ const PartsManagerDashboard = () => {
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     p.zone?.toLowerCase().includes(search.toLowerCase()) ||
     p.category?.toLowerCase().includes(search.toLowerCase()) ||
-    p.reference_number?.toLowerCase().includes(search.toLowerCase())
+    p.reference_number?.toLowerCase().includes(search.toLowerCase()) ||
+    (search === 'LOW_STOCK' && p.stock_quantity <= 30) // Magic string for low stock filter
   );
 
   const pendingRequests = requests.filter(r => r.status === 'Pending');
   const pendingCount = pendingRequests.length;
+
+  const filteredRequests = requests.filter(r =>
+    !requestSearch || (requestSearch === 'PENDING' ? r.status === 'Pending' : true)
+  );
 
   const statusBadge = (status) => {
     const map = {
@@ -143,21 +150,21 @@ const PartsManagerDashboard = () => {
 
         {/* KPI Cards */}
         <div className="pm-kpis">
-          <div className="pm-kpi-card pm-kpi-blue">
+          <div className="pm-kpi-card pm-kpi-blue" onClick={() => { setActiveTab('inventory'); setSearch(''); }} style={{ cursor: 'pointer' }}>
             <div className="pm-kpi-icon"><i className="fa-solid fa-boxes-stacked"></i></div>
             <div className="pm-kpi-text">
               <p>Total Parts</p>
               <h2>{kpis.total_parts}</h2>
             </div>
           </div>
-          <div className="pm-kpi-card pm-kpi-yellow">
+          <div className="pm-kpi-card pm-kpi-yellow" onClick={() => { setActiveTab('requests'); setRequestSearch('PENDING'); }} style={{ cursor: 'pointer' }}>
             <div className="pm-kpi-icon"><i className="fa-solid fa-clock"></i></div>
             <div className="pm-kpi-text">
               <p>Pending Requests</p>
               <h2>{kpis.pending_count}</h2>
             </div>
           </div>
-          <div className="pm-kpi-card pm-kpi-red">
+          <div className="pm-kpi-card pm-kpi-red" onClick={() => { setActiveTab('inventory'); setSearch('LOW_STOCK'); }} style={{ cursor: 'pointer' }}>
             <div className="pm-kpi-icon"><i className="fa-solid fa-triangle-exclamation"></i></div>
             <div className="pm-kpi-text">
               <p>Low Stock Alerts</p>
@@ -184,9 +191,8 @@ const PartsManagerDashboard = () => {
         </div>
 
         {loading ? (
-          <div className="pm-loading">
-            <i className="fa-solid fa-spinner fa-spin"></i>
-            <p>Loading...</p>
+          <div className="pm-card" style={{ padding: '0 12px' }}>
+            <SkeletonLoader type="table-rows" cols={6} count={6} />
           </div>
         ) : activeTab === 'inventory' ? (
           /* ===== INVENTORY TAB ===== */
@@ -240,7 +246,28 @@ const PartsManagerDashboard = () => {
           <div className="pm-card">
             <div className="pm-card-header">
               <h3>Part Requests from Mechanics</h3>
-              <span className="pm-req-count">{requests.length} total request{requests.length !== 1 ? 's' : ''}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                {requestSearch === 'PENDING' && (
+                  <button
+                    onClick={() => setRequestSearch('')}
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid var(--border-light)',
+                      color: 'var(--muted)',
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}
+                  >
+                    <i className="fa-solid fa-xmark"></i> Clear Filter
+                  </button>
+                )}
+                <span className="pm-req-count">{requests.length} total request{requests.length !== 1 ? 's' : ''}</span>
+              </div>
             </div>
             <div className="pm-table-wrap">
               <table className="pm-table">
@@ -248,7 +275,8 @@ const PartsManagerDashboard = () => {
                   <tr>
                     <th>Mechanic</th>
                     <th>Part</th>
-                    <th>Qty</th>
+                    <th>Req. Qty</th>
+                    <th>In Stock</th>
                     <th>Repair / Vehicle</th>
                     <th>Status</th>
                     <th>Notes</th>
@@ -256,9 +284,9 @@ const PartsManagerDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {requests.length === 0 ? (
-                    <tr><td colSpan="7" className="pm-empty-cell">No part requests yet.</td></tr>
-                  ) : requests.map(req => (
+                  {filteredRequests.length === 0 ? (
+                    <tr><td colSpan="8" className="pm-empty-cell">No part requests yet.</td></tr>
+                  ) : filteredRequests.map(req => (
                     <tr key={req.id}>
                       <td><strong>{req.mechanic?.name || '—'}</strong></td>
                       <td>
@@ -266,6 +294,12 @@ const PartsManagerDashboard = () => {
                         <div className="pm-sub">{req.part?.reference_number}</div>
                       </td>
                       <td><span className="pm-qty-badge">{req.quantity}</span></td>
+                      <td>
+                        <span className={`pm-stock ${req.part?.stock_quantity < req.quantity ? 'pm-stock-low' : 'pm-stock-ok'}`}>
+                          {req.part?.stock_quantity < req.quantity && <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '4px' }}></i>}
+                          {req.part?.stock_quantity || 0}
+                        </span>
+                      </td>
                       <td>
                         <div>Repair #{req.repair?.id}</div>
                         <div className="pm-sub">{req.repair?.vehicle?.make} {req.repair?.vehicle?.model}</div>

@@ -19,7 +19,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  background: linear-gradient(160deg, #0a0a0a 40%, #1a0a0b 100%);
+  background: linear-gradient(160deg, var(--black) 40%, #1a0a0b 100%);
 }
 
 .about-page .about-header-content h1 {
@@ -185,8 +185,8 @@
 .about-page .value-icon {
   font-size: 36px;
   color: var(--red);
-  background: rgba(232, 32, 42, 0.1);
-  border: 1px solid rgba(232, 32, 42, 0.3);
+  background: var(--red-glow);
+  border: 1px solid var(--red-glow);
   width: 56px;
   height: 56px;
   display: flex;
@@ -199,7 +199,7 @@
 
 .about-page .value-card:hover .value-icon {
   background: var(--red);
-  color: #fff;
+  color: var(--white);
   border-color: var(--red);
 }
 
@@ -248,7 +248,7 @@
   gap: 8px;
   padding: 14px 32px;
   background: var(--red);
-  color: #fff;
+  color: var(--white);
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 700;
   text-transform: uppercase;

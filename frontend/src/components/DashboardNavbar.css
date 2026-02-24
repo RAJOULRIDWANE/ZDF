@@ -50,7 +50,7 @@
   color: var(--white);
   font-size: 24px;
   padding-bottom: 3px;
-  color: #e8202a;
+  color: var(--red);
 }
 
 /* Right Side */
@@ -94,9 +94,8 @@
 
 .p-name {
   font-weight: 700;
-  color: var(--white);
   font-size: 14px;
-  color: #e8202a;
+  color: var(--red);
 }
 
 .p-role {

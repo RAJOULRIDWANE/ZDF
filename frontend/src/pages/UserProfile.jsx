@@ -6,7 +6,7 @@ import './UserProfile.css';
 const UserProfile = () => {
   // 1. STATE: User Data
   const [user, setUser] = useState({ name: '', role: '' });
-  
+
   // 2. STATE: Password Form
   const [passwords, setPasswords] = useState({
     currentPassword: '',
@@ -55,7 +55,7 @@ const UserProfile = () => {
 
     try {
       // Get the token you saved during login
-      const token = localStorage.getItem('ACCESS_TOKEN'); 
+      const token = localStorage.getItem('ACCESS_TOKEN');
 
       if (!token) {
         throw new Error("You are not logged in.");
@@ -63,7 +63,7 @@ const UserProfile = () => {
 
       // --- FETCH REQUEST ---
       const response = await fetch('http://localhost:8000/api/change-password', {
-        method: 'POST', 
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`, // Send Token
@@ -73,7 +73,7 @@ const UserProfile = () => {
           currentPassword: passwords.currentPassword,
           newPassword: passwords.newPassword,
           // Laravel 'confirmed' rule looks for this exact key:
-          newPassword_confirmation: passwords.confirmPassword 
+          newPassword_confirmation: passwords.confirmPassword
         })
       });
 
@@ -106,34 +106,34 @@ const UserProfile = () => {
 
         <div className="profile-wrapper">
 
-        <div className="back-link-container">
-          <Link 
-            to={`/${user.role ? user.role.toLowerCase() : 'receptionist'}/dashboard`} 
-            className="back-link"
-          >
-            ← Back to Dashboard
-          </Link>
-        </div>
+          <div className="back-link-container">
+            <Link
+              to={`/${user.role ? user.role.toLowerCase().replace(/_/g, '') : 'client'}/dashboard`}
+              className="back-link"
+            >
+              ← Back to Dashboard
+            </Link>
+          </div>
 
-        <div className="header-actions">
-          <h1>My Profile</h1>
-        </div>
-          
+          <div className="header-actions">
+            <h1>My Profile</h1>
+          </div>
+
           {/* CARD 1: User Info (Read Only) */}
           <div className="table-card profile-card">
             <div className="card-header">
               <h3>Account Details</h3>
             </div>
             <div className="form-content">
-              
+
               <div className="form-group">
                 <label>Full Name</label>
-                <input 
-                  type="text" 
-                  className="form-control locked-input" 
-                  value={user.name || 'Loading...'} 
-                  readOnly 
-                  disabled 
+                <input
+                  type="text"
+                  className="form-control locked-input"
+                  value={user.name || 'Loading...'}
+                  readOnly
+                  disabled
                 />
                 <span className="lock-icon">
                   <i class="fa-solid fa-lock"></i>
@@ -142,12 +142,12 @@ const UserProfile = () => {
 
               <div className="form-group">
                 <label>Role</label>
-                <input 
-                  type="text" 
-                  className="form-control locked-input" 
-                  value={user.role || '...'} 
-                  readOnly 
-                  disabled 
+                <input
+                  type="text"
+                  className="form-control locked-input"
+                  value={user.role.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                  readOnly
+                  disabled
                 />
                 <span className="lock-icon">
                   <i class="fa-solid fa-lock"></i>
@@ -162,13 +162,13 @@ const UserProfile = () => {
               <h3>Security Settings</h3>
             </div>
             <form className="form-content" onSubmit={handleSave}>
-              
+
               <div className="form-group">
                 <label>Current Password</label>
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   name="currentPassword"
-                  className="form-control" 
+                  className="form-control"
                   placeholder="Enter current password"
                   value={passwords.currentPassword}
                   onChange={handleChange}
@@ -179,10 +179,10 @@ const UserProfile = () => {
               <div className="row-split">
                 <div className="form-group" style={{ flex: 1 }}>
                   <label>New Password</label>
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     name="newPassword"
-                    className="form-control" 
+                    className="form-control"
                     placeholder="New password"
                     value={passwords.newPassword}
                     onChange={handleChange}
@@ -191,10 +191,10 @@ const UserProfile = () => {
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label>Confirm Password</label>
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     name="confirmPassword"
-                    className="form-control" 
+                    className="form-control"
                     placeholder="Confirm new password"
                     value={passwords.confirmPassword}
                     onChange={handleChange}
