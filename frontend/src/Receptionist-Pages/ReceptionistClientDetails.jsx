@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { jsPDF } from "jspdf";
 import DashboardNavbar from '../components/DashboardNavbar';
+import SkeletonLoader from '../components/SkeletonLoader';
 import "./ReceptionistClientDetails.css";
 
 const ReceptionistClientDetails = () => {
@@ -28,6 +29,9 @@ const ReceptionistClientDetails = () => {
     const [message, setMessage] = useState(null);
     const [messageType, setMessageType] = useState('');
 
+    // --- Confirmation Modal ---
+    const [confirmModal, setConfirmModal] = useState({ show: false, title: '', body: '', onConfirm: null });
+
     // --- 2. EFFECT: FETCH DATA ---
     useEffect(() => {
         if (id) fetchClientDetails();
@@ -51,80 +55,78 @@ const ReceptionistClientDetails = () => {
     };
 
     // --- 3. HANDLE STATUS UPDATE (DELIVERED) ---
-    const handleUpdateStatus = async (jobId, newStatus) => {
-        if (!window.confirm(`Are you sure you want to mark this vehicle as ${newStatus}?`)) return;
-
-        try {
-            const token = localStorage.getItem('ACCESS_TOKEN');
-
-            // Ensure we send the status in the format the backend likely expects (Title Case)
-            await axios.put(`http://127.0.0.1:8000/api/receptionist/repairs/${jobId}/status`,
-                { status: newStatus }, // Sending "Delivered"
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            // Update Local State Immediately
-            setRepairs(prevRepairs =>
-                prevRepairs.map(job =>
-                    job.id === jobId ? { ...job, status: newStatus } : job
-                )
-            );
-
-        } catch (error) {
-            console.error("Status update failed", error);
-            // Show the exact error from the backend if available
-            alert("Failed to update status. " + (error.response?.data?.message || error.response?.data?.error || "Check if repair is fully Completed."));
-        }
+    const handleUpdateStatus = (jobId, newStatus) => {
+        setConfirmModal({
+            show: true,
+            title: 'Mark as Delivered',
+            body: 'Are you sure you want to mark this vehicle as delivered? This action cannot be undone.',
+            onConfirm: async () => {
+                setConfirmModal({ show: false, title: '', body: '', onConfirm: null });
+                try {
+                    const token = localStorage.getItem('ACCESS_TOKEN');
+                    await axios.put(`http://127.0.0.1:8000/api/receptionist/repairs/${jobId}/status`,
+                        { status: newStatus },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    setRepairs(prevRepairs =>
+                        prevRepairs.map(job =>
+                            job.id === jobId ? { ...job, status: newStatus } : job
+                        )
+                    );
+                    setMessage('Vehicle marked as delivered successfully.');
+                    setMessageType('success');
+                    setTimeout(() => { setMessage(null); setMessageType(''); }, 4000);
+                } catch (error) {
+                    console.error('Status update failed', error);
+                    setMessage('Failed to update status. ' + (error.response?.data?.message || error.response?.data?.error || 'Repair must be fully Completed first.'));
+                    setMessageType('error');
+                    setTimeout(() => { setMessage(null); setMessageType(''); }, 5000);
+                }
+            }
+        });
     };
 
-    // --- NEW: HANDLE NEGOTIATION APPROVAL/REJECTION ---
-    const handleNegotiation = async (jobId, decision) => {
-        if (negotiatingId) return; // Prevent multiple clicks
+    // --- HANDLE NEGOTIATION APPROVAL/REJECTION ---
+    const handleNegotiation = (jobId, decision) => {
+        if (negotiatingId) return;
 
-        const confirmMsg = decision === 'approve'
-            ? 'Accept this discount request? (5% will be applied)'
-            : 'Reject this discount request?';
-
-        if (!window.confirm(confirmMsg)) return;
-
-        setNegotiatingId(jobId);
-
-        try {
-            const token = localStorage.getItem('ACCESS_TOKEN');
-            const response = await axios.post(
-                `http://127.0.0.1:8000/api/receptionist/jobs/${jobId}/negotiate`,
-                { decision },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            // Update local state with new status and cost
-            setRepairs(prevRepairs =>
-                prevRepairs.map(job =>
-                    job.id === jobId
-                        ? { ...job, status: 'In Progress', cost: response.data.repair.cost }
-                        : job
-                )
-            );
-
-            // Show success message
-            setMessage(response.data.message || 'Negotiation processed successfully');
-            setMessageType('success');
-            setTimeout(() => {
-                setMessage(null);
-                setMessageType('');
-            }, 4000);
-
-        } catch (error) {
-            console.error("Negotiation failed", error);
-            setMessage(error.response?.data?.message || 'Failed to process negotiation');
-            setMessageType('error');
-            setTimeout(() => {
-                setMessage(null);
-                setMessageType('');
-            }, 4000);
-        } finally {
-            setNegotiatingId(null);
-        }
+        const isApprove = decision === 'approve';
+        setConfirmModal({
+            show: true,
+            title: isApprove ? 'Accept Discount Request' : 'Reject Discount Request',
+            body: isApprove
+                ? 'Accept this discount request? A 5% discount will be applied to the repair cost.'
+                : 'Reject this discount request? The client will be notified.',
+            onConfirm: async () => {
+                setConfirmModal({ show: false, title: '', body: '', onConfirm: null });
+                setNegotiatingId(jobId);
+                try {
+                    const token = localStorage.getItem('ACCESS_TOKEN');
+                    const response = await axios.post(
+                        `http://127.0.0.1:8000/api/receptionist/jobs/${jobId}/negotiate`,
+                        { decision },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    setRepairs(prevRepairs =>
+                        prevRepairs.map(job =>
+                            job.id === jobId
+                                ? { ...job, status: 'In Progress', cost: response.data.repair.cost }
+                                : job
+                        )
+                    );
+                    setMessage(response.data.message || 'Negotiation processed successfully');
+                    setMessageType('success');
+                    setTimeout(() => { setMessage(null); setMessageType(''); }, 4000);
+                } catch (error) {
+                    console.error('Negotiation failed', error);
+                    setMessage(error.response?.data?.message || 'Failed to process negotiation');
+                    setMessageType('error');
+                    setTimeout(() => { setMessage(null); setMessageType(''); }, 4000);
+                } finally {
+                    setNegotiatingId(null);
+                }
+            }
+        });
     };
 
     const handleLogout = async () => {
@@ -374,7 +376,7 @@ const ReceptionistClientDetails = () => {
     const getBadgeClass = (status) => {
         if (!status) return 'pending';
         const s = status.toLowerCase().trim();
-        if (s === 'progress' || s === 'in progress') return 'in-progress';
+        if (s === 'progress' || s === 'in_progress') return 'in_progress';
         if (s === 'completed') return 'completed';
         if (s === 'delivered') return 'delivered';
         if (s === 'cancelled') return 'cancelled';
@@ -383,171 +385,228 @@ const ReceptionistClientDetails = () => {
 
     // --- 6. RENDER ---
     return (
-        <div className="receptionist-container">
-            <DashboardNavbar user={user} onLogout={handleLogout} />
+        <>
+            <div className="receptionist-container">
+                <DashboardNavbar user={user} onLogout={handleLogout} />
 
-            <div className="header-actions">
-                <div>
-                    <Link to="/receptionist/dashboard" className="back-link-container back-link">
-                        ← Back to Dashboard
-                    </Link>
-                    <h1>{clientNameDisplay}'s Repair History</h1>
+                <div className="header-actions">
+                    <div>
+                        <Link to="/receptionist/dashboard" className="back-link-container back-link">
+                            ← Back to Dashboard
+                        </Link>
+                        <h1>{clientNameDisplay}'s Repair History</h1>
+                    </div>
                 </div>
-            </div>
 
-            {/* KPI SECTION */}
-            <div className="kpi-container">
-                <div className="kpi-card">
-                    <div className="kpi-icon"><i className="fa-regular fa-calendar"></i></div>
-                    <div className="kpi-info"><h3>Today's Appt</h3><p className="kpi-number">{todaysAppointments}</p></div>
+                {/* KPI SECTION */}
+                <div className="kpi-container">
+                    <div className="kpi-card">
+                        <div className="kpi-icon"><i className="fa-regular fa-calendar"></i></div>
+                        <div className="kpi-info"><h3>Today's Appt</h3><p className="kpi-number">{todaysAppointments}</p></div>
+                    </div>
+                    <div className="kpi-card">
+                        <div className="kpi-icon delivered-icon"><i className="fa-solid fa-handshake"></i></div>
+                        <div className="kpi-info"><h3>Delivered</h3><p className="kpi-number">{deliveredCount}</p></div>
+                    </div>
+                    <div className="kpi-card">
+                        <div className="kpi-icon success-icon"><i className="fa-regular fa-circle-check"></i></div>
+                        <div className="kpi-info"><h3>Completed Today</h3><p className="kpi-number">{completedToday}</p></div>
+                    </div>
+                    <div className="kpi-card">
+                        <div className="kpi-icon"><i className="fa-solid fa-wrench"></i></div>
+                        <div className="kpi-info"><h3>Total Visits</h3><p className="kpi-number">{totalVisits}</p></div>
+                    </div>
+                    <div className="kpi-card">
+                        <div className="kpi-icon success-icon"><i className="fa-solid fa-wallet"></i></div>
+                        <div className="kpi-info"><h3>Total Spent</h3><p className="kpi-number">{totalSpent} MAD</p></div>
+                    </div>
                 </div>
-                <div className="kpi-card">
-                    <div className="kpi-icon delivered-icon"><i className="fa-solid fa-handshake"></i></div>
-                    <div className="kpi-info"><h3>Delivered</h3><p className="kpi-number">{deliveredCount}</p></div>
+
+                {/* Message Alert */}
+                {message && (
+                    <div className={`alert-message ${messageType}`} style={{
+                        padding: '12px 20px',
+                        marginBottom: '20px',
+                        borderRadius: '8px',
+                        backgroundColor: messageType === 'success' ? '#d4edda' : '#f8d7da',
+                        color: messageType === 'success' ? '#155724' : '#721c24',
+                        border: `1px solid ${messageType === 'success' ? '#c3e6cb' : '#f5c6cb'}`,
+                        textAlign: 'center'
+                    }}>
+                        <span>{message}</span>
+                    </div>
+                )}
+
+                <div className="search-filter-bar">
+                    <input
+                        type="text"
+                        placeholder="Search by License Plate, Mechanic, or Service..."
+                        className="dashboard-search-input"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                 </div>
-                <div className="kpi-card">
-                    <div className="kpi-icon success-icon"><i className="fa-regular fa-circle-check"></i></div>
-                    <div className="kpi-info"><h3>Completed Today</h3><p className="kpi-number">{completedToday}</p></div>
-                </div>
-                <div className="kpi-card">
-                    <div className="kpi-icon"><i className="fa-solid fa-wrench"></i></div>
-                    <div className="kpi-info"><h3>Total Visits</h3><p className="kpi-number">{totalVisits}</p></div>
-                </div>
-                <div className="kpi-card">
-                    <div className="kpi-icon success-icon"><i className="fa-solid fa-wallet"></i></div>
-                    <div className="kpi-info"><h3>Total Spent</h3><p className="kpi-number">{totalSpent} MAD</p></div>
-                </div>
-            </div>
 
-            {/* Message Alert */}
-            {message && (
-                <div className={`alert-message ${messageType}`} style={{
-                    padding: '12px 20px',
-                    marginBottom: '20px',
-                    borderRadius: '8px',
-                    backgroundColor: messageType === 'success' ? '#d4edda' : '#f8d7da',
-                    color: messageType === 'success' ? '#155724' : '#721c24',
-                    border: `1px solid ${messageType === 'success' ? '#c3e6cb' : '#f5c6cb'}`,
-                    textAlign: 'center'
-                }}>
-                    <span>{message}</span>
-                </div>
-            )}
-
-            <div className="search-filter-bar">
-                <input
-                    type="text"
-                    placeholder="Search by License Plate, Mechanic, or Service..."
-                    className="dashboard-search-input"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
-
-            <div className="table-card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Vehicle</th>
-                            <th>Type</th>
-                            <th>Service</th>
-                            <th>Mechanic</th>
-                            <th>Cost</th>
-                            <th>Start Date</th>
-                            <th>Predicted End</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
-                            <tr><td colSpan="9" style={{ textAlign: 'center', padding: '40px' }}>
-                                <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '24px', color: '#005DFFFF' }}></i>
-                                <p style={{ marginTop: '10px', color: '#666' }}>Loading client history...</p>
-                            </td></tr>
-                        ) : filteredRepairs.length > 0 ? (
-                            filteredRepairs.map(job => (
-                                <tr key={job.id}>
-                                    <td>
-                                        <strong>{job.vehicle?.make} {job.vehicle?.model}</strong>
-                                        <div className="sub-text">{job.vehicle?.plate_number || job.vehicle?.plate}</div>
-                                    </td>
-                                    <td><span style={{ textTransform: 'capitalize' }}>{job.vehicle?.type}</span></td>
-
-                                    {/* UPDATED SERVICE COLUMN WITH BADGES */}
-                                    <td>
-                                        <div className="service-badges-container">
-                                            {job.services && job.services.length > 0 ? (
-                                                job.services.map((service, idx) => (
-                                                    <span key={idx} className="service-badge">
-                                                        {service.name}
-                                                    </span>
-                                                ))
-                                            ) : (
-                                                <span className="service-badge">
-                                                    {job.service?.name || 'General Service'}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </td>
-
-                                    <td>{job.mechanic ? <span className="mechanic-name">{job.mechanic.name}</span> : <span className="unassigned">Unassigned</span>}</td>
-                                    <td style={{ fontWeight: 'bold' }}>{job.cost} MAD</td>
-                                    <td>{new Date(job.created_at).toLocaleDateString('en-GB')}</td>
-                                    <td>{job.date_end ? new Date(job.date_end).toLocaleString('en-GB') : 'TBD'}</td>
-                                    <td><span className={`status-badge ${getBadgeClass(job.status)}`}>{job.status}</span></td>
-                                    <td>
-                                        <button className="action-btn" onClick={() => navigate(`/track-repair/${job.id}`)}>
-                                            <i className="fa-solid fa-eye"></i>
-                                        </button>
-
-                                        <button className="action-btn invoice-btn" disabled={downloadingId === job.id} onClick={() => handleDownloadInvoice(job.id)}>
-                                            {downloadingId === job.id ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-file-arrow-down"></i>}
-                                        </button>
-
-                                        {/* Negotiation Buttons for Negotiation Requested Status */}
-                                        {job.status && job.status.toLowerCase().trim() === 'negotiation requested' && (
-                                            <>
-                                                <button
-                                                    className="action-btn accept-reduction"
-                                                    // style={{ backgroundColor: '#28a745', color: 'white' }}
-                                                    title="Accept Discount Request"
-                                                    disabled={negotiatingId === job.id}
-                                                    onClick={() => handleNegotiation(job.id, 'approve')}
-                                                >
-                                                    {negotiatingId === job.id ? <i className="fa-solid fa-spinner fa-spin"></i> : <i class="fa-regular fa-circle-check"></i>}
-                                                </button>
-                                                <button
-                                                    className="action-btn decline-reduction"
-                                                    // style={{ backgroundColor: '#dc3545', color: 'white' }}
-                                                    title="Decline Discount Request"
-                                                    disabled={negotiatingId === job.id}
-                                                    onClick={() => handleNegotiation(job.id, 'reject')}
-                                                >
-                                                    {negotiatingId === job.id ? <i className="fa-solid fa-spinner fa-spin"></i> : <i class="fa-regular fa-circle-xmark"></i>}
-                                                </button>
-                                            </>
-                                        )}
-
-                                        {job.status && job.status.toLowerCase().trim() === 'completed' && (
-                                            <button
-                                                className="action-btn deliver-btn"
-                                                title="Mark as Delivered"
-                                                onClick={() => handleUpdateStatus(job.id, 'Delivered')}
-                                            >
-                                                <i className="fa-solid fa-car-side"></i>
-                                            </button>
-                                        )}
+                <div className="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Vehicle</th>
+                                <th>Type</th>
+                                <th>Service</th>
+                                <th>Mechanic</th>
+                                <th>Cost</th>
+                                <th>Start Date</th>
+                                <th>Predicted End</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="9" style={{ padding: 0 }}>
+                                        <SkeletonLoader type="table-rows" cols={9} count={4} />
                                     </td>
                                 </tr>
-                            ))
-                        ) : (
-                            <tr><td colSpan="9" style={{ textAlign: 'center', padding: '20px' }}>No Repairs found.</td></tr>
-                        )}
-                    </tbody>
-                </table>
+                            ) : filteredRepairs.length > 0 ? (
+                                filteredRepairs.map(job => (
+                                    <tr key={job.id}>
+                                        <td>
+                                            <strong>{job.vehicle?.make} {job.vehicle?.model}</strong>
+                                            <div className="sub-text">{job.vehicle?.plate_number || job.vehicle?.plate}</div>
+                                        </td>
+                                        <td><span style={{ textTransform: 'capitalize' }}>{job.vehicle?.type}</span></td>
+
+                                        {/* UPDATED SERVICE COLUMN WITH BADGES */}
+                                        <td>
+                                            <div className="service-badges-container">
+                                                {job.services && job.services.length > 0 ? (
+                                                    job.services.map((service, idx) => (
+                                                        <span key={idx} className="service-badge">
+                                                            {service.name}
+                                                        </span>
+                                                    ))
+                                                ) : (
+                                                    <span className="service-badge">
+                                                        {job.service?.name || 'General Service'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+
+                                        <td>{job.mechanic ? <span className="mechanic-name">{job.mechanic.name}</span> : <span className="unassigned">Unassigned</span>}</td>
+                                        <td style={{ fontWeight: 'bold' }}>{job.cost} MAD</td>
+                                        <td>{new Date(job.created_at).toLocaleDateString('en-GB')}</td>
+                                        <td>{job.date_end ? new Date(job.date_end).toLocaleString('en-GB') : 'TBD'}</td>
+                                        <td><span className={`status-badge ${getBadgeClass(job.status)}`}>
+                                            {job.status ? job.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : ''}
+                                        </span></td>
+                                        <td>
+                                            <button className="action-btn" onClick={() => navigate(`/track-repair/${job.id}`)}>
+                                                <i className="fa-solid fa-eye"></i>
+                                            </button>
+
+                                            <button className="action-btn invoice-btn" disabled={downloadingId === job.id} onClick={() => handleDownloadInvoice(job.id)}>
+                                                {downloadingId === job.id ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-file-arrow-down"></i>}
+                                            </button>
+
+                                            {/* Negotiation Buttons for Negotiation Requested Status */}
+                                            {job.status && job.status.toLowerCase().trim() === 'negotiation requested' && (
+                                                <>
+                                                    <button
+                                                        className="action-btn accept-reduction"
+                                                        // style={{ backgroundColor: '#28a745', color: 'white' }}
+                                                        title="Accept Discount Request"
+                                                        disabled={negotiatingId === job.id}
+                                                        onClick={() => handleNegotiation(job.id, 'approve')}
+                                                    >
+                                                        {negotiatingId === job.id ? <i className="fa-solid fa-spinner fa-spin"></i> : <i class="fa-regular fa-circle-check"></i>}
+                                                    </button>
+                                                    <button
+                                                        className="action-btn decline-reduction"
+                                                        // style={{ backgroundColor: '#dc3545', color: 'white' }}
+                                                        title="Decline Discount Request"
+                                                        disabled={negotiatingId === job.id}
+                                                        onClick={() => handleNegotiation(job.id, 'reject')}
+                                                    >
+                                                        {negotiatingId === job.id ? <i className="fa-solid fa-spinner fa-spin"></i> : <i class="fa-regular fa-circle-xmark"></i>}
+                                                    </button>
+                                                </>
+                                            )}
+
+                                            {job.status && job.status.toLowerCase().trim() === 'completed' && (
+                                                <button
+                                                    className="action-btn deliver-btn"
+                                                    title="Mark as Delivered"
+                                                    onClick={() => handleUpdateStatus(job.id, 'Delivered')}
+                                                >
+                                                    <i className="fa-solid fa-car-side"></i>
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr><td colSpan="9" style={{ textAlign: 'center', padding: '20px' }}>No Repairs found.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+
+            {
+                confirmModal.show && (
+                    <div
+                        style={{
+                            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            zIndex: 9999, backdropFilter: 'blur(3px)'
+                        }}
+                        onClick={() => setConfirmModal({ show: false, title: '', body: '', onConfirm: null })}
+                    >
+                        <div
+                            style={{
+                                background: 'var(--charcoal)', border: '1px solid var(--border-light)',
+                                borderTop: '3px solid var(--red)', borderRadius: '8px',
+                                padding: '28px 32px', maxWidth: 420, width: '90%',
+                                boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
+                            }}
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <h3 style={{ margin: '0 0 10px', color: 'var(--white)', fontSize: '1.1rem' }}>
+                                {confirmModal.title}
+                            </h3>
+                            <p style={{ margin: '0 0 24px', color: 'var(--muted)', fontSize: '0.92rem', lineHeight: 1.5 }}>
+                                {confirmModal.body}
+                            </p>
+                            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                                <button
+                                    onClick={() => setConfirmModal({ show: false, title: '', body: '', onConfirm: null })}
+                                    style={{
+                                        padding: '9px 20px', border: '1px solid var(--border-light)',
+                                        background: 'transparent', color: 'var(--muted)', borderRadius: 6,
+                                        cursor: 'pointer', fontSize: '0.9rem'
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmModal.onConfirm}
+                                    style={{
+                                        padding: '9px 20px', border: 'none',
+                                        background: 'var(--red)', color: '#fff', borderRadius: 6,
+                                        cursor: 'pointer', fontSize: '0.9rem', fontWeight: 700
+                                    }}
+                                >
+                                    Confirm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </>
     );
 };
 

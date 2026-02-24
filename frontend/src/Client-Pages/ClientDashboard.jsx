@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { jsPDF } from 'jspdf';
 import DashboardNavbar from '../components/DashboardNavbar';
+import SkeletonLoader from '../components/SkeletonLoader';
 import './ClientDashboard.css';
 
 const ClientDashboard = () => {
@@ -734,10 +735,7 @@ const ClientDashboard = () => {
                     <h3>My Repairs</h3>
 
                     {loading ? (
-                        <div className="loading-container">
-                            <i className="fa-solid fa-spinner fa-spin"></i>
-                            <p>Loading your repairs...</p>
-                        </div>
+                        <SkeletonLoader type="repair-rows" count={3} />
                     ) : repairs.length === 0 ? (
                         <div className="empty-state">
                             <i className="fa-solid fa-inbox"></i>

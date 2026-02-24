@@ -34,7 +34,6 @@ class ClientDashboardController extends Controller
             ->whereHas('vehicle', function($q) use ($user) {
                 $q->where('user_id', $user->id);
             })
-            ->whereIn('status', ['Pending', 'In Progress', 'Confirmed', 'Completed']) // Include Completed so they see the result
             ->orderBy('created_at', 'desc')
             ->get();
 

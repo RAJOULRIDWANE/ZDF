@@ -24,7 +24,7 @@
   inset: 0;
   background:
     radial-gradient(ellipse 60% 50% at 70% 50%, var(--red-glow) 0%, transparent 70%),
-    linear-gradient(160deg, #0a0a0a 40%, #1a0a0b 100%);
+    linear-gradient(160deg, var(--black) 40%, var(--charcoal-light) 100%);
   z-index: 0;
 }
 
@@ -161,7 +161,7 @@
   width: 48px;
   height: 48px;
   background: var(--red-glow);
-  border: 1px solid rgba(232, 32, 42, 0.3);
+  border: 1px solid var(--red-glow);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -173,7 +173,7 @@
 
 .info-card:hover .card-icon {
   background: var(--red);
-  color: #fff;
+  color: var(--white);
   border-color: var(--red);
 }
 

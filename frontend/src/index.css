@@ -1,5 +1,5 @@
 :root {
-  /* GLOBAL BLACK & RED THEME VARIABLES */
+  /* GLOBAL BLACK & RED THEME VARIABLES (Default Dark) */
   --black: #0a0a0a;
   --charcoal: #141414;
   --steel: #1e2227;
@@ -31,6 +31,45 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─────────────────────────────────────────
+   LIGHT MODE OVERRIDES (Old White + Blue)
+───────────────────────────────────────── */
+.light-mode {
+  --black: #f8fafc;
+  /* Main background */
+  --charcoal: #ffffff;
+  /* Card background */
+  --steel: #f1f5f9;
+  /* Alternate/Hover background */
+  --charcoal-light: #ffffff;
+  /* Form inputs etc */
+
+  --red: #2563eb;
+  /* Primary blue */
+  --red-dark: #1d4ed8;
+  /* Darker primary */
+  --red-glow: rgba(37, 99, 235, 0.15);
+
+  --white: #0f172a;
+  /* Main text color */
+  --muted: #64748b;
+  /* Muted text color */
+  --border: rgba(0, 0, 0, 0.08);
+  --border-light: rgba(0, 0, 0, 0.15);
+
+  /* Keeps the status colors relatively similar but tweaks the background for light mode */
+  --success-bg: rgba(34, 197, 94, 0.1);
+  --warning-bg: rgba(245, 158, 11, 0.1);
+  --info-bg: rgba(59, 130, 246, 0.1);
+  --danger: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.1);
+}
+
+/* Make white logos colored/visible in Light Mode */
+.light-mode .logo {
+  filter: invert(1) brightness(0.5) sepia(1) hue-rotate(200deg) saturate(5);
 }
 
 * {

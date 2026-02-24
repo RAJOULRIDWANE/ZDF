@@ -4,22 +4,25 @@ import axios from "axios";
 import './Auth.css'
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
-function Login() { 
+function Login() {
   const navigate = useNavigate();
   const location = useLocation(); // ✅ NEW
-  
+
   // ✅ NEW: Get verification success message
   const verificationMessage = location.state?.message;
-  
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false); 
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); 
-    console.log("Attempting login with:", email); 
+    if (isLoading) return;
+    setError("");
+    setIsLoading(true);
+    console.log("Attempting login with:", email);
 
     try {
       const response = await axios.post('http://127.0.0.1:8000/api/login', {
@@ -27,54 +30,56 @@ function Login() {
         password: password
       });
 
-      console.log("Login Data:", response.data); 
+      console.log("Login Data:", response.data);
 
       const token = response.data.token;
-      const user = response.data.user; 
+      const user = response.data.user;
 
       // --- 1. CLEAR OLD DATA ---
-      localStorage.clear(); 
+      localStorage.clear();
 
       // --- 2. SAVE TOKEN ---
       localStorage.setItem('ACCESS_TOKEN', token);
 
       // --- 3. SAVE USER DETAILS INDIVIDUALLY ---
       Object.keys(user).forEach(key => {
-          localStorage.setItem(key, user[key]);
+        localStorage.setItem(key, user[key]);
       });
-      localStorage.setItem('USER_ROLE', user.role); 
+      localStorage.setItem('USER_ROLE', user.role);
 
       // --- 4. REDIRECT ---
       if (user.role === 'client') {
         navigate('/client/dashboard');
       } else if (user.role === 'supervisor') {
-        navigate('/supervisor/dashboard'); 
+        navigate('/supervisor/dashboard');
       } else if (user.role === 'mechanic') {
-        navigate('/mechanic/dashboard'); 
+        navigate('/mechanic/dashboard');
       } else if (user.role === 'receptionist') {
         navigate('/receptionist/dashboard');
       } else if (user.role === 'parts_manager') {
         navigate('/partsmanager/dashboard');
       } else {
-        navigate('/'); 
+        navigate('/');
       }
 
     } catch (err) {
       console.error(err);
-      
+
       // ✅ NEW: Handle unverified users - redirect to OTP page
       if (err.response?.data?.requires_verification) {
-        navigate('/verifyemail', { 
+        navigate('/verifyemail', {
           state: { email: err.response.data.email }
         });
         return;
       }
-      
+
       if (err.response) {
         setError(err.response.data.message || "Login failed");
       } else {
-        setError("Network error. Is Laravel running?"); 
+        setError("Network error. Is Laravel running?");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -96,25 +101,25 @@ function Login() {
               </div>
             </div>
             <h2>Welcome Back!</h2>
-            
+
             {/* ✅ NEW: Verification Success Message */}
             {verificationMessage && (
-              <div style={{ 
-                color: '#27ae60', 
+              <div style={{
+                color: '#27ae60',
                 backgroundColor: '#d5f4e6',
                 padding: '12px',
                 borderRadius: '8px',
                 marginBottom: '15px',
-                textAlign: 'center' 
+                textAlign: 'center'
               }}>
                 {verificationMessage}
               </div>
             )}
-            
+
             {/* Display Error Message here */}
             {error && (
               <div style={{
-                color: '#e74c3c', 
+                color: '#e74c3c',
                 backgroundColor: '#fadbd8',
                 padding: '12px',
                 borderRadius: '8px',
@@ -125,31 +130,31 @@ function Login() {
               </div>
             )}
 
-            <form className="auth-form" onSubmit={handleLogin}> 
+            <form className="auth-form" onSubmit={handleLogin}>
               <label className="auth-field">
                 Email
-                <input 
-                  type="email" 
-                  placeholder="Enter your email" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </label>
-              
+
               <label className="auth-field">
                 Password
                 <div style={{ position: 'relative' }}>
-                  <input 
+                  <input
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password" 
-                    value={password} 
-                    onChange={(e) => setPassword(e.target.value)} 
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
                     style={{ paddingRight: '40px' }}
                   />
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="eye-button"
                     onClick={() => setShowPassword(!showPassword)}
                   >
@@ -157,20 +162,20 @@ function Login() {
                   </button>
                 </div>
               </label>
-              
+
               <div className="auth-extra-row">
                 <button type="button" className="auth-link-button small">
                   <Link to="/forgot-password">Forgot password?</Link>
                 </button>
               </div>
-              
-              <button type="submit" className="btn-primary auth-submit">
-                Login
+
+              <button type="submit" className="btn-primary auth-submit" disabled={isLoading}>
+                {isLoading ? "Logging in..." : "Login"}
               </button>
             </form>
 
             <p className="auth-footer-text">
-              Don't have an account?{" "} 
+              Don't have an account?{" "}
               <Link to="/signup" className="auth-link-button"> Sign up </Link>
             </p>
           </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import DashboardNavbar from '../components/DashboardNavbar';
+import SkeletonLoader from '../components/SkeletonLoader';
 import "./ReceptionistDashboard.css";
 
 const ReceptionistDashboard = () => {
@@ -316,9 +317,8 @@ const ReceptionistDashboard = () => {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="4" style={{ textAlign: "center", padding: "40px" }}>
-                      <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: "24px", color: "#005DFFFF", marginBottom: "10px" }}></i>
-                      <p>Loading clients...</p>
+                    <td colSpan="4" style={{ padding: 0 }}>
+                      <SkeletonLoader type="table-rows" cols={4} count={5} />
                     </td>
                   </tr>
                 ) : filteredClients.length > 0 ? (
