@@ -4,10 +4,12 @@ import axios from 'axios';
 import { jsPDF } from 'jspdf';
 import DashboardNavbar from '../components/DashboardNavbar';
 import SkeletonLoader from '../components/SkeletonLoader';
+import { useTranslation } from 'react-i18next';
 import './ClientDashboard.css';
 
 const ClientDashboard = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const [user, setUser] = useState({
         name: localStorage.getItem('USER_NAME') || 'Client',
@@ -649,7 +651,7 @@ const ClientDashboard = () => {
                 <section className="dashboard-title">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
-                            <h2>My Client Space</h2>
+                            <h2>{t('client.welcome', { name: user.name })}</h2>
                             <p>Manage your vehicles &amp; appointments</p>
                         </div>
                         <button className="btn-appt" onClick={() => setShowAppointmentModal(true)}>
@@ -675,14 +677,14 @@ const ClientDashboard = () => {
                     </div>
                     <div className="stat-card">
                         <div className="stat-text">
-                            <label>Pending Appointments</label>
+                            <label>{t('client.next_appointment')}</label>
                             <h3>{stats.appointments}</h3>
                         </div>
                         <div className="stat-icon cal-bg"><i className="fa-solid fa-calendar"></i></div>
                     </div>
                     <div className="stat-card">
                         <div className="stat-text">
-                            <label>Invoices</label>
+                            <label>{t('client.invoices')}</label>
                             <h3>{stats.invoices}</h3>
                         </div>
                         <div className="stat-icon inv-bg"><i className="fa-solid fa-file-invoice"></i></div>
@@ -694,7 +696,7 @@ const ClientDashboard = () => {
                     <div className="vehicles-header-row">
                         <h3>My Vehicles</h3>
                         <button className="add-vehicle-btn" onClick={handleAddVehicle}>
-                            <i className="fa-solid fa-plus"></i> Add vehicle
+                            <i className="fa-solid fa-plus"></i> {t('client.add_vehicle')}
                         </button>
                     </div>
 
@@ -702,7 +704,7 @@ const ClientDashboard = () => {
                         {vehicles.length === 0 ? (
                             <div className="vehicles-empty-state">
                                 <i className="fa-solid fa-car" style={{ fontSize: '2rem', color: '#cbd5e1', marginBottom: '10px' }}></i>
-                                <p style={{ margin: 0, color: '#64748b' }}>No vehicles added yet. Click "Add vehicle" to get started!</p>
+                                <p style={{ margin: 0, color: '#64748b' }}>{t('client.no_vehicles')}</p>
                             </div>
                         ) : (
                             <>
@@ -722,7 +724,7 @@ const ClientDashboard = () => {
 
                                 {vehicles.length > 3 && (
                                     <button className="all-vehicles-link" onClick={() => {/* Navigate to vehicles page later */ }}>
-                                        All vehicles
+                                        {t('client.all_vehicles')}
                                     </button>
                                 )}
                             </>
@@ -732,14 +734,14 @@ const ClientDashboard = () => {
 
                 {/* Repairs List */}
                 <section className="repairs-list">
-                    <h3>My Repairs</h3>
+                    <h3>{t('client.my_repairs')}</h3>
 
                     {loading ? (
                         <SkeletonLoader type="repair-rows" count={3} />
                     ) : repairs.length === 0 ? (
                         <div className="empty-state">
                             <i className="fa-solid fa-inbox"></i>
-                            <p>No repair jobs found.</p>
+                            <p>{t('client.no_repairs_found')}</p>
                         </div>
                     ) : (
                         repairs.map(repair => (
@@ -751,11 +753,11 @@ const ClientDashboard = () => {
                                             {repair.services && repair.services.length > 0 ? (
                                                 repair.services.map(s => <span key={s.id} className="tag">{s.name}</span>)
                                             ) : (
-                                                <span className="tag">General Service</span>
+                                                <span className="tag">{t('client.general_service')}</span>
                                             )}
                                         </div>
                                         <h4>{repair.vehicle?.make} {repair.vehicle?.model}</h4>
-                                        <p className="due-date">Due: {repair.date_end ? new Date(repair.date_end).toLocaleDateString('en-GB', {
+                                        <p className="due-date">{t('client.due')}: {repair.date_end ? new Date(repair.date_end).toLocaleDateString('en-GB', {
                                             year: 'numeric',
                                             month: 'short',
                                             day: 'numeric'
@@ -770,15 +772,15 @@ const ClientDashboard = () => {
                                 <div className="repair-actions">
                                     {repair.status?.toLowerCase() === 'completed' && (
                                         <>
-                                            <span className="status-label completed-label">Reduction Already Requested</span>
+                                            <span className="status-label completed-label">{t('common.status.completed')}</span>
                                             <button className="btn-download" onClick={() => handleDownloadInvoice(repair)}>
-                                                Download Invoice
+                                                {t('client.invoices')}
                                             </button>
                                         </>
                                     )}
                                     {repair.status?.toLowerCase() === 'estimate sent' && (
                                         <>
-                                            <span className="status-label ready-label">Estimate Ready</span>
+                                            <span className="status-label ready-label">{t('client.estimate_ready')}</span>
                                             <button className="btn-secondary" onClick={() => handleDownloadEstimate(repair)}>
                                                 Download Estimate
                                             </button>
@@ -791,7 +793,7 @@ const ClientDashboard = () => {
                                                     () => handleAcceptEstimate(repair.id)
                                                 )}
                                             >
-                                                {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Accept'}
+                                                {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : t('client.accept')}
                                             </button>
                                             <button
                                                 className="btn-primary"
@@ -802,13 +804,13 @@ const ClientDashboard = () => {
                                                     () => handleNegotiateJob(repair.id)
                                                 )}
                                             >
-                                                {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Request Reduction'}
+                                                {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : t('client.request_reduction')}
                                             </button>
                                         </>
                                     )}
                                     {repair.status?.toLowerCase() === 'negotiation requested' && (
                                         <>
-                                            <span className="status-label pending-label">Negotiation Pending</span>
+                                            <span className="status-label pending-label">{t('client.negotiation_pending')}</span>
                                             <button className="btn-secondary" onClick={() => handleDownloadEstimate(repair)}>
                                                 Download Estimate
                                             </button>
@@ -817,17 +819,37 @@ const ClientDashboard = () => {
                                                 'Accept the estimate at the current price? This will start the repair work.',
                                                 () => handleApproveJob(repair.id)
                                             )}>
-                                                {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Approve'}
+                                                {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : t('client.approve')}
                                             </button>
-                                            <button className="btn-primary" disabled>Request Reduction</button>
+                                            <button className="btn-primary" disabled>{t('client.reduction_requested')}</button>
                                         </>
                                     )}
                                     {repair.status?.toLowerCase() === 'in progress' && (
-                                        <span className="status-label progress-label">In Progress</span>
+                                        <span className="status-label progress-label">{t('common.status.in_progress')}</span>
                                     )}
                                     {repair.status?.toLowerCase() === 'pending' && (
-                                        <span className="status-label pending-label">Estimate Requested</span>
+                                        <span className="status-label pending-label">{t('common.status.pending')}</span>
                                     )}
+                                    {repair.status?.toLowerCase() === 'cancelled' && (
+                                        <span className="status-label error-label">{t('common.status.cancelled')}</span>
+                                    )}
+                                    {repair.status?.toLowerCase() === 'delivered' && (
+                                        <span className="status-label ready-label">{t('common.status.delivered')}</span>
+                                    )}
+                                    {repair.status?.toLowerCase() === 'ready' && (
+                                        <span className="status-label ready-label">{t('common.status.ready')}</span>
+                                    )}
+                                    {repair.status?.toLowerCase() === 'diagnostic' && (
+                                        <span className="status-label pending-label">{t('common.status.diagnostic')}</span>
+                                    )}
+                                    {/* Fallback for anything else */}
+                                    {![
+                                        'completed', 'estimate sent', 'negotiation requested',
+                                        'in progress', 'pending', 'cancelled', 'delivered',
+                                        'ready', 'diagnostic'
+                                    ].includes(repair.status?.toLowerCase()) && (
+                                            <span className="status-label pending-label">{repair.status}</span>
+                                        )}
                                 </div>
                             </div>
                         ))
@@ -836,7 +858,7 @@ const ClientDashboard = () => {
 
                 {/* Appointments Section */}
                 <section className="appointments-section">
-                    <h3><i className="fa-solid fa-calendar-days"></i> My Appointment Requests</h3>
+                    <h3><i className="fa-solid fa-calendar-days"></i> {t('client.next_appointment')}</h3>
                     {loading ? null : appointments.length === 0 ? (
                         <div className="appt-empty">No appointment requests yet.</div>
                     ) : (
@@ -861,40 +883,40 @@ const ClientDashboard = () => {
             {showAddVehicleModal && (
                 <div className="modal-overlay" onClick={handleCloseVehicleModal}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h2>Add New Vehicle</h2>
+                        <h2>{t('client.modal_add_title')}</h2>
                         <form onSubmit={handleSubmitVehicle}>
                             <div className="form-group">
-                                <label>Maker <span className="required">*</span></label>
+                                <label>{t('client.modal_maker')} <span className="required">*</span></label>
                                 <input
                                     type="text"
-                                    placeholder="e.g., Toyota"
+                                    placeholder={t('client.modal_maker_placeholder')}
                                     value={newVehicle.make}
                                     onChange={(e) => setNewVehicle({ ...newVehicle, make: e.target.value })}
                                     required
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Model <span className="required">*</span></label>
+                                <label>{t('client.modal_model')} <span className="required">*</span></label>
                                 <input
                                     type="text"
-                                    placeholder="e.g., Camry"
+                                    placeholder={t('client.modal_model_placeholder')}
                                     value={newVehicle.model}
                                     onChange={(e) => setNewVehicle({ ...newVehicle, model: e.target.value })}
                                     required
                                 />
                             </div>
                             <div className="form-group">
-                                <label>License Plate <span className="required">*</span></label>
+                                <label>{t('client.modal_license_plate')} <span className="required">*</span></label>
                                 <input
                                     type="text"
-                                    placeholder="e.g., ABC-1234"
+                                    placeholder={t('client.modal_plate_placeholder')}
                                     value={newVehicle.license_plate}
                                     onChange={(e) => setNewVehicle({ ...newVehicle, license_plate: e.target.value.toUpperCase() })}
                                     required
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Year <span className="required">*</span></label>
+                                <label>{t('client.modal_year')} <span className="required">*</span></label>
                                 <input
                                     type="number"
                                     placeholder="e.g., 2020"
@@ -925,7 +947,7 @@ const ClientDashboard = () => {
                                     onClick={handleCloseVehicleModal}
                                     disabled={submittingVehicle}
                                 >
-                                    Cancel
+                                    {t('client.modal_cancel')}
                                 </button>
                                 <button
                                     type="submit"
@@ -934,10 +956,10 @@ const ClientDashboard = () => {
                                 >
                                     {submittingVehicle ? (
                                         <>
-                                            <i className="fa-solid fa-spinner fa-spin"></i> Adding...
+                                            <i className="fa-solid fa-spinner fa-spin"></i> {t('client.modal_adding')}
                                         </>
                                     ) : (
-                                        'Add Vehicle'
+                                        t('client.modal_add_button')
                                     )}
                                 </button>
                             </div>
