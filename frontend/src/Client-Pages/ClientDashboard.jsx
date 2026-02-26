@@ -5,11 +5,55 @@ import { jsPDF } from 'jspdf';
 import DashboardNavbar from '../components/DashboardNavbar';
 import SkeletonLoader from '../components/SkeletonLoader';
 import { useTranslation } from 'react-i18next';
+import Joyride, { STATUS } from 'react-joyride';
 import './ClientDashboard.css';
 
 const ClientDashboard = () => {
     const navigate = useNavigate();
     const { t } = useTranslation();
+
+    // --- Joyride Tour State ---
+    const [runTour, setRunTour] = useState(false);
+
+    const [tourSteps] = useState([
+        {
+            target: '.btn-appt',
+            content: 'Click here to request a new appointment with our garage.',
+            disableBeacon: true,
+        },
+        {
+            target: '.add-vehicle-btn',
+            content: 'Easily add your vehicles here to keep track of their details and repair history.',
+        },
+        {
+            target: '.repairs-list',
+            content: 'Monitor the status of your ongoing repairs and track completed jobs.',
+        },
+        {
+            target: '.repair-actions .status-label',
+            content: 'Pay close attention to these labels to always know exactly what stage your vehicle is at!',
+        },
+        {
+            target: '.appointments-section',
+            content: 'View your upcoming appointments and past request history here.',
+        }
+    ]);
+
+    useEffect(() => {
+        const hasCompletedTour = localStorage.getItem('hasCompletedTour');
+        if (!hasCompletedTour) {
+            setRunTour(true);
+        }
+    }, []);
+
+    const handleJoyrideCallback = (data) => {
+        const { status } = data;
+        const finishedStatuses = [STATUS.FINISHED, STATUS.SKIPPED];
+        if (finishedStatuses.includes(status)) {
+            setRunTour(false);
+            localStorage.setItem('hasCompletedTour', 'true');
+        }
+    };
 
     const [user, setUser] = useState({
         name: localStorage.getItem('USER_NAME') || 'Client',
@@ -643,6 +687,57 @@ const ClientDashboard = () => {
 
     return (
         <div className="client-space">
+            <Joyride
+                steps={tourSteps}
+                run={runTour}
+                continuous={true}
+                scrollToFirstStep={true}
+                showSkipButton={true}
+                callback={handleJoyrideCallback}
+                styles={{
+                    options: {
+                        primaryColor: 'var(--red)',
+                        textColor: 'var(--white)',
+                        backgroundColor: 'var(--charcoal)',
+                        arrowColor: 'var(--charcoal)',
+                        overlayColor: 'rgba(0, 0, 0, 0.75)',
+                    },
+                    tooltip: {
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                        fontFamily: "'Barlow', sans-serif",
+                    },
+                    tooltipContainer: {
+                        textAlign: 'left'
+                    },
+                    buttonNext: {
+                        backgroundColor: 'var(--red)',
+                        color: 'var(--white)',
+                        borderRadius: '4px',
+                        padding: '10px 18px',
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                        border: 'none',
+                    },
+                    buttonBack: {
+                        color: 'var(--muted)',
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        marginRight: '14px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em'
+                    },
+                    buttonSkip: {
+                        color: 'var(--muted)',
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em'
+                    }
+                }}
+            />
             <DashboardNavbar user={user} onLogout={() => { }} />
 
             <div className="main-content">
