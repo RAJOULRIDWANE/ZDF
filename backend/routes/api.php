@@ -52,6 +52,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/vehicles', [VehicleController::class, 'store']);
     Route::get('/client/vehicles', [ClientController::class, 'index']);
     Route::post('/jobs/{id}/approve', [ClientController::class, 'approveJob']);
+    Route::post('/jobs/{id}/decline', [ClientController::class, 'declineJob']);
     Route::post('/jobs/{id}/negotiate', [ClientController::class, 'negotiateJob']);
 
     // --- MECHANIC ROUTES ---

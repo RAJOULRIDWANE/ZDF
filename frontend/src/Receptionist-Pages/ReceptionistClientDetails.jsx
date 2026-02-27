@@ -30,7 +30,8 @@ const ReceptionistClientDetails = () => {
     const [messageType, setMessageType] = useState('');
 
     // --- Confirmation Modal ---
-    const [confirmModal, setConfirmModal] = useState({ show: false, title: '', body: '', onConfirm: null });
+    const [confirmModal, setConfirmModal] = useState({ show: false, title: '', body: '', job: null, isNegotiation: false, onConfirm: null });
+    const [customPrices, setCustomPrices] = useState({ services: {}, parts: {} });
 
     // --- 2. EFFECT: FETCH DATA ---
     useEffect(() => {
@@ -61,7 +62,7 @@ const ReceptionistClientDetails = () => {
             title: 'Mark as Delivered',
             body: 'Are you sure you want to mark this vehicle as delivered? This action cannot be undone.',
             onConfirm: async () => {
-                setConfirmModal({ show: false, title: '', body: '', onConfirm: null });
+                setConfirmModal({ show: false, title: '', body: '', job: null, isNegotiation: false, onConfirm: null });
                 try {
                     const token = localStorage.getItem('ACCESS_TOKEN');
                     await axios.put(`http://127.0.0.1:8000/api/receptionist/repairs/${jobId}/status`,
@@ -87,31 +88,48 @@ const ReceptionistClientDetails = () => {
     };
 
     // --- HANDLE NEGOTIATION APPROVAL/REJECTION ---
-    const handleNegotiation = (jobId, decision) => {
+    const handleNegotiation = (job, decision) => {
         if (negotiatingId) return;
 
         const isApprove = decision === 'approve';
+
+        // Initialize custom prices with original prices
+        let initialPrices = { services: {}, parts: {} };
+        if (isApprove) {
+            if (job.services) {
+                job.services.forEach(s => initialPrices.services[s.id] = Number(s.price || 0));
+            } else if (job.service) { // Fallback for single service structure
+                initialPrices.services[job.service.id] = Number(job.service.price || 0);
+            }
+            if (job.parts) {
+                job.parts.forEach(p => initialPrices.parts[p.id] = Number(p.pivot?.price || p.price || 0));
+            }
+        }
+        setCustomPrices(initialPrices);
+
         setConfirmModal({
             show: true,
-            title: isApprove ? 'Accept Discount Request' : 'Reject Discount Request',
+            title: isApprove ? 'Accept Discount Request & Set Custom Prices' : 'Reject Discount Request',
             body: isApprove
-                ? 'Accept this discount request? A 5% discount will be applied to the repair cost.'
+                ? 'Review the repair details below and set a custom new price for any individual item.'
                 : 'Reject this discount request? The client will be notified.',
-            onConfirm: async () => {
-                setConfirmModal({ show: false, title: '', body: '', onConfirm: null });
-                setNegotiatingId(jobId);
+            job: job,
+            isNegotiation: isApprove,
+            onConfirm: async (payloadPrices) => {
+                setConfirmModal({ show: false, title: '', body: '', job: null, isNegotiation: false, onConfirm: null });
+                setNegotiatingId(job.id);
                 try {
                     const token = localStorage.getItem('ACCESS_TOKEN');
                     const response = await axios.post(
-                        `http://127.0.0.1:8000/api/receptionist/jobs/${jobId}/negotiate`,
-                        { decision },
+                        `http://127.0.0.1:8000/api/receptionist/jobs/${job.id}/negotiate`,
+                        { decision, custom_prices: payloadPrices },
                         { headers: { Authorization: `Bearer ${token}` } }
                     );
                     setRepairs(prevRepairs =>
-                        prevRepairs.map(job =>
-                            job.id === jobId
-                                ? { ...job, status: 'In Progress', cost: response.data.repair.cost }
-                                : job
+                        prevRepairs.map(j =>
+                            j.id === job.id
+                                ? { ...j, status: 'In Progress', cost: response.data.repair.cost }
+                                : j
                         )
                     );
                     setMessage(response.data.message || 'Negotiation processed successfully');
@@ -136,7 +154,9 @@ const ReceptionistClientDetails = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
         } catch (error) { console.error("Logout failed", error); }
-        localStorage.clear();
+        localStorage.removeItem('ACCESS_TOKEN');
+        localStorage.removeItem('USER_NAME');
+        localStorage.removeItem('USER_ROLE');
         navigate('/login');
     };
 
@@ -249,7 +269,8 @@ const ReceptionistClientDetails = () => {
         let rowIndex = 0;
 
         const addRow = (description, qty, price) => {
-            const lineTotal = qty * price;
+            const parsedQty = typeof qty === 'number' ? qty : 1;
+            const lineTotal = parsedQty * price;
             grandTotal += lineTotal;
             if (rowIndex % 2 === 0) {
                 doc.setFillColor(...lightGray);
@@ -274,20 +295,18 @@ const ReceptionistClientDetails = () => {
 
         if (hasServices || hasParts) {
             // 1. Add Services
-            // 1. Add Services
             if (hasServices) {
                 job.services.forEach(service => {
                     const price = Number(service.price || 0);
-                    const qty = Number(service.quantity || 1);
-                    // Note: If service.quantity doesn't exist in your DB, default to 1
+                    const qty = '-';
                     if (price > 0) addRow(service.name, qty, price);
                 });
             }
             // 2. Add Parts
             if (hasParts) {
                 job.parts.forEach(part => {
-                    const qty = Number(part.pivot?.quantity || 1);
-                    const price = Number(part.pivot?.price || 0);
+                    const qty = Number(part.quantity || part.pivot?.quantity || 1);
+                    const price = Number(part.price || part.pivot?.price || 0);
                     if (price > 0) addRow(`Part: ${part.name}`, qty, price);
                 });
             }
@@ -295,7 +314,7 @@ const ReceptionistClientDetails = () => {
             // Fallback: No details found, use the Main Total Cost
             const labor = Number(job.cost || 0);
             if (labor > 0) {
-                addRow(job.service?.name || "Repair Service (Total)", 1, labor);
+                addRow(job.service?.name || "Repair Service (Total)", '-', labor);
             }
         }
         // --- FIX ENDS HERE ---
@@ -519,18 +538,18 @@ const ReceptionistClientDetails = () => {
                                                         // style={{ backgroundColor: '#28a745', color: 'white' }}
                                                         title="Accept Discount Request"
                                                         disabled={negotiatingId === job.id}
-                                                        onClick={() => handleNegotiation(job.id, 'approve')}
+                                                        onClick={() => handleNegotiation(job, 'approve')}
                                                     >
-                                                        {negotiatingId === job.id ? <i className="fa-solid fa-spinner fa-spin"></i> : <i class="fa-regular fa-circle-check"></i>}
+                                                        {negotiatingId === job.id ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-regular fa-circle-check"></i>}
                                                     </button>
                                                     <button
                                                         className="action-btn decline-reduction"
                                                         // style={{ backgroundColor: '#dc3545', color: 'white' }}
                                                         title="Decline Discount Request"
                                                         disabled={negotiatingId === job.id}
-                                                        onClick={() => handleNegotiation(job.id, 'reject')}
+                                                        onClick={() => handleNegotiation(job, 'reject')}
                                                     >
-                                                        {negotiatingId === job.id ? <i className="fa-solid fa-spinner fa-spin"></i> : <i class="fa-regular fa-circle-xmark"></i>}
+                                                        {negotiatingId === job.id ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-regular fa-circle-xmark"></i>}
                                                     </button>
                                                 </>
                                             )}
@@ -563,14 +582,15 @@ const ReceptionistClientDetails = () => {
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             zIndex: 9999, backdropFilter: 'blur(3px)'
                         }}
-                        onClick={() => setConfirmModal({ show: false, title: '', body: '', onConfirm: null })}
+                        onClick={() => setConfirmModal({ show: false, title: '', body: '', job: null, isNegotiation: false, onConfirm: null })}
                     >
                         <div
                             style={{
                                 background: 'var(--charcoal)', border: '1px solid var(--border-light)',
                                 borderTop: '3px solid var(--red)', borderRadius: '8px',
-                                padding: '28px 32px', maxWidth: 420, width: '90%',
-                                boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
+                                padding: '28px 32px', maxWidth: confirmModal.isNegotiation ? 600 : 420, width: '90%',
+                                boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+                                maxHeight: '90vh', overflowY: 'auto'
                             }}
                             onClick={e => e.stopPropagation()}
                         >
@@ -580,9 +600,136 @@ const ReceptionistClientDetails = () => {
                             <p style={{ margin: '0 0 24px', color: 'var(--muted)', fontSize: '0.92rem', lineHeight: 1.5 }}>
                                 {confirmModal.body}
                             </p>
+
+                            {confirmModal.isNegotiation && confirmModal.job && (
+                                <div style={{ marginBottom: '20px', color: 'var(--white)' }}>
+                                    <h4 style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '8px', marginBottom: '10px' }}>Repair Services</h4>
+                                    <ul style={{ listStyleType: 'none', padding: 0, margin: '0 0 15px 0' }}>
+                                        {confirmModal.job.services && confirmModal.job.services.length > 0 ? (
+                                            confirmModal.job.services.map((s, idx) => (
+                                                <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                                    <div>
+                                                        <span style={{ fontSize: '0.95rem' }}>{s.name}</span>
+                                                        <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Original: {s.price} MAD</div>
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <label style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>New Price:</label>
+                                                        <input
+                                                            type="number" min="0" step="0.01" max={s.original_price || s.price}
+                                                            value={customPrices.services[s.id] !== undefined ? customPrices.services[s.id] : s.price}
+                                                            onChange={(e) => {
+                                                                let val = e.target.value === '' ? '' : Number(e.target.value);
+                                                                const maxVal = Number(s.original_price || s.price);
+                                                                if (val !== '' && val > maxVal) val = maxVal;
+                                                                setCustomPrices(prev => ({ ...prev, services: { ...prev.services, [s.id]: val } }));
+                                                            }}
+                                                            style={{ width: '80px', padding: '4px 6px', borderRadius: '4px', border: '1px solid var(--border-light)', background: 'var(--dark)', color: 'var(--white)', textAlign: 'right' }}
+                                                        />
+                                                    </div>
+                                                </li>
+                                            ))
+                                        ) : confirmModal.job.service ? (
+                                            <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                                <div>
+                                                    <span style={{ fontSize: '0.95rem' }}>{confirmModal.job.service.name}</span>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Original: {confirmModal.job.service.original_price || confirmModal.job.service.price} MAD</div>
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <label style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>New Price:</label>
+                                                    <input
+                                                        type="number" min="0" step="0.01" max={confirmModal.job.service.original_price || confirmModal.job.service.price}
+                                                        value={customPrices.services[confirmModal.job.service.id] !== undefined ? customPrices.services[confirmModal.job.service.id] : confirmModal.job.service.price}
+                                                        onChange={(e) => {
+                                                            let val = e.target.value === '' ? '' : Number(e.target.value);
+                                                            const maxVal = Number(confirmModal.job.service.original_price || confirmModal.job.service.price);
+                                                            if (val !== '' && val > maxVal) val = maxVal;
+                                                            setCustomPrices(prev => ({ ...prev, services: { ...prev.services, [confirmModal.job.service.id]: val } }));
+                                                        }}
+                                                        style={{ width: '80px', padding: '4px 6px', borderRadius: '4px', border: '1px solid var(--border-light)', background: 'var(--dark)', color: 'var(--white)', textAlign: 'right' }}
+                                                    />
+                                                </div>
+                                            </li>
+                                        ) : (
+                                            <li style={{ fontSize: '0.9rem', fontStyle: 'italic', color: 'var(--muted)' }}>No specific services listed.</li>
+                                        )}
+                                    </ul>
+
+                                    <h4 style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '8px', marginBottom: '10px' }}>Parts Requested</h4>
+                                    <ul style={{ listStyleType: 'none', padding: 0, margin: '0 0 15px 0' }}>
+                                        {confirmModal.job.parts && confirmModal.job.parts.length > 0 ? (
+                                            confirmModal.job.parts.map((p, idx) => (
+                                                <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                                    <div>
+                                                        <span style={{ fontSize: '0.95rem' }}>{p.name} (Qty: {p.quantity || 1})</span>
+                                                        <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Cost: {Number(p.cost || 0).toFixed(2)} | Original Sell: {Number(p.original_price || p.price).toFixed(2)} MAD</div>
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <label style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>New Price:</label>
+                                                        <input
+                                                            type="number" min="0" step="0.01" max={p.original_price || p.price}
+                                                            value={customPrices.parts[p.id] !== undefined ? customPrices.parts[p.id] : Number(p.price)}
+                                                            onChange={(e) => {
+                                                                let val = e.target.value === '' ? '' : Number(e.target.value);
+                                                                const maxVal = Number(p.original_price || p.price);
+                                                                if (val !== '' && val > maxVal) val = maxVal;
+                                                                setCustomPrices(prev => ({ ...prev, parts: { ...prev.parts, [p.id]: val } }));
+                                                            }}
+                                                            style={{ width: '80px', padding: '4px 6px', borderRadius: '4px', border: '1px solid var(--border-light)', background: 'var(--dark)', color: 'var(--white)', textAlign: 'right' }}
+                                                        />
+                                                    </div>
+                                                </li>
+                                            ))
+                                        ) : (
+                                            <li style={{ fontSize: '0.9rem', fontStyle: 'italic', color: 'var(--muted)' }}>No parts requested.</li>
+                                        )}
+                                    </ul>
+
+                                    <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '15px', borderRadius: '6px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                            <label style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>Original Total Cost:</label>
+                                            <span style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--red)' }}>
+                                                {(() => {
+                                                    let sOrigTotal = 0;
+                                                    if (confirmModal.job.services) {
+                                                        sOrigTotal = confirmModal.job.services.reduce((sum, s) => sum + Number(s.original_price || s.price || 0), 0);
+                                                    } else if (confirmModal.job.service) { // Fallback single service
+                                                        sOrigTotal = Number(confirmModal.job.service.price || 0);
+                                                    }
+
+                                                    let pOrigTotal = 0;
+                                                    if (confirmModal.job.parts) {
+                                                        pOrigTotal = confirmModal.job.parts.reduce((sum, p) => sum + (Number(p.original_price || p.price || 0) * (p.quantity || 1)), 0);
+                                                    }
+                                                    return (sOrigTotal + pOrigTotal).toFixed(2);
+                                                })()} MAD
+                                            </span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px dashed rgba(255,255,255,0.2)' }}>
+                                            <label style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>New Total Cost:</label>
+                                            <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#10b981' }}>
+                                                {(() => {
+                                                    let sTotal = 0;
+                                                    if (confirmModal.job.services) {
+                                                        sTotal = confirmModal.job.services.reduce((sum, s) => sum + (customPrices.services[s.id] !== undefined ? customPrices.services[s.id] : Number(s.price || 0)), 0);
+                                                    } else if (confirmModal.job.service) { // Fallback single service
+                                                        sTotal = customPrices.services[confirmModal.job.service.id] !== undefined ? customPrices.services[confirmModal.job.service.id] : Number(confirmModal.job.service.price || 0);
+                                                    }
+
+                                                    let pTotal = 0;
+                                                    if (confirmModal.job.parts) {
+                                                        pTotal = confirmModal.job.parts.reduce((sum, p) => sum + ((customPrices.parts[p.id] !== undefined ? customPrices.parts[p.id] : Number(p.price || 0)) * (p.quantity || 1)), 0);
+                                                    }
+                                                    return (sTotal + pTotal).toFixed(2);
+                                                })()} MAD
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
                                 <button
-                                    onClick={() => setConfirmModal({ show: false, title: '', body: '', onConfirm: null })}
+                                    onClick={() => setConfirmModal({ show: false, title: '', body: '', job: null, isNegotiation: false, onConfirm: null })}
                                     style={{
                                         padding: '9px 20px', border: '1px solid var(--border-light)',
                                         background: 'transparent', color: 'var(--muted)', borderRadius: 6,
@@ -592,7 +739,7 @@ const ReceptionistClientDetails = () => {
                                     Cancel
                                 </button>
                                 <button
-                                    onClick={confirmModal.onConfirm}
+                                    onClick={() => confirmModal.onConfirm(confirmModal.isNegotiation ? customPrices : null)}
                                     style={{
                                         padding: '9px 20px', border: 'none',
                                         background: 'var(--red)', color: '#fff', borderRadius: 6,

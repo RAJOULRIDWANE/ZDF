@@ -63,7 +63,7 @@ const PartsManagerDashboard = () => {
       localStorage.setItem('USER_ROLE', userData.role);
 
     } catch (err) {
-      if (err.response?.status === 401) { localStorage.clear(); navigate('/login'); }
+      if (err.response?.status === 401) { localStorage.removeItem('ACCESS_TOKEN'); localStorage.removeItem('USER_NAME'); localStorage.removeItem('USER_ROLE'); navigate('/login'); }
       showMsg('Failed to load data.', 'error');
     } finally {
       setLoading(false);
@@ -104,7 +104,9 @@ const PartsManagerDashboard = () => {
 
   const handleLogout = async () => {
     try { await axios.post(`${BASE}/logout`, {}, { headers }); } catch { }
-    localStorage.clear();
+    localStorage.removeItem('ACCESS_TOKEN');
+    localStorage.removeItem('USER_NAME');
+    localStorage.removeItem('USER_ROLE');
     navigate('/login');
   };
 

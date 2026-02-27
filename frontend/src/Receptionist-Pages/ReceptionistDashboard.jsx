@@ -95,7 +95,9 @@ const ReceptionistDashboard = () => {
       const token = localStorage.getItem('ACCESS_TOKEN');
       await axios.post('http://127.0.0.1:8000/api/logout', {}, { headers: { Authorization: `Bearer ${token}` } });
     } catch (error) { console.error("Logout failed", error); }
-    localStorage.clear();
+    localStorage.removeItem('ACCESS_TOKEN');
+    localStorage.removeItem('USER_NAME');
+    localStorage.removeItem('USER_ROLE');
     navigate('/login');
   };
 
@@ -228,7 +230,9 @@ const ReceptionistDashboard = () => {
     if (!formData.vehicle_id || !formData.mechanic_id || !formData.date_end) {
       showMessage("Please fill in required fields.", "error"); return;
     }
-    if (selectedServices.length === 0) {
+    if (formData.description.trim().length > 0 && formData.description.trim().length < 5) {
+      showMessage("Notes must be at least 5 characters long.", "error"); return;
+    } if (selectedServices.length === 0) {
       showMessage("Please select at least one service.", "error"); return;
     }
     try {
@@ -322,14 +326,31 @@ const ReceptionistDashboard = () => {
                     </td>
                   </tr>
                 ) : filteredClients.length > 0 ? (
-                  filteredClients.map(client => (
-                    <tr key={client.id} className="clickable-row" onClick={() => handleClientClick(client)}>
-                      <td><strong>{client.name}</strong><div className="sub-text">{client.email}</div></td>
-                      <td>{client.vehicles?.length || 0} Vehicles</td>
-                      <td><span className="status-badge progress">{client.repairs_count} Repairs</span></td>
-                      <td><button className="action-btn view-btn"><i className="fa-solid fa-eye"></i> View History</button></td>
-                    </tr>
-                  ))) : (
+                  filteredClients.map(client => {
+                    const clientPendingNegs = repairs.filter(r => r.vehicle?.client_id === client.id && r.status?.toLowerCase().trim() === 'negotiation requested').length;
+                    return (
+                      <tr key={client.id} className="clickable-row" onClick={() => handleClientClick(client)}>
+                        <td><strong>{client.name}</strong><div className="sub-text">{client.email}</div></td>
+                        <td>{client.vehicles?.length || 0} Vehicles</td>
+                        <td><span className="status-badge progress">{client.repairs_count} Repairs</span></td>
+                        <td>
+                          <div style={{ position: 'relative', display: 'inline-block' }}>
+                            <button className="action-btn view-btn"><i className="fa-solid fa-eye"></i> View History</button>
+                            {clientPendingNegs > 0 && (
+                              <span className="r-tab-badge" style={{
+                                position: 'absolute',
+                                top: '-8px',
+                                right: '-8px',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                              }}>
+                                {clientPendingNegs}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })) : (
                   <tr><td colSpan="4" style={{ textAlign: "center", padding: "20px" }}>No clients found.</td></tr>
                 )}
               </tbody>
@@ -451,7 +472,7 @@ const ReceptionistDashboard = () => {
 
               <div className="form-group">
                 <label>Total Cost (Auto-calculated) :</label>
-                <input type="number" className="form-control" value={formData.cost} readOnly style={{ backgroundColor: '#e9ecef', fontWeight: 'bold' }} />
+                <input type="number" className="form-control" value={formData.cost} readOnly />
               </div>
 
               <div className="form-group">

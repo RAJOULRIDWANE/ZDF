@@ -97,10 +97,16 @@ const RepairDetails = () => {
         setPartRows(prev => prev.filter((_, i) => i !== index));
     };
 
-    const getFilteredParts = (search) => {
-        if (!search) return availableParts;
+    const getFilteredParts = (search, currentRowIndex) => {
+        const selectedPartIds = partRows
+            .filter((r, idx) => idx !== currentRowIndex && r.selectedPart)
+            .map(r => r.selectedPart.id);
+
+        let filtered = availableParts.filter(p => !selectedPartIds.includes(p.id));
+
+        if (!search) return filtered;
         const s = search.toLowerCase();
-        return availableParts.filter(p =>
+        return filtered.filter(p =>
             p.name.toLowerCase().includes(s) ||
             p.reference_number?.toLowerCase().includes(s) ||
             p.category?.toLowerCase().includes(s)
@@ -280,7 +286,7 @@ const RepairDetails = () => {
                                                     />
                                                     {row.showDropdown && row.search && (
                                                         <div className="part-row-dropdown">
-                                                            {getFilteredParts(row.search).slice(0, 12).map(part => (
+                                                            {getFilteredParts(row.search, index).slice(0, 12).map(part => (
                                                                 <div
                                                                     key={part.id}
                                                                     className="part-row-dropdown-item"
@@ -298,7 +304,7 @@ const RepairDetails = () => {
                                                                     </div>
                                                                 </div>
                                                             ))}
-                                                            {getFilteredParts(row.search).length === 0 && (
+                                                            {getFilteredParts(row.search, index).length === 0 && (
                                                                 <div className="pdd-empty">No parts found.</div>
                                                             )}
                                                         </div>

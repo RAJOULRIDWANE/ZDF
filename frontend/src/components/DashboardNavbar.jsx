@@ -8,7 +8,9 @@ const DashboardNavbar = ({ user }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem('ACCESS_TOKEN');
+    localStorage.removeItem('USER_NAME');
+    localStorage.removeItem('USER_ROLE');
     navigate('/login');
   };
 

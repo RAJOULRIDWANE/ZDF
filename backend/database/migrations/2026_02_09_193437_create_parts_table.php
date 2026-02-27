@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('zone'); // e.g., 'engine', 'wheels'
             $table->string('category'); // e.g., 'Pièces principales'
+            $table->decimal('cost', 10, 2)->default(0.00);
             $table->decimal('price', 10, 2)->default(0.00); // Important for your Invoice
             $table->integer('stock_quantity')->default(10); // Default stock
             $table->string('reference_number')->nullable(); // For SKU/Barcodes

@@ -36,7 +36,9 @@ function Login() {
       const user = response.data.user;
 
       // --- 1. CLEAR OLD DATA ---
-      localStorage.clear();
+      localStorage.removeItem('ACCESS_TOKEN');
+      localStorage.removeItem('USER_NAME');
+      localStorage.removeItem('USER_ROLE');
 
       // --- 2. SAVE TOKEN ---
       localStorage.setItem('ACCESS_TOKEN', token);
