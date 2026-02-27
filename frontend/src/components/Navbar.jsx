@@ -101,7 +101,7 @@ function Navbar() {
                   <button
                     key={lang.code}
                     className={`language-option ${currentLanguage.code === lang.code ? 'active' : ''}`}
-                    onClick={() => changeLanguage(lang.code)}
+                    onMouseDown={() => { changeLanguage(lang.code); setIsLangDropdownOpen(false); }}
                   >
                     <span className="language-flag">{lang.flag}</span>
                     <span className="language-label">{lang.label}</span>

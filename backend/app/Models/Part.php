@@ -14,6 +14,7 @@ class Part extends Model
         'zone',
         'category',
         'price',
+        'cost',
         'stock_quantity', // Matches your migration
         'reference_number' // Matches your migration
     ];

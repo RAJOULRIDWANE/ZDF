@@ -53,6 +53,33 @@ class ClientController extends Controller
     }
 
     /**
+     * Decline the Estimate (Cancel the Job)
+     */
+    public function declineJob(Request $request, $id)
+    {
+        $repair = Repair::findOrFail($id);
+
+        // Security Check: Does the client own this vehicle?
+        if ($repair->vehicle->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized access to this job.'], 403);
+        }
+
+        // Status Check
+        if ($repair->status !== 'Estimate Sent') { 
+             return response()->json(['message' => 'Cannot decline this job right now.'], 400);
+        }
+
+        // Action: Update Status
+        $repair->status = 'Cancelled'; 
+        $repair->save();
+
+        return response()->json([
+            'message' => 'Estimate declined. Job has been cancelled.',
+            'status' => $repair->status
+        ]);
+    }
+
+    /**
      * Negotiate the Price (Request Discount)
      */
     public function negotiateJob(Request $request, $id)

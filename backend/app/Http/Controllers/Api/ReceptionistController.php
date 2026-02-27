@@ -18,7 +18,7 @@ class ReceptionistController extends Controller
         $mechanics = User::whereIn('role', ['Mechanic', 'mechanic', 'MECHANIC'])
                         ->get(['id', 'name']);
 
-        $repairs = Repair::with(['vehicle.client', 'mechanic', 'services']) 
+        $repairs = Repair::with(['vehicle.client', 'mechanic', 'services', 'parts']) 
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -131,10 +131,11 @@ class ReceptionistController extends Controller
      */
     public function handleNegotiation(Request $request, $id)
     {
-        $repair = Repair::findOrFail($id);
+        $repair = Repair::with(['services', 'parts'])->findOrFail($id);
 
         $request->validate([
-            'decision' => 'required|in:approve,reject' 
+            'decision' => 'required|in:approve,reject',
+            'custom_prices' => 'nullable|array'
         ]);
 
         if ($repair->status !== 'Negotiation Requested') {
@@ -142,22 +143,54 @@ class ReceptionistController extends Controller
         }
 
         if ($request->decision === 'approve') {
-            // Apply 5% Discount
-            $discount = $repair->original_cost * 0.05;
-            $repair->cost = $repair->original_cost - $discount;
+            $customPrices = $request->input('custom_prices', []);
+            $newTotalCost = 0;
+
+            // Update Services Pivots
+            if (isset($customPrices['services']) && is_array($customPrices['services'])) {
+                foreach ($repair->services as $service) {
+                    $newPrice = isset($customPrices['services'][$service->id]) ? $customPrices['services'][$service->id] : $service->price;
+                    $repair->services()->updateExistingPivot($service->id, ['price_at_booking' => $newPrice]);
+                    $newTotalCost += $newPrice;
+                }
+            } else {
+                foreach ($repair->services as $service) {
+                    $newTotalCost += $service->price;
+                }
+            }
+
+            // Update Parts Pivots
+            if (isset($customPrices['parts']) && is_array($customPrices['parts'])) {
+                foreach ($repair->parts as $part) {
+                    $newPrice = isset($customPrices['parts'][$part->id]) ? $customPrices['parts'][$part->id] : ($part->pivot->price ?? $part->price);
+                    $qty = $part->pivot->quantity ?? 1;
+                    $repair->parts()->updateExistingPivot($part->id, ['price' => $newPrice]);
+                    $newTotalCost += ($newPrice * $qty);
+                }
+            } else {
+                 foreach ($repair->parts as $part) {
+                     $price = $part->pivot->price ?? $part->price;
+                     $qty = $part->pivot->quantity ?? 1;
+                     $newTotalCost += ($price * $qty);
+                 }
+            }
+
+            // Calculate overall discount
+            $discount = max(0, $repair->original_cost - $newTotalCost);
+            $repair->cost = $newTotalCost;
             $repair->discount_amount = $discount;
             $repair->negotiation_status = 'Approved';
-            $message = "Discount approved! New price: " . $repair->cost;
+            $message = "Discount approved! New price: " . $repair->cost . " MAD";
         } else {
             // Reject: Revert to original price
             $repair->cost = $repair->original_cost;
             $repair->discount_amount = 0;
             $repair->negotiation_status = 'Rejected';
-            $message = "Discount rejected. Price remains: " . $repair->cost;
+            $message = "Discount rejected. Price remains: " . $repair->cost . " MAD";
         }
 
         // Finalize the Job
-        $repair->status = 'In Progress'; // Work begins immediately after decision
+        $repair->status = 'Estimate Sent'; // Send back to client for final acceptance
         
         // Generate Invoice Number if not exists
         if (!$repair->invoice_number) {
@@ -200,7 +233,7 @@ class ReceptionistController extends Controller
         $repairs = Repair::whereHas('vehicle', function($q) use ($clientId) {
                 $q->where('user_id', $clientId);
             })
-            ->with(['vehicle', 'mechanic', 'services']) 
+            ->with(['vehicle', 'mechanic', 'services', 'parts']) 
             ->orderBy('created_at', 'desc')
             ->get();
 

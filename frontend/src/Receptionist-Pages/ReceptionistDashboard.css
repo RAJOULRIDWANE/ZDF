@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@700;800&display=swap');
-
+::-webkit-scrollbar {
+  display: none;
+}
 /* ─────────────────────────────────────────
    MAIN LAYOUT
 ───────────────────────────────────────── */
@@ -368,6 +370,8 @@ tr:hover td {
     z-index: 1000;
     backdrop-filter: blur(4px);
     overflow-y: auto;
+    /* display: block;  */
+    padding: 50px 20px;
 }
 
 .modal-content {
@@ -380,7 +384,10 @@ tr:hover td {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
     animation: modalSlideIn 0.3s ease-out;
     margin-bottom: 50px;
+    max-height: calc(100vh - 100px); 
+    overflow-y: auto;
 }
+
 
 .modal-content .alert-message {
     margin: 0 0 20px;

@@ -22,6 +22,8 @@ class RepairResource extends JsonResource
             'invoice_number' => $this->invoice_number,
             'created_at' => $this->created_at,
             'is_diagnostic' => $this->is_diagnostic ?? false,
+            'negotiation_count' => $this->negotiation_count ?? 0,
+            'original_cost' => $this->original_cost,
 
             // --- VEHICLE (Hyper-Safe Check) ---
             'vehicle' => $this->vehicle ? [
@@ -47,7 +49,8 @@ class RepairResource extends JsonResource
                     'id' => $service->id,
                     'name' => $service->name,
                     'zone' => $service->zone ?? 'general',
-                    'price' => $service->price,
+                    'price' => $service->pivot->price_at_booking ?? $service->price,
+                    'original_price' => $service->price,
                 ];
             }),
 
@@ -70,8 +73,10 @@ class RepairResource extends JsonResource
                     return [
                         'id' => $part->id,
                         'name' => $part->name,
+                        'cost' => $part->cost,
                         'quantity' => $part->pivot->quantity ?? 1,
                         'price' => $part->pivot->price ?? $part->price,
+                        'original_price' => $part->price,
                     ];
                 });
             }),

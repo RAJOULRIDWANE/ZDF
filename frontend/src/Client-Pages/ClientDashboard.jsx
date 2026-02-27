@@ -43,6 +43,7 @@ const ClientDashboard = () => {
         const hasCompletedTour = localStorage.getItem('hasCompletedTour');
         if (!hasCompletedTour) {
             setRunTour(true);
+            localStorage.setItem('hasCompletedTour', 'true');
         }
     }, []);
 
@@ -130,7 +131,9 @@ const ClientDashboard = () => {
         } catch (err) {
             console.error("Fetch Error:", err);
             if (err.response && err.response.status === 401) {
-                localStorage.clear();
+                localStorage.removeItem('ACCESS_TOKEN');
+                localStorage.removeItem('USER_NAME');
+                localStorage.removeItem('USER_ROLE');
                 navigate('/login');
             }
             showMessage('Failed to load data. Please refresh.', 'error');
@@ -200,6 +203,33 @@ const ClientDashboard = () => {
         } catch (err) {
             console.error("Accept Error:", err);
             showMessage(err.response?.data?.message || 'Failed to accept estimate.', 'error');
+        } finally {
+            setActionLoading(null);
+            closeConfirm();
+        }
+    };
+
+    const handleDeclineEstimate = async (repairId) => {
+        if (actionLoading) return;
+        setActionLoading(repairId);
+        const token = localStorage.getItem('ACCESS_TOKEN');
+
+        try {
+            const response = await axios.post(
+                `http://127.0.0.1:8000/api/jobs/${repairId}/decline`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            setRepairs(prevRepairs =>
+                prevRepairs.map(r =>
+                    r.id === repairId ? { ...r, status: 'Cancelled' } : r
+                )
+            );
+            showMessage(response.data.message || 'Estimate declined successfully.', 'success');
+        } catch (err) {
+            console.error("Decline Error:", err);
+            showMessage(err.response?.data?.message || 'Failed to decline estimate.', 'error');
         } finally {
             setActionLoading(null);
             closeConfirm();
@@ -367,7 +397,8 @@ const ClientDashboard = () => {
         let rowIndex = 0;
 
         const addRow = (description, qty, price) => {
-            const lineTotal = qty * price;
+            const parsedQty = typeof qty === 'number' ? qty : 1;
+            const lineTotal = parsedQty * price;
             grandTotal += lineTotal;
             if (rowIndex % 2 === 0) {
                 doc.setFillColor(...lightGray);
@@ -390,15 +421,19 @@ const ClientDashboard = () => {
             if (hasServices) {
                 repair.services.forEach(service => {
                     const price = Number(service.price || 0);
-                    const qty = Number(service.quantity || 1);
+                    const qty = '-';
                     if (price > 0) addRow(service.name, qty, price);
                 });
+            } else if (repair.service) { // Fallback for single attached service
+                const labor = Number(repair.service.price || repair.cost || 0);
+                if (labor > 0) addRow(repair.service.name || "Repair Service", '-', labor);
             }
+
             // 2. Add Parts
             if (hasParts) {
                 repair.parts.forEach(part => {
-                    const qty = Number(part.pivot?.quantity || 1);
-                    const price = Number(part.pivot?.price || 0);
+                    const qty = Number(part.quantity || part.pivot?.quantity || 1);
+                    const price = Number(part.price || part.pivot?.price || 0);
                     if (price > 0) addRow(`Part: ${part.name}`, qty, price);
                 });
             }
@@ -406,7 +441,7 @@ const ClientDashboard = () => {
             // Fallback: No details found, use the Main Total Cost
             const labor = Number(repair.cost || 0);
             if (labor > 0) {
-                addRow(repair.service?.name || "Repair Service (Total)", 1, labor);
+                addRow(repair.service?.name || "Repair Service (Total)", '-', labor);
             }
         }
 
@@ -558,7 +593,8 @@ const ClientDashboard = () => {
         let rowIndex = 0;
 
         const addRow = (description, qty, price) => {
-            const lineTotal = qty * price;
+            const parsedQty = typeof qty === 'number' ? qty : 1;
+            const lineTotal = parsedQty * price;
             grandTotal += lineTotal;
             if (rowIndex % 2 === 0) {
                 doc.setFillColor(...lightGray);
@@ -581,15 +617,19 @@ const ClientDashboard = () => {
             if (hasServices) {
                 repair.services.forEach(service => {
                     const price = Number(service.price || 0);
-                    const qty = Number(service.quantity || 1);
+                    const qty = '-';
                     if (price > 0) addRow(service.name, qty, price);
                 });
+            } else if (repair.service) { // Fallback for single attached service
+                const labor = Number(repair.service.price || repair.cost || 0);
+                if (labor > 0) addRow(repair.service.name || "Repair Service", '-', labor);
             }
+
             // 2. Add Parts
             if (hasParts) {
                 repair.parts.forEach(part => {
-                    const qty = Number(part.pivot?.quantity || 1);
-                    const price = Number(part.pivot?.price || 0);
+                    const qty = Number(part.quantity || part.pivot?.quantity || 1);
+                    const price = Number(part.price || part.pivot?.price || 0);
                     if (price > 0) addRow(`Part: ${part.name}`, qty, price);
                 });
             }
@@ -597,7 +637,7 @@ const ClientDashboard = () => {
             // Fallback: No details found, use the Main Total Cost
             const labor = Number(repair.cost || 0);
             if (labor > 0) {
-                addRow(repair.service?.name || "Repair Service (Total)", 1, labor);
+                addRow(repair.service?.name || "Repair Service (Total)", '-', labor);
             }
         }
 
@@ -890,17 +930,33 @@ const ClientDashboard = () => {
                                             >
                                                 {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : t('client.accept')}
                                             </button>
-                                            <button
-                                                className="btn-primary"
-                                                disabled={actionLoading === repair.id}
-                                                onClick={() => askConfirm(
-                                                    'Request Reduction',
-                                                    'This will send a discount request to the receptionist. Continue?',
-                                                    () => handleNegotiateJob(repair.id)
-                                                )}
-                                            >
-                                                {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : t('client.request_reduction')}
-                                            </button>
+                                            {repair.negotiation_count > 0 ? (
+                                                <button
+                                                    className="btn-danger" style={{ background: 'transparent', border: '1px solid var(--red)', padding: '10px 18px', cursor: 'pointer', fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, borderRadius: '4px', fontSize: '0.88rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--red)', transition: 'background 0.2s, color 0.2s' }}
+                                                    onMouseEnter={(e) => { e.target.style.background = 'var(--red)'; e.target.style.color = 'var(--white)'; }}
+                                                    onMouseLeave={(e) => { e.target.style.background = 'transparent'; e.target.style.color = 'var(--red)'; }}
+                                                    disabled={actionLoading === repair.id}
+                                                    onClick={() => askConfirm(
+                                                        'Decline Estimate',
+                                                        'Are you sure you want to decline this estimate? This will cancel the repair request.',
+                                                        () => handleDeclineEstimate(repair.id)
+                                                    )}
+                                                >
+                                                    {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : t('client.decline', 'Decline')}
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    className="btn-primary"
+                                                    disabled={actionLoading === repair.id}
+                                                    onClick={() => askConfirm(
+                                                        'Request Reduction',
+                                                        'This will send a discount request to the receptionist. Continue?',
+                                                        () => handleNegotiateJob(repair.id)
+                                                    )}
+                                                >
+                                                    {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : t('client.request_reduction')}
+                                                </button>
+                                            )}
                                         </>
                                     )}
                                     {repair.status?.toLowerCase() === 'negotiation requested' && (

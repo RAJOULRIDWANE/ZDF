@@ -78,7 +78,9 @@ const MechanicDashboard = () => {
             console.error("Dashboard Error:", err);
             if (err.response && err.response.status === 401) {
                 showMessage('Session expired. Please log in again.', 'error');
-                localStorage.clear();
+                localStorage.removeItem('ACCESS_TOKEN');
+                localStorage.removeItem('USER_NAME');
+                localStorage.removeItem('USER_ROLE');
                 navigate('/login');
             } else {
                 showMessage('Failed to load dashboard data.', 'error');
@@ -172,7 +174,9 @@ const MechanicDashboard = () => {
 
     const handleLogout = async () => {
         try { await axios.post(`${BASE}/logout`, {}, { headers }); } catch { }
-        localStorage.clear();
+        localStorage.removeItem('ACCESS_TOKEN');
+        localStorage.removeItem('USER_NAME');
+        localStorage.removeItem('USER_ROLE');
         navigate('/login');
     };
 
