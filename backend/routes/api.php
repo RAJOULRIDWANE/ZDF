@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\PartsManagerController;
+use App\Http\Controllers\Api\SupervisorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -106,5 +107,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/requests', [PartsManagerController::class, 'requests']);
         Route::post('/requests/{id}/approve', [PartsManagerController::class, 'approve']);
         Route::post('/requests/{id}/decline', [PartsManagerController::class, 'decline']);
+    });
+
+    // --- SUPERVISOR ROUTES ---
+    Route::prefix('supervisor')->group(function () {
+        // We will do a generic check or explicitly bind middleware
+        // For now, these are within the `auth:sanctum` group.
+        // If we need a custom middleware later we can add it, but usually standard is to just check $request->user()->role in controller,
+        // or we can use custom middleware. Assuming standard middleware usage.
+        Route::get('/staff', [SupervisorController::class, 'index']);
+        Route::post('/staff', [SupervisorController::class, 'store']);
+        Route::put('/staff/{id}', [SupervisorController::class, 'update']);
+        Route::patch('/staff/{id}/toggle-status', [SupervisorController::class, 'toggleStatus']);
     });
 });

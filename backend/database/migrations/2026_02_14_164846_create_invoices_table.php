@@ -22,7 +22,6 @@ return new class extends Migration
             
             // Status
             $table->enum('status', ['Unpaid', 'Partially Paid', 'Paid'])->default('Unpaid');
-            $table->string('payment_method')->nullable(); // Cash, Card
             
             $table->date('due_date')->nullable();
             $table->timestamp('paid_at')->nullable();

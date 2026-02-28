@@ -18,6 +18,7 @@ class User extends Authenticatable
         'role',
         'phone', // Added: Useful for the dashboard contact inf
         'is_verified',
+        'is_active',
     ];
 
     protected $hidden = [

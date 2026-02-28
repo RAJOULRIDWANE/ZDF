@@ -50,15 +50,16 @@ function Login() {
       localStorage.setItem('USER_ROLE', user.role);
 
       // --- 4. REDIRECT ---
-      if (user.role === 'client') {
+      const cleanRole = user.role ? user.role.trim().toLowerCase() : '';
+      if (cleanRole === 'client') {
         navigate('/client/dashboard');
-      } else if (user.role === 'supervisor') {
+      } else if (cleanRole === 'supervisor') {
         navigate('/supervisor/dashboard');
-      } else if (user.role === 'mechanic') {
+      } else if (cleanRole === 'mechanic') {
         navigate('/mechanic/dashboard');
-      } else if (user.role === 'receptionist') {
+      } else if (cleanRole === 'receptionist') {
         navigate('/receptionist/dashboard');
-      } else if (user.role === 'parts_manager') {
+      } else if (cleanRole === 'parts_manager') {
         navigate('/partsmanager/dashboard');
       } else {
         navigate('/');
