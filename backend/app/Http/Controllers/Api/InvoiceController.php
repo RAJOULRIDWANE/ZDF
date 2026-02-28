@@ -72,7 +72,6 @@ public function pay(Request $request, $id)
         $invoice->update([
             'status' => 'Paid',
             'paid_amount' => $invoice->total_amount,
-            'payment_method' => 'Cash', // Strictly Cash
             'paid_at' => now()
         ]);
 

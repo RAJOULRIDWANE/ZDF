@@ -178,6 +178,14 @@ class AuthController extends Controller
     // ✅ Refresh user from database to ensure latest data
     $user->refresh();
 
+    // Check if account is disabled (is_active = false)
+    if (!$user->is_active) {
+        return response()->json([
+            'message' => 'Your account has been disabled. Please contact the supervisor.',
+            'is_active' => false
+        ], 403);
+    }
+
 
 
     // Check if email is verified

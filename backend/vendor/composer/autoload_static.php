@@ -153,6 +153,7 @@ class ComposerStaticInitd3c16cb86c42230c6c023d9a5d9bcf42
         'F' => 
         array (
             'Fruitcake\\Cors\\' => 15,
+            'Firebase\\JWT\\' => 13,
             'Faker\\' => 6,
         ),
         'E' => 
@@ -484,6 +485,10 @@ class ComposerStaticInitd3c16cb86c42230c6c023d9a5d9bcf42
         array (
             0 => __DIR__ . '/..' . '/fruitcake/php-cors/src',
         ),
+        'Firebase\\JWT\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/firebase/php-jwt/src',
+        ),
         'Faker\\' => 
         array (
             0 => __DIR__ . '/..' . '/fakerphp/faker/src/Faker',
@@ -546,26 +551,32 @@ class ComposerStaticInitd3c16cb86c42230c6c023d9a5d9bcf42
     );
 
     public static $classMap = array (
+        'App\\Http\\Controllers\\Api\\AppointmentController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/AppointmentController.php',
         'App\\Http\\Controllers\\Api\\ClientController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/ClientController.php',
         'App\\Http\\Controllers\\Api\\ClientDashboardController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/ClientDashboardController.php',
         'App\\Http\\Controllers\\Api\\ForgotPasswordController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/ForgotPasswordController.php',
         'App\\Http\\Controllers\\Api\\InvoiceController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/InvoiceController.php',
         'App\\Http\\Controllers\\Api\\MechanicController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/MechanicController.php',
         'App\\Http\\Controllers\\Api\\PartsController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/PartsController.php',
+        'App\\Http\\Controllers\\Api\\PartsManagerController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/PartsManagerController.php',
         'App\\Http\\Controllers\\Api\\ReceptionistController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/ReceptionistController.php',
         'App\\Http\\Controllers\\Api\\ServiceController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/ServiceController.php',
+        'App\\Http\\Controllers\\Api\\SupervisorController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/SupervisorController.php',
         'App\\Http\\Controllers\\Api\\VehicleController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/VehicleController.php',
         'App\\Http\\Controllers\\AuthController' => __DIR__ . '/../..' . '/app/Http/Controllers/AuthController.php',
         'App\\Http\\Controllers\\ContactDetailsController' => __DIR__ . '/../..' . '/app/Http/Controllers/ContactDetailsController.php',
         'App\\Http\\Controllers\\Controller' => __DIR__ . '/../..' . '/app/Http/Controllers/Controller.php',
         'App\\Http\\Resources\\RepairResource' => __DIR__ . '/../..' . '/app/Http/Resources/RepairResource.php',
+        'App\\Mail\\ContactMail' => __DIR__ . '/../..' . '/app/Mail/ContactMail.php',
         'App\\Mail\\OtpMail' => __DIR__ . '/../..' . '/app/Mail/OtpMail.php',
         'App\\Mail\\ResetPasswordMail' => __DIR__ . '/../..' . '/app/Mail/ResetPasswordMail.php',
+        'App\\Models\\Appointment' => __DIR__ . '/../..' . '/app/Models/Appointment.php',
         'App\\Models\\Client' => __DIR__ . '/../..' . '/app/Models/Client.php',
         'App\\Models\\ContactDetails' => __DIR__ . '/../..' . '/app/Models/ContactDetails.php',
         'App\\Models\\EmailVerification' => __DIR__ . '/../..' . '/app/Models/EmailVerification.php',
         'App\\Models\\Invoice' => __DIR__ . '/../..' . '/app/Models/Invoice.php',
         'App\\Models\\Part' => __DIR__ . '/../..' . '/app/Models/Part.php',
+        'App\\Models\\PartRequest' => __DIR__ . '/../..' . '/app/Models/PartRequest.php',
         'App\\Models\\Receptionist' => __DIR__ . '/../..' . '/app/Models/Receptionist.php',
         'App\\Models\\Repair' => __DIR__ . '/../..' . '/app/Models/Repair.php',
         'App\\Models\\Service' => __DIR__ . '/../..' . '/app/Models/Service.php',
@@ -1423,6 +1434,14 @@ class ComposerStaticInitd3c16cb86c42230c6c023d9a5d9bcf42
         'Faker\\Provider\\zh_TW\\Text' => __DIR__ . '/..' . '/fakerphp/faker/src/Faker/Provider/zh_TW/Text.php',
         'Faker\\UniqueGenerator' => __DIR__ . '/..' . '/fakerphp/faker/src/Faker/UniqueGenerator.php',
         'Faker\\ValidGenerator' => __DIR__ . '/..' . '/fakerphp/faker/src/Faker/ValidGenerator.php',
+        'Firebase\\JWT\\BeforeValidException' => __DIR__ . '/..' . '/firebase/php-jwt/src/BeforeValidException.php',
+        'Firebase\\JWT\\CachedKeySet' => __DIR__ . '/..' . '/firebase/php-jwt/src/CachedKeySet.php',
+        'Firebase\\JWT\\ExpiredException' => __DIR__ . '/..' . '/firebase/php-jwt/src/ExpiredException.php',
+        'Firebase\\JWT\\JWK' => __DIR__ . '/..' . '/firebase/php-jwt/src/JWK.php',
+        'Firebase\\JWT\\JWT' => __DIR__ . '/..' . '/firebase/php-jwt/src/JWT.php',
+        'Firebase\\JWT\\JWTExceptionWithPayloadInterface' => __DIR__ . '/..' . '/firebase/php-jwt/src/JWTExceptionWithPayloadInterface.php',
+        'Firebase\\JWT\\Key' => __DIR__ . '/..' . '/firebase/php-jwt/src/Key.php',
+        'Firebase\\JWT\\SignatureInvalidException' => __DIR__ . '/..' . '/firebase/php-jwt/src/SignatureInvalidException.php',
         'Fruitcake\\Cors\\CorsService' => __DIR__ . '/..' . '/fruitcake/php-cors/src/CorsService.php',
         'Fruitcake\\Cors\\Exceptions\\InvalidOptionException' => __DIR__ . '/..' . '/fruitcake/php-cors/src/Exceptions/InvalidOptionException.php',
         'GrahamCampbell\\ResultType\\Error' => __DIR__ . '/..' . '/graham-campbell/result-type/src/Error.php',
