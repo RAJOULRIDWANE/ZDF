@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import DashboardNavbar from '../components/DashboardNavbar';
@@ -8,6 +9,7 @@ import './MechanicDashboard.css';
 const BASE = 'http://127.0.0.1:8000/api';
 
 const MechanicDashboard = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
 
     const [user, setUser] = useState({
@@ -369,7 +371,7 @@ const MechanicDashboard = () => {
                                     </div>
 
                                     <div className="task-action" onClick={(e) => e.stopPropagation()}>
-                                        {isDiagnosticJob(job) && job.status === 'Pending' && (
+                                        {job.status === 'Pending' && (
                                             <button className="btn-estimate" onClick={(e) => { e.stopPropagation(); handleOpenEstimateModal(job); }}>
                                                 <i className="fa-solid fa-file-invoice"></i> Submit Estimate
                                             </button>
@@ -410,15 +412,13 @@ const MechanicDashboard = () => {
                             <label>Add Services:</label>
                             <input type="text" className="form-control" placeholder="Search services..." value={serviceSearch} onChange={(e) => setServiceSearch(e.target.value)} />
                             {serviceSearch && (
-                                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '4px', maxHeight: '200px', overflowY: 'auto', zIndex: 1000, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                                <div className="service-dropdown">
                                     {filteredServices.length > 0 ? filteredServices.map(service => (
-                                        <div key={service.id} onClick={() => handleServiceSelect(service)} style={{ padding: '10px', cursor: 'pointer', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between' }}
-                                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
-                                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}>
+                                        <div key={service.id} onClick={() => handleServiceSelect(service)} className="service-dropdown-item">
                                             <span>{service.name} - {service.zone}</span>
                                             <span style={{ fontWeight: '600', color: '#005DFFFF' }}>{service.price} MAD</span>
                                         </div>
-                                    )) : <div style={{ padding: '10px', color: '#666' }}>No services found</div>}
+                                    )) : <div className="service-dropdown-empty">No services found</div>}
                                 </div>
                             )}
                         </div>

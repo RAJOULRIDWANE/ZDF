@@ -7,7 +7,7 @@ import SkeletonLoader from '../components/SkeletonLoader';
 
 const BASE = 'http://127.0.0.1:8000/api';
 
-const MAX_PARTS = 8;
+const MAX_PARTS = 20;
 
 const RepairDetails = () => {
     const { jobId } = useParams();

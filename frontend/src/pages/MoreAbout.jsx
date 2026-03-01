@@ -1,23 +1,23 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import './MoreAbout.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const MoreAbout = () => {
-  // Scroll to top on load
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  const { t } = useTranslation();
+
+  useEffect(() => { window.scrollTo(0, 0); }, []);
 
   return (
     <div className="ma-v2-wrapper">
-      
+
       {/* 1. Minimalist Hero */}
       <header className="ma-v2-hero">
         <div className="ma-v2-hero-content">
-          <span className="ma-v2-subtitle">EST. 2022</span>
-          <h1>Auto Repair, <span className="text-blue">Reimagined.</span></h1>
-          <p>We are building the most trusted automotive brand in the region.</p>
+          <span className="ma-v2-subtitle">{t('more_about.hero.subtitle')}</span>
+          <h1>{t('more_about.hero.title_part1')} <span className="text-blue">{t('more_about.hero.title_part2')}</span></h1>
+          <p>{t('more_about.hero.desc')}</p>
         </div>
       </header>
 
@@ -26,77 +26,71 @@ const MoreAbout = () => {
         <div className="ma-v2-container">
           <div className="ma-v2-grid-2col">
             <div className="ma-v2-text-block">
-              <h2>Why we are different</h2>
-              <p>
-                The traditional mechanic experience is often filled with uncertainty. 
-                We designed MecaPro to eliminate the guesswork.
-              </p>
-              
+              <h2>{t('more_about.comparison.title')}</h2>
+              <p>{t('more_about.comparison.desc')}</p>
+
               <div className="comparison-list">
                 <div className="comparison-item bad">
                   <i className="fa-solid fa-xmark"></i>
-                  <span>Vague estimates & surprise fees</span>
+                  <span>{t('more_about.comparison.bad1')}</span>
                 </div>
                 <div className="comparison-item good">
                   <i className="fa-solid fa-check"></i>
-                  <span>Digital quotes approved by you first</span>
+                  <span>{t('more_about.comparison.good1')}</span>
                 </div>
 
                 <div className="comparison-item bad">
                   <i className="fa-solid fa-xmark"></i>
-                  <span>Dirty waiting rooms & delays</span>
+                  <span>{t('more_about.comparison.bad2')}</span>
                 </div>
                 <div className="comparison-item good">
                   <i className="fa-solid fa-check"></i>
-                  <span>Clean facility & strict scheduling</span>
+                  <span>{t('more_about.comparison.good2')}</span>
                 </div>
 
                 <div className="comparison-item bad">
                   <i className="fa-solid fa-xmark"></i>
-                  <span>"It looks fine" diagnostics</span>
+                  <span>{t('more_about.comparison.bad3')}</span>
                 </div>
                 <div className="comparison-item good">
                   <i className="fa-solid fa-check"></i>
-                  <span>Data-driven computer diagnostics</span>
+                  <span>{t('more_about.comparison.good3')}</span>
                 </div>
               </div>
             </div>
-            
+
             <div className="ma-v2-image-block">
-               {/* Placeholder for an image of a mechanic using a tablet/computer */}
-               <div className="image-placeholder-tech">
-                 <i className="fa-solid fa-laptop-medical"></i>
-               </div>
+              <div className="image-placeholder-tech">
+                <i className="fa-solid fa-laptop-medical"></i>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. Our Standards (Dark Section) */}
+      {/* 3. Our Standards */}
       <section className="ma-v2-standards">
         <div className="ma-v2-container">
           <div className="standards-header">
-            <h2>Our Core Standards</h2>
+            <h2>{t('more_about.standards.title')}</h2>
             <div className="blue-bar"></div>
           </div>
-          
+
           <div className="standards-grid">
             <div className="standard-card">
               <div className="card-number">01</div>
-              <h3>OEM Quality</h3>
-              <p>We never compromise on parts. We use Original Equipment Manufacturer (OEM) or high-grade equivalent parts to ensure your warranty remains valid.</p>
+              <h3>{t('more_about.standards.s1_title')}</h3>
+              <p>{t('more_about.standards.s1_desc')}</p>
             </div>
-            
             <div className="standard-card">
               <div className="card-number">02</div>
-              <h3>Tech-First</h3>
-              <p>Modern cars are computers on wheels. We invest heavily in the latest diagnostic software for European, Asian, and American models.</p>
+              <h3>{t('more_about.standards.s2_title')}</h3>
+              <p>{t('more_about.standards.s2_desc')}</p>
             </div>
-            
             <div className="standard-card">
               <div className="card-number">03</div>
-              <h3>Cleanliness</h3>
-              <p>We respect your vehicle. Seat covers, floor mats, and steering wheel covers are used on every single job to keep your interior pristine.</p>
+              <h3>{t('more_about.standards.s3_title')}</h3>
+              <p>{t('more_about.standards.s3_desc')}</p>
             </div>
           </div>
         </div>
@@ -105,10 +99,10 @@ const MoreAbout = () => {
       {/* 4. Bottom CTA */}
       <section className="ma-v2-cta">
         <div className="ma-v2-cta-content">
-          <h2>Experience the difference today.</h2>
+          <h2>{t('more_about.cta.title')}</h2>
           <div className="ma-v2-buttons">
-             <Link to="/contact" className="btn-solid">Book Appointment</Link>
-             <Link to="/" className="btn-outline">Return Home</Link>
+            <Link to="/contact" className="btn-solid">{t('more_about.cta.book')}</Link>
+            <Link to="/" className="btn-outline">{t('more_about.cta.home')}</Link>
           </div>
         </div>
       </section>

@@ -1,17 +1,16 @@
 import React, { useEffect } from 'react';
-import { Link, useLocation  } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import './Services.css';
 
 function Services() {
-
+  const { t } = useTranslation();
   const location = useLocation();
 
   useEffect(() => {
     if (location.hash) {
       const element = document.querySelector(location.hash);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
-      }
+      if (element) element.scrollIntoView({ behavior: "smooth" });
     } else {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -19,59 +18,59 @@ function Services() {
 
   const categories = [
     {
-      name: "Routine Maintenance",
+      nameKey: "services.categories.maintenance.name",
       id: "maintenance",
       services: [
-        { icon: "fa-oil-can", title: "Oil Change", description: "Regular oil changes to keep your engine running smoothly and extend its life." },
-        { icon: "fa-car-battery", title: "Battery Services", description: "Testing, charging, and replacement of batteries to avoid unexpected breakdowns." },
-        { icon: "fa-leaf", title: "Emissions Testing", description: "State-required emissions testing to ensure your vehicle meets environmental and regulatory standards." }
+        { icon: "fa-oil-can", titleKey: "services.categories.maintenance.oil_change", descKey: "services.categories.maintenance.oil_change_desc" },
+        { icon: "fa-car-battery", titleKey: "services.categories.maintenance.battery", descKey: "services.categories.maintenance.battery_desc" },
+        { icon: "fa-leaf", titleKey: "services.categories.maintenance.emissions", descKey: "services.categories.maintenance.emissions_desc" },
       ]
     },
     {
-      name: "Brakes, Tires & Suspension",
+      nameKey: "services.categories.brakes.name",
       id: "brakes",
       services: [
-        { icon: "fa-circle-stop", title: "Brake Services", description: "Inspection, repair, and replacement of brake pads, rotors, and brake fluid as needed." },
-        { icon: "fa-dharmachakra", title: "Tire Services", description: "Rotation, balancing, alignment, and replacement of tires for optimal performance." },
-        { icon: "fa-road", title: "Suspension & Steering", description: "Repair and alignment of shocks, struts, and steering components for a stable and comfortable ride." },
-        { icon: "fa-dharmachakra", title: "Wheel Alignment", description: "Precise wheel alignment to improve handling, reduce tire wear, and ensure driving safety." }
+        { icon: "fa-circle-stop", titleKey: "services.categories.brakes.pads", descKey: "services.categories.brakes.pads_desc" },
+        { icon: "fa-dharmachakra", titleKey: "services.categories.brakes.tires", descKey: "services.categories.brakes.tires_desc" },
+        { icon: "fa-road", titleKey: "services.categories.brakes.suspension", descKey: "services.categories.brakes.suspension_desc" },
+        { icon: "fa-dharmachakra", titleKey: "services.categories.brakes.alignment", descKey: "services.categories.brakes.alignment_desc" },
       ]
     },
     {
-      name: "Engine & Transmission",
+      nameKey: "services.categories.engine.name",
       id: "engine",
       services: [
-        { icon: "fa-microchip", title: "Engine Diagnostics", description: "Advanced diagnostic services to identify and fix engine problems and warning lights." },
-        { icon: "fa-gears", title: "Transmission Services", description: "Inspection, fluid replacement, and repair services to ensure smooth shifting and performance." },
-        { icon: "fa-gears", title: "Clutch Repair", description: "Inspection, adjustment, and replacement of clutch components for manual transmission vehicles." }
+        { icon: "fa-microchip", titleKey: "services.categories.engine.diagnostics", descKey: "services.categories.engine.diagnostics_desc" },
+        { icon: "fa-gears", titleKey: "services.categories.engine.transmission", descKey: "services.categories.engine.transmission_desc" },
+        { icon: "fa-gears", titleKey: "services.categories.engine.clutch", descKey: "services.categories.engine.clutch_desc" },
       ]
     },
     {
-      name: "Electrical & Fuel Systems",
+      nameKey: "services.categories.electrical.name",
       id: "electrical",
       services: [
-        { icon: "fa-bolt", title: "Electrical Diagnostics", description: "Advanced diagnostics to detect and fix wiring issues, sensor faults, and electronic malfunctions." },
-        { icon: "fa-plug-circle-bolt", title: "Electrical Repair", description: "Diagnosis and replacement of headlights, taillights, fuses, and other electrical components." },
-        { icon: "fa-gas-pump", title: "Fuel System Services", description: "Cleaning and maintenance of fuel injectors, pumps, and filters to improve fuel efficiency and performance." }
+        { icon: "fa-bolt", titleKey: "services.categories.electrical.diagnostics", descKey: "services.categories.electrical.diagnostics_desc" },
+        { icon: "fa-plug-circle-bolt", titleKey: "services.categories.electrical.repair", descKey: "services.categories.electrical.repair_desc" },
+        { icon: "fa-gas-pump", titleKey: "services.categories.electrical.fuel", descKey: "services.categories.electrical.fuel_desc" },
       ]
     },
     {
-      name: "Cooling, Exhaust & Climate",
+      nameKey: "services.categories.cooling.name",
       id: "cooling",
       services: [
-        { icon: "fa-temperature-half", title: "Radiator Services", description: "Flushing, refilling, and leak repair to prevent engine overheating and maintain temperature control." },
-        { icon: "fa-wind", title: "Exhaust System Repair", description: "Inspection and replacement of mufflers, catalytic converters, and exhaust pipes to reduce noise and emissions." },
-        { icon: "fa-fan", title: "A/C Services", description: "Inspection, recharge, and repair of air conditioning systems for your comfort." }
+        { icon: "fa-temperature-half", titleKey: "services.categories.cooling.radiator", descKey: "services.categories.cooling.radiator_desc" },
+        { icon: "fa-wind", titleKey: "services.categories.cooling.exhaust", descKey: "services.categories.cooling.exhaust_desc" },
+        { icon: "fa-fan", titleKey: "services.categories.cooling.ac", descKey: "services.categories.cooling.ac_desc" },
       ]
     },
     {
-      name: "Inspection & Detailing",
+      nameKey: "services.categories.inspection.name",
       id: "inspection",
       services: [
-        { icon: "fa-shield", title: "Safety Inspection", description: "Comprehensive multi-point inspections to identify any safety issues before they become major problems." },
-        { icon: "fa-screwdriver-wrench", title: "Engine Cleaning & Detailing", description: "Professional engine bay cleaning to remove grime, oil, and debris for better performance and aesthetics." }
+        { icon: "fa-shield", titleKey: "services.categories.inspection.safety", descKey: "services.categories.inspection.safety_desc" },
+        { icon: "fa-screwdriver-wrench", titleKey: "services.categories.inspection.detailing", descKey: "services.categories.inspection.detailing_desc" },
       ]
-    }
+    },
   ];
 
   return (
@@ -79,40 +78,32 @@ function Services() {
 
       <div className="services-hero">
         <div className="services-hero-content">
-          <h1>Our Services</h1>
-          <p>We offer a complete range of professional automotive services.</p>
+          <h1>{t('services.title')}</h1>
+          <p>{t('services.subtitle')}</p>
         </div>
       </div>
 
       <div className="services-container">
-
         {categories.map((category, index) => (
           <div key={index} className="service-category" id={category.id}>
-
-            <h2 className="category-title">{category.name}</h2>
-
+            <h2 className="category-title">{t(category.nameKey)}</h2>
             <div className="services-grid">
               {category.services.map((service, i) => (
                 <div key={i} className="service-card">
-
                   <i className={`fa-solid ${service.icon} service-icon`}></i>
-
-                  <h3 className="service-title">{service.title}</h3>
-                  <p className="service-description">{service.description}</p>
-
+                  <h3 className="service-title">{t(service.titleKey)}</h3>
+                  <p className="service-description">{t(service.descKey)}</p>
                 </div>
               ))}
             </div>
-
           </div>
         ))}
-
       </div>
 
       <div className="services-footer">
         <Link to="/contact" className="support-badge">
           <i className="fa-solid fa-shield-halved"></i>
-          <span> Support 24/7 </span>
+          <span>{t('services.support')}</span>
         </Link>
       </div>
 

@@ -107,6 +107,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/requests', [PartsManagerController::class, 'requests']);
         Route::post('/requests/{id}/approve', [PartsManagerController::class, 'approve']);
         Route::post('/requests/{id}/decline', [PartsManagerController::class, 'decline']);
+        Route::post('/parts', [PartsManagerController::class, 'storePart']);
+        Route::post('/services', [PartsManagerController::class, 'storeService']);
     });
 
     // --- SUPERVISOR ROUTES ---

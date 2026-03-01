@@ -3,19 +3,20 @@ import MECHANIC from "/images/MECHANIC.png";
 import { useTranslation } from "react-i18next";
 import { useState } from 'react';
 import ThemeToggle from './ThemeToggle';
-import './Navbar.css'
+import './Navbar.css';
 
 function Navbar() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
 
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
 
+  // Public navbar supports all 3 languages including Arabic
   const languages = [
     { code: 'en', label: 'English' },
     { code: 'fr', label: 'Français' },
-    { code: 'ar', label: 'العربية' }
+    { code: 'ar', label: 'العربية' },
   ];
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
@@ -28,19 +29,10 @@ function Navbar() {
     e.preventDefault();
     const sectionId = "checkstatus-btn";
     if (location.pathname === '/') {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-    else {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+    } else {
       navigate('/');
-      setTimeout(() => {
-        const element = document.getElementById(sectionId);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
+      setTimeout(() => document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' }), 100);
     }
   };
 
@@ -52,28 +44,24 @@ function Navbar() {
           <div className="navbar-logo-mark">
             <img src={MECHANIC} alt="MecaPro logo" className="logo" />
           </div>
-          <span className="navbar-logo-text"> MecaPro </span>
+          <span className="navbar-logo-text">MecaPro</span>
         </Link>
 
         <nav className="navbar-links">
-
           <NavLink className={({ isActive }) => isActive ? "nav-link active" : "nav-link"} to="/" end>
-            Home
+            {t('navbar.home')}
           </NavLink>
-
           <NavLink className={({ isActive }) => isActive ? "nav-link active" : "nav-link"} to="/about">
-            About
+            {t('navbar.about')}
           </NavLink>
-
           <NavLink className={({ isActive }) => isActive ? "nav-link active" : "nav-link"} to="/contact">
-            Contact
+            {t('navbar.contact')}
           </NavLink>
-
         </nav>
 
         <div className="navbar-actions" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <Link className="btn-outline" to="/login"> Login </Link>
-          <Link className="btn-primary" to="/signup"> Sign up </Link>
+          <Link className="btn-outline" to="/login">{t('navbar.login')}</Link>
+          <Link className="btn-primary" to="/signup">{t('navbar.signup')}</Link>
           <ThemeToggle />
 
           <div className="language-switcher">
@@ -82,14 +70,10 @@ function Navbar() {
               onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
               onBlur={() => setTimeout(() => setIsLangDropdownOpen(false), 200)}
             >
-              <span className="language-flag">{currentLanguage.flag}</span>
               <span className="language-code">{currentLanguage.code.toUpperCase()}</span>
               <svg
                 className={`language-arrow ${isLangDropdownOpen ? 'open' : ''}`}
-                width="12"
-                height="8"
-                viewBox="0 0 12 8"
-                fill="none"
+                width="12" height="8" viewBox="0 0 12 8" fill="none"
               >
                 <path d="M1 1L6 6L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
@@ -103,7 +87,6 @@ function Navbar() {
                     className={`language-option ${currentLanguage.code === lang.code ? 'active' : ''}`}
                     onMouseDown={() => { changeLanguage(lang.code); setIsLangDropdownOpen(false); }}
                   >
-                    <span className="language-flag">{lang.flag}</span>
                     <span className="language-label">{lang.label}</span>
                     {currentLanguage.code === lang.code && (
                       <svg className="language-check" width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -119,7 +102,7 @@ function Navbar() {
         </div>
       </div>
     </header>
-  )
+  );
 }
 
-export default Navbar
+export default Navbar;

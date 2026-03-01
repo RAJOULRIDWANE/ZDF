@@ -12,7 +12,12 @@ function PartnerCarousel() {
         { name: "CONTINENTAL", image: "/images/brands/continental.png" },
         { name: "BREMBO", image: "/images/brands/brembo.png" },
         { name: "CASTROL", image: "/images/brands/castrol.png" },
-        { name: "GOODYEAR", image: "/images/brands/goodyear.png" }
+        { name: "GOODYEAR", image: "/images/brands/goodyear.png" },
+        { name: "volswagen.png", image: "/images/brands/volkswagen.png" },
+        { name: "Mercedes-Benz.png", image: "/images/brands/Mercedes-Benz.png" },
+        { name: "Dacia.png", image: "/images/brands/Dacia.png" },
+        { name: "YAMAHA.png", image: "/images/brands/YAMAHA.png" },
+        { name: "MAN.png", image: "/images/brands/MAN.png" }
     ];
 
     return (
@@ -26,7 +31,7 @@ function PartnerCarousel() {
             <div className="carousel-container">
                 <div className="carousel-track">
                     {/* First set of brands */}
-                    {brands.map((brand, index) => (
+                    {[...brands, ...brands].map((brand, index) => (
                         <div className="brand-logo" key={`brand-${index}`}>
                             <img
                                 src={brand.image}

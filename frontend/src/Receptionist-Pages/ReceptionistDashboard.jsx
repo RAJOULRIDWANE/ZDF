@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import DashboardNavbar from '../components/DashboardNavbar';
@@ -6,6 +7,7 @@ import SkeletonLoader from '../components/SkeletonLoader';
 import "./ReceptionistDashboard.css";
 
 const ReceptionistDashboard = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [user, setUser] = useState({
@@ -115,7 +117,7 @@ const ReceptionistDashboard = () => {
         { notes: apptNotes[id] || '' },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      showMessage('Appointment approved.', 'success');
+      showMessage(t('receptionist.modal.success'), 'success');
       fetchAppointments();
     } catch (err) {
       showMessage(err.response?.data?.message || 'Failed to approve.', 'error');
@@ -130,7 +132,7 @@ const ReceptionistDashboard = () => {
         { notes: apptNotes[id] || '' },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      showMessage('Appointment declined.', 'success');
+      showMessage(t('receptionist.modal.success'), 'success');
       fetchAppointments();
     } catch (err) {
       showMessage(err.response?.data?.message || 'Failed to decline.', 'error');
@@ -228,12 +230,12 @@ const ReceptionistDashboard = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.vehicle_id || !formData.mechanic_id || !formData.date_end) {
-      showMessage("Please fill in required fields.", "error"); return;
+      showMessage(t('receptionist.modal.fill_required'), "error"); return;
     }
     if (formData.description.trim().length > 0 && formData.description.trim().length < 5) {
       showMessage("Notes must be at least 5 characters long.", "error"); return;
     } if (selectedServices.length === 0) {
-      showMessage("Please select at least one service.", "error"); return;
+      showMessage(t('receptionist.modal.select_service_error'), "error"); return;
     }
     try {
       const token = localStorage.getItem('ACCESS_TOKEN');
@@ -249,11 +251,11 @@ const ReceptionistDashboard = () => {
         setServiceSearch('');
         setSelectedClient(null);
         fetchDashboardData();
-        showMessage("Appointment Created Successfully!", "success");
+        showMessage(t('receptionist.modal.success'), "success");
       }
     } catch (err) {
       console.error("Error:", err);
-      showMessage("Error creating appointment.", "error");
+      showMessage(t('receptionist.modal.error'), "error");
     }
   };
 
@@ -269,30 +271,30 @@ const ReceptionistDashboard = () => {
       <div className="kpi-container">
         <div className="kpi-card">
           <div className="kpi-icon"><i className="fa-regular fa-calendar"></i></div>
-          <div className="kpi-info"><h3>Today's Repairs</h3><p className="kpi-number">{todaysAppointments}</p></div>
+          <div className="kpi-info"><h3>{t('receptionist.today_appointments')}</h3><p className="kpi-number">{todaysAppointments}</p></div>
         </div>
         <div className="kpi-card">
           <div className="kpi-icon success-icon"><i className="fa-regular fa-circle-check"></i></div>
-          <div className="kpi-info"><h3>Confirmed Today</h3><p className="kpi-number">{confirmedToday}</p></div>
+          <div className="kpi-info"><h3>{t('receptionist.confirmed_appointments')}</h3><p className="kpi-number">{confirmedToday}</p></div>
         </div>
         <div className="kpi-card">
           <div className="kpi-icon" style={{ background: '#fffbeb' }}><i className="fa-solid fa-calendar-days" style={{ color: '#d97706' }}></i></div>
-          <div className="kpi-info"><h3>Pending Appt. Requests</h3><p className="kpi-number">{pendingAppts}</p></div>
+          <div className="kpi-info"><h3>{t('receptionist.add_appointment')}</h3><p className="kpi-number">{pendingAppts}</p></div>
         </div>
       </div>
 
       <div className="header-actions">
-        <h1>Dashboard</h1>
-        <button className="add-btn" onClick={() => setShowModal(true)}>+ Add New Repair Job</button>
+        <h1>{t('receptionist.title')}</h1>
+        <button className="add-btn" onClick={() => setShowModal(true)}>+ {t('receptionist.add_appointment')}</button>
       </div>
 
       {/* Tabs */}
       <div className="r-tabs">
         <button className={`r-tab ${activeTab === 'clients' ? 'r-tab-active' : ''}`} onClick={() => setActiveTab('clients')}>
-          <i className="fa-solid fa-users"></i> Clients Overview
+          <i className="fa-solid fa-users"></i> {t('receptionist.title')}
         </button>
         <button className={`r-tab ${activeTab === 'appointments' ? 'r-tab-active' : ''}`} onClick={() => setActiveTab('appointments')}>
-          <i className="fa-solid fa-calendar-check"></i> Appointment Requests
+          <i className="fa-solid fa-calendar-check"></i> {t('receptionist.add_appointment')}
           {pendingAppts > 0 && <span className="r-tab-badge">{pendingAppts}</span>}
         </button>
       </div>
@@ -306,7 +308,7 @@ const ReceptionistDashboard = () => {
           <div className="search-filter-bar">
             <input
               type="text"
-              placeholder="Search Client by Name or Email..."
+              placeholder={t('receptionist.search_placeholder')}
               className="dashboard-search-input"
               value={dashboardSearch}
               onChange={(e) => setDashboardSearch(e.target.value)}
@@ -316,7 +318,7 @@ const ReceptionistDashboard = () => {
           <div className="table-card">
             <table>
               <thead>
-                <tr><th>Client Name</th><th>Total Vehicles</th><th>Total Repairs History</th><th>Action</th></tr>
+                <tr><th>{t('receptionist.client_name')}</th><th>{t('receptionist.total_vehicles')}</th><th>{t('receptionist.repairs_history')}</th><th>{t('receptionist.action')}</th></tr>
               </thead>
               <tbody>
                 {loading ? (
@@ -331,11 +333,11 @@ const ReceptionistDashboard = () => {
                     return (
                       <tr key={client.id} className="clickable-row" onClick={() => handleClientClick(client)}>
                         <td><strong>{client.name}</strong><div className="sub-text">{client.email}</div></td>
-                        <td>{client.vehicles?.length || 0} Vehicles</td>
-                        <td><span className="status-badge progress">{client.repairs_count} Repairs</span></td>
+                        <td>{client.vehicles?.length || 0} {t('receptionist.total_vehicles')}</td>
+                        <td><span className="status-badge progress">{client.repairs_count} {t('receptionist.repairs_history')}</span></td>
                         <td>
                           <div style={{ position: 'relative', display: 'inline-block' }}>
-                            <button className="action-btn view-btn"><i className="fa-solid fa-eye"></i> View History</button>
+                            <button className="action-btn view-btn"><i className="fa-solid fa-eye"></i> {t('receptionist.view_history')}</button>
                             {clientPendingNegs > 0 && (
                               <span className="r-tab-badge" style={{
                                 position: 'absolute',
@@ -351,7 +353,7 @@ const ReceptionistDashboard = () => {
                       </tr>
                     )
                   })) : (
-                  <tr><td colSpan="4" style={{ textAlign: "center", padding: "20px" }}>No clients found.</td></tr>
+                  <tr><td colSpan="4" style={{ textAlign: "center", padding: "20px" }}>{t('receptionist.no_clients')}</td></tr>
                 )}
               </tbody>
             </table>
@@ -362,17 +364,17 @@ const ReceptionistDashboard = () => {
           <table>
             <thead>
               <tr>
-                <th>Client</th>
-                <th>Vehicle</th>
-                <th>Preferred Date</th>
-                <th>Description</th>
-                <th>Status</th>
-                <th>Notes / Action</th>
+                <th>{t('receptionist.client_name')}</th>
+                <th>{t('receptionist.details.vehicle')}</th>
+                <th>{t('receptionist.details.start_date')}</th>
+                <th>{t('receptionist.details.description', 'Description')}</th>
+                <th>{t('receptionist.details.status')}</th>
+                <th>{t('receptionist.details.action')}</th>
               </tr>
             </thead>
             <tbody>
               {appointments.length === 0 ? (
-                <tr><td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>No appointment requests yet.</td></tr>
+                <tr><td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>{t('receptionist.details.no_repairs')}</td></tr>
               ) : appointments.map(appt => (
                 <tr key={appt.id}>
                   <td><strong>{appt.client?.name}</strong><div className="sub-text">{appt.client?.email}</div></td>
@@ -392,10 +394,10 @@ const ReceptionistDashboard = () => {
                         />
                         <div className="appt-action-row">
                           <button className="appt-btn-approve" disabled={apptActionLoading === appt.id + '-approve'} onClick={() => handleApptApprove(appt.id)}>
-                            {apptActionLoading === appt.id + '-approve' ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-check"></i> Approve</>}
+                            {apptActionLoading === appt.id + '-approve' ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-check"></i> {t('dashboard.approve')}</>}
                           </button>
                           <button className="appt-btn-decline" disabled={apptActionLoading === appt.id + '-decline'} onClick={() => handleApptDecline(appt.id)}>
-                            {apptActionLoading === appt.id + '-decline' ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-xmark"></i> Decline</>}
+                            {apptActionLoading === appt.id + '-decline' ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-xmark"></i> {t('receptionist.modal.cancel')}</>}
                           </button>
                         </div>
                       </div>
@@ -413,13 +415,13 @@ const ReceptionistDashboard = () => {
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2>Add New Appointment</h2>
+            <h2>{t('receptionist.modal.title')}</h2>
             {message && <div className={`alert-message ${messageType}`}>{message}</div>}
 
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Customer :</label>
-                <input type="text" className="form-control" placeholder="Search Client..." value={searchQuery} onChange={handleClientSearch} />
+                <label>{t('receptionist.modal.customer')}</label>
+                <input type="text" className="form-control" placeholder={t('receptionist.modal.customer_placeholder')} value={searchQuery} onChange={handleClientSearch} />
                 {searchResults.length > 0 && (
                   <ul className="suggestions-list">
                     {searchResults.map(c => <li key={c.id} onClick={() => selectClient(c)}>{c.name}</li>)}
@@ -428,16 +430,16 @@ const ReceptionistDashboard = () => {
               </div>
 
               <div className="form-group">
-                <label>Vehicle :</label>
+                <label>{t('receptionist.modal.vehicle')}</label>
                 <select className="form-control" value={formData.vehicle_id} onChange={e => setFormData({ ...formData, vehicle_id: e.target.value })} disabled={!selectedClient}>
-                  <option value="">-- Select Vehicle --</option>
+                  <option value="">{t('receptionist.modal.select_vehicle')}</option>
                   {clientVehicles.map(v => <option key={v.id} value={v.id}>{v.make} {v.model}</option>)}
                 </select>
               </div>
 
               {selectedServices.length > 0 && (
                 <div className="selected-services-container" style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem' }}>Selected Services:</label>
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem' }}>{t('receptionist.modal.selected_services')}</label>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {selectedServices.map(s => (
                       <span key={s.id} style={{ background: '#e3f2fd', color: '#005DFFFF', padding: '6px 10px', borderRadius: '15px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #b3d7ff' }}>
@@ -450,9 +452,9 @@ const ReceptionistDashboard = () => {
               )}
 
               <div className="form-group" style={{ position: 'relative' }}>
-                <label>Add Service :</label>
+                <label>{t('receptionist.modal.add_service')}</label>
                 <input
-                  type="text" className="form-control" placeholder="Type to search and add services..."
+                  type="text" className="form-control" placeholder={t('receptionist.modal.service_placeholder')}
                   value={serviceSearch}
                   onChange={(e) => { setServiceSearch(e.target.value); setShowServiceList(true); }}
                   onFocus={() => setShowServiceList(true)}
@@ -465,41 +467,41 @@ const ReceptionistDashboard = () => {
                         <div className="service-row"><span className="service-name">{s.name}</span><span className="service-zone">{s.zone || 'General'}</span></div>
                         <span className="service-price">{s.price} MAD</span>
                       </li>
-                    )) : <li className="no-result">No services found</li>}
+                    )) : <li className="no-result">{t('receptionist.modal.no_services')}</li>}
                   </ul>
                 )}
               </div>
 
               <div className="form-group">
-                <label>Total Cost (Auto-calculated) :</label>
+                <label>{t('receptionist.modal.total_cost')}</label>
                 <input type="number" className="form-control" value={formData.cost} readOnly />
               </div>
 
               <div className="form-group">
-                <label>Notes (Optional) :</label>
-                <input type="text" className="form-control" placeholder="E.g. Customer hears noise..." value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
+                <label>{t('receptionist.modal.notes')}</label>
+                <input type="text" className="form-control" placeholder={t('receptionist.modal.notes_placeholder')} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
               </div>
 
               <div className="form-group">
-                <label>Mechanic :</label>
+                <label>{t('receptionist.modal.mechanic')}</label>
                 <select className="form-control" value={formData.mechanic_id} onChange={e => setFormData({ ...formData, mechanic_id: e.target.value })}>
-                  <option value="">-- Select Mechanic --</option>
+                  <option value="">{t('receptionist.modal.select_mechanic')}</option>
                   {mechanics.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                 </select>
               </div>
 
               <div className="form-group">
-                <label>End Date &amp; Time :</label>
+                <label>{t('receptionist.modal.end_date_time')}</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <input type="date" min={new Date().toISOString().split('T')[0]} className="form-control" value={getDatePart()} onChange={handleDatePartChange} required />
+                  <input type="date" min={new Date().toISOString().split('T')[0]} max={new Date(new Date().setMonth(new Date().getMonth() + 4)).toISOString().split('T')[0]} className="form-control" value={getDatePart()} onChange={handleDatePartChange} required />
                   <input type="time" className="form-control" value={getTimePart()} onChange={handleTimePartChange} min="08:00" max="20:30" required disabled={!getDatePart()} />
                 </div>
-                <small style={{ color: '#666', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>Working hours: 08:00 AM to 08:30 PM</small>
+                <small style={{ color: '#666', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{t('receptionist.modal.working_hours')}</small>
               </div>
 
               <div className="modal-actions">
-                <button type="submit" className="save-btn">Save</button>
-                <button type="button" className="cancel-btn" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit" className="save-btn">{t('receptionist.modal.save')}</button>
+                <button type="button" className="cancel-btn" onClick={() => setShowModal(false)}>{t('receptionist.modal.cancel')}</button>
               </div>
             </form>
           </div>

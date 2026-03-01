@@ -12,6 +12,11 @@ const ClientDashboard = () => {
     const navigate = useNavigate();
     const { t } = useTranslation();
 
+    const [plate1, setPlate1] = useState("");
+    const [plate2, setPlate2] = useState("");
+    const [plate3, setPlate3] = useState("");
+
+
     // --- Joyride Tour State ---
     const [runTour, setRunTour] = useState(false);
 
@@ -39,20 +44,13 @@ const ClientDashboard = () => {
         }
     ]);
 
-    useEffect(() => {
-        const hasCompletedTour = localStorage.getItem('hasCompletedTour');
-        if (!hasCompletedTour) {
-            setRunTour(true);
-            localStorage.setItem('hasCompletedTour', 'true');
-        }
-    }, []);
+    // Tour is triggered inside fetchData after we know the user ID
 
     const handleJoyrideCallback = (data) => {
         const { status } = data;
         const finishedStatuses = [STATUS.FINISHED, STATUS.SKIPPED];
         if (finishedStatuses.includes(status)) {
             setRunTour(false);
-            localStorage.setItem('hasCompletedTour', 'true');
         }
     };
 
@@ -113,11 +111,20 @@ const ClientDashboard = () => {
             setVehicles(vehicleRes.data || []);
             setAppointments(apptRes.data || []);
 
-            setUser({
+            const userData = {
                 name: userRes.data.name,
                 email: userRes.data.email,
                 role: 'Client'
-            });
+            };
+            setUser(userData);
+
+            // --- Per-user tour check ---
+            const userId = userRes.data.id || userRes.data.email;
+            const tourKey = `tour_done_${userId}`;
+            if (!localStorage.getItem(tourKey)) {
+                setRunTour(true);
+                localStorage.setItem(tourKey, 'true');
+            }
 
             localStorage.setItem('USER_NAME', userRes.data.name);
 
@@ -290,6 +297,13 @@ const ClientDashboard = () => {
         }
     };
 
+    useEffect(() => {
+        const fullPlate = `${plate1}-${plate2}-${plate3}`;
+        setNewVehicle(prev => ({
+            ...prev,
+            license_plate: fullPlate
+        }));
+    }, [plate1, plate2, plate3]);
 
     const handleDownloadEstimate = async (repair) => {
         const doc = new jsPDF();
@@ -372,7 +386,7 @@ const ClientDashboard = () => {
         doc.text(user.name || "Guest Client", 20, 97);
         doc.setFont("helvetica", "normal");
         doc.setTextColor(...grayText);
-        const carInfo = `${repair.vehicle?.type ? repair.vehicle.type.toUpperCase() + ' - ' : ''}${repair.vehicle?.make || ''} ${repair.vehicle?.model || ''} - ${repair.vehicle?.license_plate || repair.vehicle?.plate_number || repair.vehicle?.plate || ''}`;
+        const carInfo = `${repair.vehicle?.type ? repair.vehicle.type.toUpperCase() + ' - ' : ''}${repair.vehicle?.make || ''} ${repair.vehicle?.model || ''} - ${repair.vehicle?.license_plate || ''}`;
         doc.text(carInfo, 20, 103);
 
         // H. TABLE HEADER
@@ -568,7 +582,7 @@ const ClientDashboard = () => {
         doc.text(user.name || "Guest Client", 20, 97);
         doc.setFont("helvetica", "normal");
         doc.setTextColor(...grayText);
-        const carInfo = `${repair.vehicle?.type ? repair.vehicle.type.toUpperCase() + ' - ' : ''}${repair.vehicle?.make || ''} ${repair.vehicle?.model || ''} - ${repair.vehicle?.license_plate || repair.vehicle?.plate_number || repair.vehicle?.plate || ''}`;
+        const carInfo = `${repair.vehicle?.type ? repair.vehicle.type.toUpperCase() + ' - ' : ''}${repair.vehicle?.make || ''} ${repair.vehicle?.model || ''} - ${repair.vehicle?.license_plate || ''}`;
         doc.text(carInfo, 20, 103);
 
         // H. TABLE HEADER
@@ -669,20 +683,30 @@ const ClientDashboard = () => {
     };
 
     const handleAddVehicle = () => {
+        setPlate1("");
+        setPlate2("");
+        setPlate3("");
         setShowAddVehicleModal(true);
-        setNewVehicle({ make: '', model: '', license_plate: '', year: '', type: 'car' });
     };
 
     const handleCloseVehicleModal = () => {
         setShowAddVehicleModal(false);
         setNewVehicle({ make: '', model: '', license_plate: '', year: '', type: 'car' });
+        setPlate1("");
+        setPlate2("");
+        setPlate3("");
     };
 
     const handleSubmitVehicle = async (e) => {
         e.preventDefault();
 
-        if (!newVehicle.make || !newVehicle.model || !newVehicle.license_plate || !newVehicle.year) {
+        if (!newVehicle.make || !newVehicle.model || !newVehicle.year) {
             showMessage('All fields are required', 'error');
+            return;
+        }
+
+        if (!plate1 || !plate2 || !plate3) {
+            showMessage('Complete license plate correctly', 'error');
             return;
         }
 
@@ -1057,14 +1081,51 @@ const ClientDashboard = () => {
                                 />
                             </div>
                             <div className="form-group">
-                                <label>{t('client.modal_license_plate')} <span className="required">*</span></label>
-                                <input
-                                    type="text"
-                                    placeholder={t('client.modal_plate_placeholder')}
-                                    value={newVehicle.license_plate}
-                                    onChange={(e) => setNewVehicle({ ...newVehicle, license_plate: e.target.value.toUpperCase() })}
-                                    required
-                                />
+                                <label>
+                                    {t('client.modal_license_plate')}
+                                    <span className="required">*</span>
+                                </label>
+
+                                <div style={{ display: "flex", gap: "8px" }}>
+
+                                    {/* First Part — Up to 6 Numbers */}
+                                    <input
+                                        type="text"
+                                        maxLength="6"
+                                        value={plate1}
+                                        onChange={(e) =>
+                                            setPlate1(e.target.value.replace(/[^0-9]/g, ""))
+                                        }
+                                        placeholder="123456"
+                                        required
+                                    />
+
+                                    {/* Middle Part — 1 Letter Only */}
+                                    <input
+                                        type="text"
+                                        maxLength="1"
+                                        value={plate2}
+                                        onChange={(e) =>
+                                            setPlate2(
+                                                e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase()
+                                            )
+                                        }
+                                        placeholder="A"
+                                        required
+                                    />
+
+                                    {/* Last Part — Up to 2 Numbers */}
+                                    <input
+                                        type="text"
+                                        maxLength="2"
+                                        value={plate3}
+                                        onChange={(e) =>
+                                            setPlate3(e.target.value.replace(/[^0-9]/g, ""))
+                                        }
+                                        placeholder="12"
+                                        required
+                                    />
+                                </div>
                             </div>
                             <div className="form-group">
                                 <label>{t('client.modal_year')} <span className="required">*</span></label>
@@ -1142,6 +1203,7 @@ const ClientDashboard = () => {
                                 <input
                                     type="date"
                                     min={new Date().toISOString().split('T')[0]}
+                                    max={new Date(new Date().setMonth(new Date().getMonth() + 2)).toISOString().split('T')[0]}
                                     value={newAppointment.preferred_date}
                                     onChange={(e) => setNewAppointment({ ...newAppointment, preferred_date: e.target.value })}
                                     required

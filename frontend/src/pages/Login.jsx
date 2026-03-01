@@ -1,14 +1,15 @@
-import { Link, useNavigate, useLocation } from "react-router-dom"; // ✅ Added useLocation
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
-import './Auth.css'
+import './Auth.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 function Login() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ NEW
+  const location = useLocation();
 
-  // ✅ NEW: Get verification success message
   const verificationMessage = location.state?.message;
 
   const [email, setEmail] = useState("");
@@ -22,65 +23,35 @@ function Login() {
     if (isLoading) return;
     setError("");
     setIsLoading(true);
-    console.log("Attempting login with:", email);
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/login', {
-        email: email,
-        password: password
-      });
-
-      console.log("Login Data:", response.data);
+      const response = await axios.post('http://127.0.0.1:8000/api/login', { email, password });
 
       const token = response.data.token;
       const user = response.data.user;
 
-      // --- 1. CLEAR OLD DATA ---
       localStorage.removeItem('ACCESS_TOKEN');
       localStorage.removeItem('USER_NAME');
       localStorage.removeItem('USER_ROLE');
-
-      // --- 2. SAVE TOKEN ---
       localStorage.setItem('ACCESS_TOKEN', token);
-
-      // --- 3. SAVE USER DETAILS INDIVIDUALLY ---
-      Object.keys(user).forEach(key => {
-        localStorage.setItem(key, user[key]);
-      });
+      Object.keys(user).forEach(key => localStorage.setItem(key, user[key]));
       localStorage.setItem('USER_ROLE', user.role);
 
-      // --- 4. REDIRECT ---
       const cleanRole = user.role ? user.role.trim().toLowerCase() : '';
-      if (cleanRole === 'client') {
-        navigate('/client/dashboard');
-      } else if (cleanRole === 'supervisor') {
-        navigate('/supervisor/dashboard');
-      } else if (cleanRole === 'mechanic') {
-        navigate('/mechanic/dashboard');
-      } else if (cleanRole === 'receptionist') {
-        navigate('/receptionist/dashboard');
-      } else if (cleanRole === 'parts_manager') {
-        navigate('/partsmanager/dashboard');
-      } else {
-        navigate('/');
-      }
+      if (cleanRole === 'client') navigate('/client/dashboard');
+      else if (cleanRole === 'supervisor') navigate('/supervisor/dashboard');
+      else if (cleanRole === 'mechanic') navigate('/mechanic/dashboard');
+      else if (cleanRole === 'receptionist') navigate('/receptionist/dashboard');
+      else if (cleanRole === 'parts_manager') navigate('/partsmanager/dashboard');
+      else navigate('/');
 
     } catch (err) {
-      console.error(err);
-
-      // ✅ NEW: Handle unverified users - redirect to OTP page
       if (err.response?.data?.requires_verification) {
-        navigate('/verifyemail', {
-          state: { email: err.response.data.email }
-        });
+        navigate('/verifyemail', { state: { email: err.response.data.email } });
         return;
       }
-
-      if (err.response) {
-        setError(err.response.data.message || "Login failed");
-      } else {
-        setError("Network error. Is Laravel running?");
-      }
+      if (err.response) setError(err.response.data.message || t('auth.login_failed'));
+      else setError(t('auth.network_error'));
     } finally {
       setIsLoading(false);
     }
@@ -92,75 +63,44 @@ function Login() {
         <section className="auth-hero">
           <div className="auth-hero-overlay" />
           <div className="auth-hero-content">
-            <h1>Welcome Back!</h1>
-            <p>Create your account and bring us your vehicle!</p>
+            <h1>{t('auth.login_title')}</h1>
+            <p>{t('auth.login_subtitle')}</p>
           </div>
         </section>
         <section className="auth-form-panel">
           <div className="auth-form-card">
             <div className="auth-avatar">
-              <div className="auth-avatar-icon">
-                <i className="fa-solid fa-user-check"></i>
-              </div>
+              <div className="auth-avatar-icon"><i className="fa-solid fa-user-check"></i></div>
             </div>
-            <h2>Welcome Back!</h2>
+            <h2>{t('auth.login_title')}</h2>
 
-            {/* ✅ NEW: Verification Success Message */}
             {verificationMessage && (
-              <div style={{
-                color: '#27ae60',
-                backgroundColor: '#d5f4e6',
-                padding: '12px',
-                borderRadius: '8px',
-                marginBottom: '15px',
-                textAlign: 'center'
-              }}>
+              <div style={{ color: '#27ae60', backgroundColor: '#d5f4e6', padding: '12px', borderRadius: '8px', marginBottom: '15px', textAlign: 'center' }}>
                 {verificationMessage}
               </div>
             )}
 
-            {/* Display Error Message here */}
             {error && (
-              <div style={{
-                color: '#e74c3c',
-                backgroundColor: '#fadbd8',
-                padding: '12px',
-                borderRadius: '8px',
-                marginBottom: '15px',
-                textAlign: 'center'
-              }}>
+              <div style={{ color: '#e74c3c', backgroundColor: '#fadbd8', padding: '12px', borderRadius: '8px', marginBottom: '15px', textAlign: 'center' }}>
                 {error}
               </div>
             )}
 
             <form className="auth-form" onSubmit={handleLogin}>
               <label className="auth-field">
-                Email
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+                {t('auth.email_label')}
+                <input type="email" placeholder={t('auth.email_placeholder')}
+                  value={email} onChange={(e) => setEmail(e.target.value)} required />
               </label>
 
               <label className="auth-field">
-                Password
+                {t('auth.password_label')}
                 <div style={{ position: 'relative' }}>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    style={{ paddingRight: '40px' }}
-                  />
-                  <button
-                    type="button"
-                    className="eye-button"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
+                  <input type={showPassword ? "text" : "password"}
+                    placeholder={t('auth.password_placeholder')}
+                    value={password} onChange={(e) => setPassword(e.target.value)}
+                    required style={{ paddingRight: '40px' }} />
+                  <button type="button" className="eye-button" onClick={() => setShowPassword(!showPassword)}>
                     <i className={showPassword ? "ri-eye-close-line" : "ri-eye-line"}></i>
                   </button>
                 </div>
@@ -168,24 +108,24 @@ function Login() {
 
               <div className="auth-extra-row">
                 <button type="button" className="auth-link-button small">
-                  <Link to="/forgot-password">Forgot password?</Link>
+                  <Link to="/forgot-password">{t('auth.forgot_password')}</Link>
                 </button>
               </div>
 
               <button type="submit" className="btn-primary auth-submit" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login"}
+                {isLoading ? t('common.loading') : t('auth.login_button')}
               </button>
             </form>
 
             <p className="auth-footer-text">
-              Don't have an account?{" "}
-              <Link to="/signup" className="auth-link-button"> Sign up </Link>
+              {t('auth.no_account')}{" "}
+              <Link to="/signup" className="auth-link-button">{t('auth.signup_link')}</Link>
             </p>
           </div>
         </section>
       </div>
     </main>
-  )
+  );
 }
 
 export default Login;

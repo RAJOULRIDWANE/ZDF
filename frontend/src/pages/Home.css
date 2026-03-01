@@ -109,6 +109,13 @@
   background: var(--red);
 }
 
+.section-inner p {
+  font-size: 17px;
+  font-weight: 300;
+  color:#b6b6b6;
+}
+
+
 .section-subtitle {
   font-size: 15px;
   font-weight: 300;
@@ -187,9 +194,9 @@
 }
 
 .info-card p {
-  font-size: 14px;
+  font-size: 17px;
   font-weight: 300;
-  color: var(--muted);
+  color: #b6b6b6;
   line-height: 1.65;
 }
 
