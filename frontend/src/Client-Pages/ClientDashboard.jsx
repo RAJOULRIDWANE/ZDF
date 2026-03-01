@@ -810,11 +810,11 @@ const ClientDashboard = () => {
                 <section className="dashboard-title">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
-                            <h2>{t('client.welcome', { name: user.name })}</h2>
-                            <p>Manage your vehicles &amp; appointments</p>
+                            <h2>{t('dashboard.welcome', { name: user.name, defaultValue: `Welcome Back, ${user.name} !` })}</h2>
+                            <p>{t('dashboard.subtitle', 'Manage your vehicles & appointments')}</p>
                         </div>
                         <button className="btn-appt" onClick={() => setShowAppointmentModal(true)}>
-                            <i className="fa-solid fa-calendar-plus"></i> Request Appointment
+                            <i className="fa-solid fa-calendar-plus"></i> {t('dashboard.request_appointment', 'Request Appointment')}
                         </button>
                     </div>
                 </section>
@@ -829,21 +829,21 @@ const ClientDashboard = () => {
                 <div className="stats-grid">
                     <div className="stat-card">
                         <div className="stat-text">
-                            <label>My Vehicles</label>
+                            <label>{t('dashboard.my_vehicles', 'My Vehicles')}</label>
                             <h3>{stats.vehicles}</h3>
                         </div>
                         <div className="stat-icon car-bg"><i className="fa-solid fa-car"></i></div>
                     </div>
                     <div className="stat-card">
                         <div className="stat-text">
-                            <label>{t('client.next_appointment')}</label>
+                            <label>{t('dashboard.next_appointment', 'Next Appointment')}</label>
                             <h3>{stats.appointments}</h3>
                         </div>
                         <div className="stat-icon cal-bg"><i className="fa-solid fa-calendar"></i></div>
                     </div>
                     <div className="stat-card">
                         <div className="stat-text">
-                            <label>{t('client.invoices')}</label>
+                            <label>{t('dashboard.invoices', 'Invoices')}</label>
                             <h3>{stats.invoices}</h3>
                         </div>
                         <div className="stat-icon inv-bg"><i className="fa-solid fa-file-invoice"></i></div>
@@ -853,9 +853,9 @@ const ClientDashboard = () => {
                 {/* Vehicles Section */}
                 <section className="vehicles-section-main">
                     <div className="vehicles-header-row">
-                        <h3>My Vehicles</h3>
+                        <h3>{t('dashboard.my_vehicles', 'My Vehicles')}</h3>
                         <button className="add-vehicle-btn" onClick={handleAddVehicle}>
-                            <i className="fa-solid fa-plus"></i> {t('client.add_vehicle')}
+                            <i className="fa-solid fa-plus"></i> {t('dashboard.add_vehicle', 'Add vehicle')}
                         </button>
                     </div>
 
@@ -863,7 +863,7 @@ const ClientDashboard = () => {
                         {vehicles.length === 0 ? (
                             <div className="vehicles-empty-state">
                                 <i className="fa-solid fa-car" style={{ fontSize: '2rem', color: '#cbd5e1', marginBottom: '10px' }}></i>
-                                <p style={{ margin: 0, color: '#64748b' }}>{t('client.no_vehicles')}</p>
+                                <p style={{ margin: 0, color: '#64748b' }}>{t('dashboard.no_vehicles', 'No vehicles added yet. Click "Add vehicle" to get started!')}</p>
                             </div>
                         ) : (
                             <>
@@ -883,7 +883,7 @@ const ClientDashboard = () => {
 
                                 {vehicles.length > 3 && (
                                     <button className="all-vehicles-link" onClick={() => {/* Navigate to vehicles page later */ }}>
-                                        {t('client.all_vehicles')}
+                                        {t('dashboard.all_vehicles', 'All vehicles')}
                                     </button>
                                 )}
                             </>
@@ -893,14 +893,14 @@ const ClientDashboard = () => {
 
                 {/* Repairs List */}
                 <section className="repairs-list">
-                    <h3>{t('client.my_repairs')}</h3>
+                    <h3>{t('dashboard.my_repairs', 'My Repairs')}</h3>
 
                     {loading ? (
                         <SkeletonLoader type="repair-rows" count={3} />
                     ) : repairs.length === 0 ? (
                         <div className="empty-state">
                             <i className="fa-solid fa-inbox"></i>
-                            <p>{t('client.no_repairs_found')}</p>
+                            <p>{t('dashboard.no_repairs_found', 'No repair jobs found.')}</p>
                         </div>
                     ) : (
                         repairs.map(repair => (
@@ -912,11 +912,11 @@ const ClientDashboard = () => {
                                             {repair.services && repair.services.length > 0 ? (
                                                 repair.services.map(s => <span key={s.id} className="tag">{s.name}</span>)
                                             ) : (
-                                                <span className="tag">{t('client.general_service')}</span>
+                                                <span className="tag">{t('dashboard.general_service', 'General Service')}</span>
                                             )}
                                         </div>
                                         <h4>{repair.vehicle?.make} {repair.vehicle?.model}</h4>
-                                        <p className="due-date">{t('client.due')}: {repair.date_end ? new Date(repair.date_end).toLocaleDateString('en-GB', {
+                                        <p className="due-date">{t('dashboard.due', 'Due')}: {repair.date_end ? new Date(repair.date_end).toLocaleDateString('en-GB', {
                                             year: 'numeric',
                                             month: 'short',
                                             day: 'numeric'
@@ -931,28 +931,28 @@ const ClientDashboard = () => {
                                 <div className="repair-actions">
                                     {repair.status?.toLowerCase() === 'completed' && (
                                         <>
-                                            <span className="status-label completed-label">{t('common.status.completed')}</span>
+                                            <span className="status-label completed-label">{t('common.status.completed', 'Completed')}</span>
                                             <button className="btn-download" onClick={() => handleDownloadInvoice(repair)}>
-                                                {t('client.invoices')}
+                                                {t('dashboard.download_invoice', 'Download Invoice')}
                                             </button>
                                         </>
                                     )}
                                     {repair.status?.toLowerCase() === 'estimate sent' && (
                                         <>
-                                            <span className="status-label ready-label">{t('client.estimate_ready')}</span>
+                                            <span className="status-label ready-label">{t('dashboard.estimate_ready', 'Estimate Ready')}</span>
                                             <button className="btn-secondary" onClick={() => handleDownloadEstimate(repair)}>
-                                                Download Estimate
+                                                {t('dashboard.download_estimate', 'Download Estimate')}
                                             </button>
                                             <button
                                                 className="btn-accept"
                                                 disabled={actionLoading === repair.id}
                                                 onClick={() => askConfirm(
-                                                    'Accept Estimate',
-                                                    'Are you sure you want to accept this estimate? Work will begin immediately.',
+                                                    t('dashboard.accept_estimate_title', 'Accept Estimate'),
+                                                    t('dashboard.accept_estimate_msg', 'Are you sure you want to accept this estimate? Work will begin immediately.'),
                                                     () => handleAcceptEstimate(repair.id)
                                                 )}
                                             >
-                                                {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : t('client.accept')}
+                                                {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : t('dashboard.accept', 'Accept')}
                                             </button>
                                             {repair.negotiation_count > 0 ? (
                                                 <button
@@ -961,42 +961,42 @@ const ClientDashboard = () => {
                                                     onMouseLeave={(e) => { e.target.style.background = 'transparent'; e.target.style.color = 'var(--red)'; }}
                                                     disabled={actionLoading === repair.id}
                                                     onClick={() => askConfirm(
-                                                        'Decline Estimate',
-                                                        'Are you sure you want to decline this estimate? This will cancel the repair request.',
+                                                        t('dashboard.decline_estimate_title', 'Decline Estimate'),
+                                                        t('dashboard.decline_estimate_msg', 'Are you sure you want to decline this estimate? This will cancel the repair request.'),
                                                         () => handleDeclineEstimate(repair.id)
                                                     )}
                                                 >
-                                                    {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : t('client.decline', 'Decline')}
+                                                    {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : t('dashboard.decline', 'Decline')}
                                                 </button>
                                             ) : (
                                                 <button
                                                     className="btn-primary"
                                                     disabled={actionLoading === repair.id}
                                                     onClick={() => askConfirm(
-                                                        'Request Reduction',
-                                                        'This will send a discount request to the receptionist. Continue?',
+                                                        t('dashboard.request_reduction_title', 'Request Reduction'),
+                                                        t('dashboard.request_reduction_msg', 'This will send a discount request to the receptionist. Continue?'),
                                                         () => handleNegotiateJob(repair.id)
                                                     )}
                                                 >
-                                                    {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : t('client.request_reduction')}
+                                                    {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : t('dashboard.request_reduction', 'Request Reduction')}
                                                 </button>
                                             )}
                                         </>
                                     )}
                                     {repair.status?.toLowerCase() === 'negotiation requested' && (
                                         <>
-                                            <span className="status-label pending-label">{t('client.negotiation_pending')}</span>
+                                            <span className="status-label pending-label">{t('dashboard.negotiation_pending', 'Negotiation Pending')}</span>
                                             <button className="btn-secondary" onClick={() => handleDownloadEstimate(repair)}>
-                                                Download Estimate
+                                                {t('dashboard.download_estimate', 'Download Estimate')}
                                             </button>
                                             <button className="btn-primary" disabled={actionLoading === repair.id} onClick={() => askConfirm(
-                                                'Approve Estimate',
-                                                'Accept the estimate at the current price? This will start the repair work.',
+                                                t('dashboard.approve_estimate_title', 'Approve Estimate'),
+                                                t('dashboard.approve_estimate_msg', 'Accept the estimate at the current price? This will start the repair work.'),
                                                 () => handleApproveJob(repair.id)
                                             )}>
-                                                {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : t('client.approve')}
+                                                {actionLoading === repair.id ? <i className="fa-solid fa-spinner fa-spin"></i> : t('dashboard.approve', 'Approve')}
                                             </button>
-                                            <button className="btn-primary" disabled>{t('client.reduction_requested')}</button>
+                                            <button className="btn-primary" disabled>{t('dashboard.reduction_requested', 'Reduction Already Requested')}</button>
                                         </>
                                     )}
                                     {repair.status?.toLowerCase() === 'in progress' && (
@@ -1033,9 +1033,9 @@ const ClientDashboard = () => {
 
                 {/* Appointments Section */}
                 <section className="appointments-section">
-                    <h3><i className="fa-solid fa-calendar-days"></i> {t('client.next_appointment')}</h3>
+                    <h3><i className="fa-solid fa-calendar-days"></i> {t('dashboard.next_appointment', 'Next Appointment')}</h3>
                     {loading ? null : appointments.length === 0 ? (
-                        <div className="appt-empty">No appointment requests yet.</div>
+                        <div className="appt-empty">{t('dashboard.no_appointments', 'No appointment requests yet.')}</div>
                     ) : (
                         <div className="appt-list">
                             {appointments.map(appt => (
@@ -1046,7 +1046,7 @@ const ClientDashboard = () => {
                                         {appt.description && <p className="appt-desc">{appt.description}</p>}
                                         {appt.receptionist_notes && <p className="appt-notes"><i className="fa-solid fa-comment"></i> {appt.receptionist_notes}</p>}
                                     </div>
-                                    <span className={`appt-badge appt-${appt.status.toLowerCase()}`}>{appt.status}</span>
+                                    <span className={`appt-badge appt-${appt.status.toLowerCase()}`}>{t(`common.status.${appt.status.toLowerCase()}`, appt.status)}</span>
                                 </div>
                             ))}
                         </div>
@@ -1058,23 +1058,23 @@ const ClientDashboard = () => {
             {showAddVehicleModal && (
                 <div className="modal-overlay" onClick={handleCloseVehicleModal}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h2>{t('client.modal_add_title')}</h2>
+                        <h2>{t('dashboard.modal_add_title', 'Add New Vehicle')}</h2>
                         <form onSubmit={handleSubmitVehicle}>
                             <div className="form-group">
-                                <label>{t('client.modal_maker')} <span className="required">*</span></label>
+                                <label>{t('dashboard.modal_maker', 'Maker')} <span className="required">*</span></label>
                                 <input
                                     type="text"
-                                    placeholder={t('client.modal_maker_placeholder')}
+                                    placeholder={t('dashboard.modal_maker_placeholder', 'e.g., Toyota')}
                                     value={newVehicle.make}
                                     onChange={(e) => setNewVehicle({ ...newVehicle, make: e.target.value })}
                                     required
                                 />
                             </div>
                             <div className="form-group">
-                                <label>{t('client.modal_model')} <span className="required">*</span></label>
+                                <label>{t('dashboard.modal_model', 'Model')} <span className="required">*</span></label>
                                 <input
                                     type="text"
-                                    placeholder={t('client.modal_model_placeholder')}
+                                    placeholder={t('dashboard.modal_model_placeholder', 'e.g., Camry')}
                                     value={newVehicle.model}
                                     onChange={(e) => setNewVehicle({ ...newVehicle, model: e.target.value })}
                                     required
@@ -1082,7 +1082,7 @@ const ClientDashboard = () => {
                             </div>
                             <div className="form-group">
                                 <label>
-                                    {t('client.modal_license_plate')}
+                                    {t('dashboard.modal_license_plate', 'License Plate')}
                                     <span className="required">*</span>
                                 </label>
 
@@ -1128,7 +1128,7 @@ const ClientDashboard = () => {
                                 </div>
                             </div>
                             <div className="form-group">
-                                <label>{t('client.modal_year')} <span className="required">*</span></label>
+                                <label>{t('dashboard.modal_year', 'Year')} <span className="required">*</span></label>
                                 <input
                                     type="number"
                                     placeholder="e.g., 2020"
@@ -1140,16 +1140,16 @@ const ClientDashboard = () => {
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Type <span className="required">*</span></label>
+                                <label>{t('dashboard.type', 'Type')} <span className="required">*</span></label>
                                 <select
                                     value={newVehicle.type}
                                     onChange={(e) => setNewVehicle({ ...newVehicle, type: e.target.value })}
                                     required
                                 >
-                                    <option value="car">Car</option>
-                                    <option value="bus">Bus</option>
-                                    <option value="truck">Truck</option>
-                                    <option value="moto">Moto</option>
+                                    <option value="car">{t('dashboard.vehicle_types.car', 'Car')}</option>
+                                    <option value="bus">{t('dashboard.vehicle_types.bus', 'Bus')}</option>
+                                    <option value="truck">{t('dashboard.vehicle_types.truck', 'Truck')}</option>
+                                    <option value="moto">{t('dashboard.vehicle_types.moto', 'Moto')}</option>
                                 </select>
                             </div>
                             <div className="modal-actions">
@@ -1159,7 +1159,7 @@ const ClientDashboard = () => {
                                     onClick={handleCloseVehicleModal}
                                     disabled={submittingVehicle}
                                 >
-                                    {t('client.modal_cancel')}
+                                    {t('dashboard.modal_cancel', 'Cancel')}
                                 </button>
                                 <button
                                     type="submit"
@@ -1168,10 +1168,10 @@ const ClientDashboard = () => {
                                 >
                                     {submittingVehicle ? (
                                         <>
-                                            <i className="fa-solid fa-spinner fa-spin"></i> {t('client.modal_adding')}
+                                            <i className="fa-solid fa-spinner fa-spin"></i> {t('dashboard.modal_adding', 'Adding...')}
                                         </>
                                     ) : (
-                                        t('client.modal_add_button')
+                                        t('dashboard.modal_add_button', 'Add Vehicle')
                                     )}
                                 </button>
                             </div>
@@ -1184,22 +1184,22 @@ const ClientDashboard = () => {
             {showAppointmentModal && (
                 <div className="modal-overlay" onClick={() => setShowAppointmentModal(false)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h2><i className="fa-solid fa-calendar-plus"></i> Request Appointment</h2>
+                        <h2><i className="fa-solid fa-calendar-plus"></i> {t('dashboard.request_appointment', 'Request Appointment')}</h2>
                         <form onSubmit={handleSubmitAppointment}>
                             <div className="form-group">
-                                <label>Vehicle (optional)</label>
+                                <label>{t('dashboard.vehicle_optional', 'Vehicle (optional)')}</label>
                                 <select
                                     value={newAppointment.vehicle_id}
                                     onChange={(e) => setNewAppointment({ ...newAppointment, vehicle_id: e.target.value })}
                                 >
-                                    <option value="">-- No specific vehicle --</option>
+                                    <option value="">-- {t('dashboard.no_specific_vehicle', 'No specific vehicle')} --</option>
                                     {vehicles.map(v => (
                                         <option key={v.id} value={v.id}>{v.make} {v.model} ({v.license_plate})</option>
                                     ))}
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label>Preferred Date <span className="required">*</span></label>
+                                <label>{t('dashboard.preferred_date', 'Preferred Date')} <span className="required">*</span></label>
                                 <input
                                     type="date"
                                     min={new Date().toISOString().split('T')[0]}
@@ -1210,9 +1210,9 @@ const ClientDashboard = () => {
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Description / Issue</label>
+                                <label>{t('dashboard.description_issue', 'Description / Issue')}</label>
                                 <textarea
-                                    placeholder="Describe the issue or reason for your visit..."
+                                    placeholder={t('dashboard.describe_issue_placeholder', 'Describe the issue or reason for your visit...')}
                                     value={newAppointment.description}
                                     onChange={(e) => setNewAppointment({ ...newAppointment, description: e.target.value })}
                                     rows={3}
@@ -1220,9 +1220,9 @@ const ClientDashboard = () => {
                                 />
                             </div>
                             <div className="modal-actions">
-                                <button type="button" className="cancel-btn" onClick={() => setShowAppointmentModal(false)} disabled={submittingAppointment}>Cancel</button>
+                                <button type="button" className="cancel-btn" onClick={() => setShowAppointmentModal(false)} disabled={submittingAppointment}>{t('dashboard.modal_cancel', 'Cancel')}</button>
                                 <button type="submit" className="save-btn" disabled={submittingAppointment}>
-                                    {submittingAppointment ? <><i className="fa-solid fa-spinner fa-spin"></i> Submitting...</> : 'Submit Request'}
+                                    {submittingAppointment ? <><i className="fa-solid fa-spinner fa-spin"></i> {t('dashboard.submitting', 'Submitting...')}</> : t('dashboard.submit_request', 'Submit Request')}
                                 </button>
                             </div>
                         </form>
@@ -1238,8 +1238,8 @@ const ClientDashboard = () => {
                         <h2>{confirmModal.title}</h2>
                         <p className="confirm-message">{confirmModal.message}</p>
                         <div className="modal-actions">
-                            <button className="cancel-btn" onClick={closeConfirm}>Cancel</button>
-                            <button className="save-btn" onClick={confirmModal.onConfirm}>Confirm</button>
+                            <button className="cancel-btn" onClick={closeConfirm}>{t('dashboard.modal_cancel', 'Cancel')}</button>
+                            <button className="save-btn" onClick={confirmModal.onConfirm}>{t('dashboard.confirm', 'Confirm')}</button>
                         </div>
                     </div>
                 </div>

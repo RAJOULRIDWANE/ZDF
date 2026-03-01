@@ -23,7 +23,15 @@
   --danger: var(--red);
   --danger-bg: var(--red-glow);
 
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Add global font import for Arabic */
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;900&display=swap');
+
+  /* English and French Font */
+  --font-family-latin: 'Bebas Neue', sans-serif;
+  /* Arabic Font */
+  --font-family-arabic: 'Cairo', sans-serif;
+
+  font-family: var(--font-family-latin);
   line-height: 1.5;
   font-weight: 400;
   color: var(--white);
@@ -31,6 +39,15 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+[lang="ar"] {
+  font-family: var(--font-family-arabic);
+}
+
+[lang="en"],
+[lang="fr"] {
+  font-family: var(--font-family-latin);
 }
 
 /* ─────────────────────────────────────────

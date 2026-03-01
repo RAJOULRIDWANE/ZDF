@@ -220,9 +220,9 @@ const MechanicDashboard = () => {
     const StatusDropdown = ({ currentStatus, onStatusChange }) => {
         const [isOpen, setIsOpen] = useState(false);
         const statusConfig = {
-            pending: { label: 'Pending', colorClass: 'pending', apiValue: 'pending' },
-            progress: { label: 'In Progress', colorClass: 'progress', apiValue: 'in_progress' },
-            completed: { label: 'Completed', colorClass: 'completed', apiValue: 'completed' }
+            pending: { label: t('mechanic.status.pending', 'Pending'), colorClass: 'pending', apiValue: 'pending' },
+            progress: { label: t('mechanic.status.in_progress', 'In Progress'), colorClass: 'progress', apiValue: 'in_progress' },
+            completed: { label: t('mechanic.status.completed', 'Completed'), colorClass: 'completed', apiValue: 'completed' }
         };
         const getStatusKey = (status) => {
             if (!status) return 'pending';
@@ -259,7 +259,8 @@ const MechanicDashboard = () => {
     // --- Part request status badge ---
     const partReqBadge = (status) => {
         const cls = { Pending: 'mpr-badge-pending', Approved: 'mpr-badge-approved', Declined: 'mpr-badge-declined' };
-        return <span className={`mpr-badge ${cls[status] || ''}`}>{status}</span>;
+        const translatedStatus = t(`common.status.${status?.toLowerCase()}`, status);
+        return <span className={`mpr-badge ${cls[status] || ''}`}>{translatedStatus}</span>;
     };
 
     return (
@@ -278,18 +279,18 @@ const MechanicDashboard = () => {
 
             <div className='main' style={{ padding: '20px' }}>
                 <section className="dashboard-stats">
-                    <div className="section-header"><h2>Dashboard</h2></div>
+                    <div className="section-header"><h2>{t('mechanic.title', 'Mechanic Dashboard')}</h2></div>
                     <div className="stats-container">
                         <div className="stat-card">
-                            <div className="stat-info"><span>Active Repairs</span><h2>{kpiData.ActiveJobs}</h2></div>
+                            <div className="stat-info"><span>{t('mechanic.active_repairs', 'Active Repairs')}</span><h2>{kpiData.ActiveJobs}</h2></div>
                             <div className="stat-icon blue"><i className="fa-solid fa-wrench"></i></div>
                         </div>
                         <div className="stat-card">
-                            <div className="stat-info"><span>Completed</span><h2>{kpiData.completed}</h2></div>
+                            <div className="stat-info"><span>{t('mechanic.completed_repairs', 'Completed')}</span><h2>{kpiData.completed}</h2></div>
                             <div className="stat-icon green"><i className="fa-solid fa-check"></i></div>
                         </div>
                         <div className="stat-card">
-                            <div className="stat-info"><span>Awaiting Tasks</span><h2>{kpiData.pending}</h2></div>
+                            <div className="stat-info"><span>{t('mechanic.awaiting_tasks', 'Awaiting Tasks')}</span><h2>{kpiData.pending}</h2></div>
                             <div className="stat-icon orange"><i className="fa-solid fa-clock-rotate-left"></i></div>
                         </div>
                     </div>
@@ -297,9 +298,9 @@ const MechanicDashboard = () => {
 
                 <section className="tasks-section">
                     <div className="section-header">
-                        <h2>My Job List</h2>
+                        <h2>{t('mechanic.job_list', 'My Job List')}</h2>
                         <button className="mech-part-req-toggle" onClick={() => setShowPartRequests(!showPartRequests)}>
-                            <i className="fa-solid fa-boxes-stacked"></i> My Part Requests
+                            <i className="fa-solid fa-boxes-stacked"></i> {t('mechanic.my_part_requests', 'My Part Requests')}
                             {pendingPartReqs > 0 && <span className="mpr-count">{pendingPartReqs}</span>}
                         </button>
                     </div>
@@ -307,19 +308,19 @@ const MechanicDashboard = () => {
                     {/* Part Requests Panel (toggle) */}
                     {showPartRequests && (
                         <div className="mpr-panel">
-                            <h3><i className="fa-solid fa-clipboard-list"></i> My Part Requests</h3>
+                            <h3><i className="fa-solid fa-clipboard-list"></i> {t('mechanic.my_part_requests', 'My Part Requests')}</h3>
                             {myPartRequests.length === 0 ? (
-                                <p className="mpr-empty">You haven't requested any parts yet.</p>
+                                <p className="mpr-empty">{t('mechanic.no_part_requests', 'You haven\'t requested any parts yet.')}</p>
                             ) : (
                                 <div className="mpr-list">
                                     {myPartRequests.map(req => (
                                         <div key={req.id} className="mpr-card">
                                             <div className="mpr-card-left">
-                                                <strong>{req.part?.name || 'Unknown Part'}</strong>
+                                                <strong>{req.part?.name || t('mechanic.unknown_part', 'Unknown Part')}</strong>
                                                 <span className="mpr-ref">{req.part?.reference_number || ''}</span>
                                                 <span className="mpr-vehicle">
                                                     <i className="fa-solid fa-car"></i>
-                                                    {req.repair?.vehicle?.make} {req.repair?.vehicle?.model} — Repair #{req.repair?.id}
+                                                    {req.repair?.vehicle?.make} {req.repair?.vehicle?.model} — {t('mechanic.repair_id', 'Repair')} #{req.repair?.id}
                                                 </span>
                                             </div>
                                             <div className="mpr-card-right">
@@ -338,7 +339,7 @@ const MechanicDashboard = () => {
                         {loading ? (
                             <SkeletonLoader type="cards" count={4} />
                         ) : repairs.length === 0 ? (
-                            <div className="no-tasks"><p>🎉 You have no assigned jobs at the moment.</p></div>
+                            <div className="no-tasks"><p>{t('mechanic.no_jobs_assigned', '🎉 You have no assigned jobs at the moment.')}</p></div>
                         ) : (
                             repairs.map(job => (
                                 <div
@@ -357,16 +358,16 @@ const MechanicDashboard = () => {
                                             ))}
                                             {isDiagnosticJob(job) && (
                                                 <span className="diagnostic-badge">
-                                                    <i className="fa-brands fa-sistrix"></i> DIAGNOSTIC
+                                                    <i className="fa-brands fa-sistrix"></i> {t('mechanic.diagnostic', 'DIAGNOSTIC')}
                                                 </span>
                                             )}
                                         </div>
-                                        <span className="client-name"><i className="fa-solid fa-user"></i>{job.vehicle?.owner_name || 'Unknown Client'}</span>
+                                        <span className="client-name"><i className="fa-solid fa-user"></i>{job.vehicle?.owner_name || t('mechanic.unknown_client', 'Unknown Client')}</span>
                                         <span className="car-model"><i className="fa-solid fa-car"></i>{job.vehicle?.make} {job.vehicle?.model} ( {job.vehicle?.plate_number || 'N/A'} )</span>
-                                        <span className="due-date"><i className="fa-solid fa-calendar"></i>Due: {formatDate(job.date_end)}</span>
+                                        <span className="due-date"><i className="fa-solid fa-calendar"></i>{t('mechanic.due', 'Due')}: {formatDate(job.date_end)}</span>
                                         <span className='DESC' title={job.description}>
                                             <i className="fa-solid fa-circle-info"></i>
-                                            {job.description ? (job.description.length > 50 ? job.description.substring(0, 50) + '...' : job.description) : 'No description'}
+                                            {job.description ? (job.description.length > 50 ? job.description.substring(0, 50) + '...' : job.description) : t('mechanic.no_description', 'No description')}
                                         </span>
                                     </div>
 
@@ -393,10 +394,10 @@ const MechanicDashboard = () => {
             {showEstimateModal && selectedJob && (
                 <div className="modal-overlay" onClick={handleCloseEstimateModal}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
-                        <h2>Submit Estimate - {selectedJob.vehicle?.make} {selectedJob.vehicle?.model}</h2>
+                        <h2>{t('mechanic.estimate_modal.title', 'Submit Estimate')} - {selectedJob.vehicle?.make} {selectedJob.vehicle?.model}</h2>
                         {selectedServices.length > 0 && (
                             <div style={{ marginBottom: '15px' }}>
-                                <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', fontWeight: '600' }}>Selected Services:</label>
+                                <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', fontWeight: '600' }}>{t('mechanic.estimate_modal.selected_services', 'Selected Services:')}</label>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                                     {selectedServices.map(service => (
                                         <span key={service.id} style={{ background: '#e3f2fd', color: '#005DFFFF', padding: '6px 10px', borderRadius: '15px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #b3d7ff' }}>
@@ -405,12 +406,12 @@ const MechanicDashboard = () => {
                                         </span>
                                     ))}
                                 </div>
-                                <p style={{ marginTop: '8px', fontWeight: '700', color: '#005DFFFF' }}>Total Estimate: {totalEstimate.toFixed(2)} MAD</p>
+                                <p style={{ marginTop: '8px', fontWeight: '700', color: '#005DFFFF' }}>{t('mechanic.estimate_modal.total_estimate', 'Total Estimate:')} {totalEstimate.toFixed(2)} MAD</p>
                             </div>
                         )}
                         <div className="form-group" style={{ position: 'relative', marginBottom: '15px' }}>
-                            <label>Add Services:</label>
-                            <input type="text" className="form-control" placeholder="Search services..." value={serviceSearch} onChange={(e) => setServiceSearch(e.target.value)} />
+                            <label>{t('mechanic.estimate_modal.add_services', 'Add Services:')}</label>
+                            <input type="text" className="form-control" placeholder={t('mechanic.estimate_modal.search_placeholder', 'Search services...')} value={serviceSearch} onChange={(e) => setServiceSearch(e.target.value)} />
                             {serviceSearch && (
                                 <div className="service-dropdown">
                                     {filteredServices.length > 0 ? filteredServices.map(service => (
@@ -418,19 +419,19 @@ const MechanicDashboard = () => {
                                             <span>{service.name} - {service.zone}</span>
                                             <span style={{ fontWeight: '600', color: '#005DFFFF' }}>{service.price} MAD</span>
                                         </div>
-                                    )) : <div className="service-dropdown-empty">No services found</div>}
+                                    )) : <div className="service-dropdown-empty">{t('mechanic.estimate_modal.no_services_found', 'No services found')}</div>}
                                 </div>
                             )}
                         </div>
                         <div className="form-group">
-                            <label>Mechanic Notes:</label>
-                            <textarea className="form-control" placeholder="Describe the issues found..." value={mechanicNotes} onChange={(e) => setMechanicNotes(e.target.value)} rows="4" style={{ resize: 'vertical' }} />
+                            <label>{t('mechanic.estimate_modal.notes_label', 'Mechanic Notes:')}</label>
+                            <textarea className="form-control" placeholder={t('mechanic.estimate_modal.notes_placeholder', 'Describe the issues found...')} value={mechanicNotes} onChange={(e) => setMechanicNotes(e.target.value)} rows="4" style={{ resize: 'vertical' }} />
                         </div>
                         <div className="modal-actions" style={{ marginTop: '20px' }}>
                             <button type="button" className="save-btn" onClick={handleSubmitEstimate} disabled={submittingEstimate}>
-                                {submittingEstimate ? <><i className="fa-solid fa-spinner fa-spin"></i> Submitting...</> : 'Submit Estimate'}
+                                {submittingEstimate ? <><i className="fa-solid fa-spinner fa-spin"></i> {t('mechanic.estimate_modal.submitting', 'Submitting...')}</> : t('mechanic.submit_estimate', 'Submit Estimate')}
                             </button>
-                            <button type="button" className="cancel-btn" onClick={handleCloseEstimateModal} disabled={submittingEstimate}>Cancel</button>
+                            <button type="button" className="cancel-btn" onClick={handleCloseEstimateModal} disabled={submittingEstimate}>{t('mechanic.estimate_modal.cancel', 'Cancel')}</button>
                         </div>
                     </div>
                 </div>

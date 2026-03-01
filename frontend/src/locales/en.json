@@ -450,6 +450,8 @@
         "hero_subtitle": "Smooth rides start with smart maintenance – care for your car today!",
         "get_started": "Get Started",
         "call_us": "Call us now",
+        "trusted_brands": "Trusted Brands",
+        "brands_subtitle": "We work with industry-leading manufacturers to ensure quality and reliability",
         "our_services": "Our Services",
         "services_subtitle": "We offer a complete range of automotive services to keep your vehicle in optimal condition.",
         "oil_change": "Oil Change",
@@ -479,7 +481,7 @@
     "about": {
         "title": "Who We Are",
         "subtitle": "Dedicated to keeping your vehicle running safely and smoothly.",
-        "story_title": "Driving Excellence Since 2015",
+        "story_title": "Driving Excellence Since 2022",
         "story_p1": "Welcome to MecaPro. We started with a simple mission: to provide transparent, high-quality auto repair services that treat customers like family.",
         "story_p1_html": "Welcome to <strong>MecaPro</strong>. We started with a simple mission: to provide transparent, high-quality auto repair services that treat customers like family.",
         "story_p2": "We know that car repairs can be stressful. That is why we prioritize clear communication and honest pricing. Whether it is a routine oil change or a complex engine overhaul, our certified mechanics use the latest diagnostic tools to get you back on the road safely.",
@@ -642,5 +644,52 @@
         "access_denied": "Access Denied",
         "unauthorized_msg": "Your role is not authorized. Try logging out and back in.",
         "loading": "Loading..."
+    },
+    "supervisor": {
+        "sidebar": {
+            "title": "Supervisor",
+            "expand": "Expand Sidebar",
+            "collapse": "Collapse Sidebar",
+            "analytics": "Analytics",
+            "user_management": "User Management",
+            "parts": "Parts",
+            "appointments": "Appointments",
+            "repairs": "Repairs",
+            "reports": "Reports"
+        },
+        "dashboard": {
+            "analytics_title": "Analytics & Reports",
+            "analytics_desc": "Interactive Metabase analytics dashboard for full operational oversight.",
+            "parts_title": "Parts Management",
+            "parts_desc": "Overview of parts inventory, usage, and low-stock alerts.",
+            "appointments_title": "Appointments",
+            "appointments_desc": "Monitor scheduled appointments and daily workload distribution.",
+            "repairs_title": "Repairs",
+            "repairs_desc": "Live repair pipeline status across all mechanics.",
+            "reports_title": "Reports",
+            "reports_desc": "Generate and view performance, financial, and operational reports.",
+            "metabase_not_configured": "Your Metabase dashboard URL is not configured yet."
+        },
+        "users": {
+            "staff_directory": "Staff Directory",
+            "add_new_staff": "+ Add New Staff",
+            "search_placeholder": "Search by name, email or role...",
+            "all_roles": "All Roles",
+            "all_status": "All Status",
+            "active": "Active",
+            "disabled": "Disabled",
+            "actions": "Actions",
+            "edit": "Edit",
+            "enable": "Enable",
+            "disable": "Disable",
+            "no_staff_found": "No staff members match your filters.",
+            "showing_x_of_y": "Showing {{count}} of {{total}} staff members",
+            "create_new_staff": "Create New Staff",
+            "edit_staff_member": "Edit Staff Member",
+            "create_btn": "Create Staff",
+            "save_btn": "Save Changes",
+            "cancel_btn": "Cancel",
+            "leave_blank": "(Leave blank to keep current)"
+        }
     }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ThemeToggle from './ThemeToggle';
@@ -9,6 +9,12 @@ const DashboardNavbar = ({ user }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (i18n.language === 'ar') {
+      i18n.changeLanguage('fr');
+    }
+  }, [i18n.language, i18n]);
 
   // Dashboard: EN + FR only (no Arabic)
   const languages = [

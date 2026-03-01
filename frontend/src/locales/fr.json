@@ -436,6 +436,8 @@
         "hero_subtitle": "Les trajets fluides commencent par une maintenance intelligente - prenez soin de votre voiture dès aujourd'hui !",
         "get_started": "Commencer",
         "call_us": "Appelez-nous",
+        "trusted_brands": "Marques de Confiance",
+        "brands_subtitle": "Nous travaillons avec les principaux fabricants de l'industrie pour garantir qualité et fiabilité",
         "our_services": "Nos Services",
         "services_subtitle": "Nous offrons une gamme complète de services automobiles pour maintenir votre véhicule en condition optimale.",
         "oil_change": "Vidange",
@@ -465,7 +467,7 @@
     "about": {
         "title": "Qui Nous Sommes",
         "subtitle": "Dédié à maintenir votre véhicule en marche de manière sûre et fluide.",
-        "story_title": "L'excellence au volant depuis 2015",
+        "story_title": "L'excellence au volant depuis 2022",
         "story_p1": "Bienvenue chez MecaPro. Nous avons commencé avec une mission simple : fournir des services de réparation automobile transparents et de haute qualité qui traitent les clients comme la famille.",
         "story_p1_html": "Bienvenue chez <strong>MecaPro</strong>. Nous avons commencé avec une mission simple : fournir des services de réparation automobile transparents et de haute qualité qui traitent les clients comme la famille.",
         "story_p2": "Nous savons que les réparations automobiles peuvent être stressantes. C'est pourquoi nous privilégions une communication claire et des prix honnêtes. Qu'il s'agisse d'une vidange de routine ou d'une remise à neuf complète du moteur, nos mécaniciens certifiés utilisent les derniers outils de diagnostic pour vous remettre sur la route en toute sécurité.",
@@ -628,5 +630,52 @@
         "access_denied": "Accès refusé",
         "unauthorized_msg": "Votre rôle n'est pas autorisé. Essayez de vous déconnecter et de vous reconnecter.",
         "loading": "Chargement..."
+    },
+    "supervisor": {
+        "sidebar": {
+            "title": "Superviseur",
+            "expand": "Développer",
+            "collapse": "Réduire",
+            "analytics": "Analyses",
+            "user_management": "Gestion des Utilisateurs",
+            "parts": "Pièces",
+            "appointments": "Rendez-vous",
+            "repairs": "Réparations",
+            "reports": "Rapports"
+        },
+        "dashboard": {
+            "analytics_title": "Analyses & Rapports",
+            "analytics_desc": "Tableau de bord interactif Metabase pour une supervision opérationnelle complète.",
+            "parts_title": "Gestion des Pièces",
+            "parts_desc": "Aperçu de l'inventaire des pièces, de l'utilisation et des alertes de stock faible.",
+            "appointments_title": "Rendez-vous",
+            "appointments_desc": "Surveillez les rendez-vous programmés et la répartition de la charge de travail quotidienne.",
+            "repairs_title": "Réparations",
+            "repairs_desc": "Statut du pipeline de réparation en direct pour tous les mécaniciens.",
+            "reports_title": "Rapports",
+            "reports_desc": "Générez et consultez des rapports de performance, financiers et opérationnels.",
+            "metabase_not_configured": "L'URL de votre tableau de bord Metabase n'est pas encore configurée."
+        },
+        "users": {
+            "staff_directory": "Annuaire du Personnel",
+            "add_new_staff": "+ Ajouter du Personnel",
+            "search_placeholder": "Rechercher par nom, email ou rôle...",
+            "all_roles": "Tous les Rôles",
+            "all_status": "Tous les Statuts",
+            "active": "Actif",
+            "disabled": "Désactivé",
+            "actions": "Actions",
+            "edit": "Modifier",
+            "enable": "Activer",
+            "disable": "Désactiver",
+            "no_staff_found": "Aucun membre du personnel ne correspond à vos filtres.",
+            "showing_x_of_y": "Affichage de {{count}} sur {{total}} membres du personnel",
+            "create_new_staff": "Créer un Nouveau Membre",
+            "edit_staff_member": "Modifier le Membre",
+            "create_btn": "Créer le Personnel",
+            "save_btn": "Enregistrer",
+            "cancel_btn": "Annuler",
+            "leave_blank": "(Laissez vide pour conserver l'actuel)"
+        }
     }
 }

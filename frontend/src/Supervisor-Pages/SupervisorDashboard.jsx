@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import UserManagement from '../components/UserManagement';
 import DashboardNavbar from '../components/DashboardNavbar';
 import SupervisorSidebar from '../components/SupervisorSidebar';
@@ -17,11 +17,11 @@ const SectionPlaceholder = ({ icon, title, description, badge }) => (
   </div>
 );
 
-const AnalyticsSection = ({ chiffredaffaire }) => (
+const AnalyticsSection = ({ chiffredaffaire, t }) => (
   <div className="supervisor-section">
     <div className="section-header">
-      <h1><i className="ri-bar-chart-2-line"></i> Analytics &amp; Reports</h1>
-      <p className="section-subtitle">Interactive Metabase analytics dashboard for full operational oversight.</p>
+      <h1><i className="ri-bar-chart-2-line"></i> {t('supervisor.dashboard.analytics_title', 'Analytics & Reports')}</h1>
+      <p className="section-subtitle">{t('supervisor.dashboard.analytics_desc', 'Interactive Metabase analytics dashboard for full operational oversight.')}</p>
     </div>
     <div className="analytics-container">
       {chiffredaffaire ? (
@@ -35,7 +35,7 @@ const AnalyticsSection = ({ chiffredaffaire }) => (
         />
       ) : (
         <div className="metabase-placeholder">
-          <p>Your Metabase dashboard URL is not configured yet.<br /></p>
+          <p>{t('supervisor.dashboard.metabase_not_configured', 'Your Metabase dashboard URL is not configured yet.')}<br /></p>
         </div>
       )}
     </div>
@@ -43,11 +43,11 @@ const AnalyticsSection = ({ chiffredaffaire }) => (
 );
 
 
-const PartsSection = ({ topparts }) => (
+const PartsSection = ({ topparts, t }) => (
   <div className="supervisor-section">
     <div className="section-header">
-      <h1><i className="ri-tools-line"></i> Parts Management</h1>
-      <p className="section-subtitle">Overview of parts inventory, usage, and low-stock alerts.</p>
+      <h1><i className="ri-tools-line"></i> {t('supervisor.dashboard.parts_title', 'Parts Management')}</h1>
+      <p className="section-subtitle">{t('supervisor.dashboard.parts_desc', 'Overview of parts inventory, usage, and low-stock alerts.')}</p>
     </div>
     <div className="analytics-container">
       {topparts ? (
@@ -61,18 +61,18 @@ const PartsSection = ({ topparts }) => (
         />
       ) : (
         <div className="metabase-placeholder">
-          <p>Your Metabase dashboard URL is not configured yet.<br /></p>
+          <p>{t('supervisor.dashboard.metabase_not_configured', 'Your Metabase dashboard URL is not configured yet.')}<br /></p>
         </div>
       )}
     </div>
   </div>
 );
 
-const AppointmentsSection = ({ appointments }) => (
+const AppointmentsSection = ({ appointments, t }) => (
   <div className="supervisor-section">
     <div className="section-header">
-      <h1><i className="ri-calendar-check-line"></i> Appointments</h1>
-      <p className="section-subtitle">Monitor scheduled appointments and daily workload distribution.</p>
+      <h1><i className="ri-calendar-check-line"></i> {t('supervisor.dashboard.appointments_title', 'Appointments')}</h1>
+      <p className="section-subtitle">{t('supervisor.dashboard.appointments_desc', 'Monitor scheduled appointments and daily workload distribution.')}</p>
     </div>
     <div className="analytics-container">
       {appointments ? (
@@ -86,7 +86,7 @@ const AppointmentsSection = ({ appointments }) => (
         />
       ) : (
         <div className="metabase-placeholder">
-          <p>Your Metabase dashboard URL is not configured yet.<br /></p>
+          <p>{t('supervisor.dashboard.metabase_not_configured', 'Your Metabase dashboard URL is not configured yet.')}<br /></p>
         </div>
       )}
     </div>
@@ -94,11 +94,11 @@ const AppointmentsSection = ({ appointments }) => (
 );
 
 
-const TopClientSection = ({ topclients }) => (
+const TopClientSection = ({ topclients, t }) => (
   <div className="supervisor-section">
     <div className="section-header">
-      <h1><i className="ri-car-line"></i> Repairs</h1>
-      <p className="section-subtitle">Live repair pipeline status across all mechanics.</p>
+      <h1><i className="ri-car-line"></i> {t('supervisor.dashboard.repairs_title', 'Repairs')}</h1>
+      <p className="section-subtitle">{t('supervisor.dashboard.repairs_desc', 'Live repair pipeline status across all mechanics.')}</p>
     </div>
     <div className="analytics-container">
       {topclients ? (
@@ -112,18 +112,18 @@ const TopClientSection = ({ topclients }) => (
         />
       ) : (
         <div className="metabase-placeholder">
-          <p>Your Metabase dashboard URL is not configured yet.<br /></p>
+          <p>{t('supervisor.dashboard.metabase_not_configured', 'Your Metabase dashboard URL is not configured yet.')}<br /></p>
         </div>
       )}
     </div>
   </div>
 );
 
-const TopServicesSection = ({ topservices }) => (
+const TopServicesSection = ({ topservices, t }) => (
   <div className="supervisor-section">
     <div className="section-header">
-      <h1><i className="ri-file-chart-line"></i> Reports</h1>
-      <p className="section-subtitle">Generate and view performance, financial, and operational reports.</p>
+      <h1><i className="ri-file-chart-line"></i> {t('supervisor.dashboard.reports_title', 'Reports')}</h1>
+      <p className="section-subtitle">{t('supervisor.dashboard.reports_desc', 'Generate and view performance, financial, and operational reports.')}</p>
     </div>
     <div className="analytics-container">
       {topservices ? (
@@ -137,7 +137,7 @@ const TopServicesSection = ({ topservices }) => (
         />
       ) : (
         <div className="metabase-placeholder">
-          <p>Your Metabase dashboard URL is not configured yet.<br /></p>
+          <p>{t('supervisor.dashboard.metabase_not_configured', 'Your Metabase dashboard URL is not configured yet.')}<br /></p>
         </div>
       )}
     </div>
@@ -165,12 +165,12 @@ const SupervisorDashboard = () => {
 
   const renderSection = () => {
     switch (activeSection) {
-      case 'analytics': return <AnalyticsSection chiffredaffaire={chiffredaffaire} />;
-      case 'user-management': return <UserManagement />;
-      case 'parts': return <PartsSection topparts={topparts} />;
-      case 'appointments': return <AppointmentsSection appointments={appointments} />;
-      case 'repairs': return <TopClientSection topclients={topclients} />;
-      case 'reports': return <TopServicesSection topservices={topservices} />;
+      case 'analytics': return <AnalyticsSection chiffredaffaire={chiffredaffaire} t={t} />;
+      case 'user-management': return <UserManagement t={t} />;
+      case 'parts': return <PartsSection topparts={topparts} t={t} />;
+      case 'appointments': return <AppointmentsSection appointments={appointments} t={t} />;
+      case 'repairs': return <TopClientSection topclients={topclients} t={t} />;
+      case 'reports': return <TopServicesSection topservices={topservices} t={t} />;
       default: return null;
     }
   };
