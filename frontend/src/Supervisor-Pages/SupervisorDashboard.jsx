@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import UserManagement from '../components/UserManagement';
 import DashboardNavbar from '../components/DashboardNavbar';
 import SupervisorSidebar from '../components/SupervisorSidebar';
@@ -147,6 +148,7 @@ const TopServicesSection = ({ topservices }) => (
 
 /* ── Main Dashboard Component ── */
 const SupervisorDashboard = () => {
+  const { t } = useTranslation();
   const [activeSection, setActiveSection] = useState('analytics');
 
   const user = {

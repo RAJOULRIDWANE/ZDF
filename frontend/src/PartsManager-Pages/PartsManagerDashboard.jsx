@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import DashboardNavbar from '../components/DashboardNavbar';
@@ -7,7 +8,11 @@ import './PartsManagerDashboard.css';
 
 const BASE = 'http://127.0.0.1:8000/api';
 
+const EMPTY_PART = { name: '', zone: '', category: '', cost: '', price: '', stock_quantity: '', reference_number: '' };
+const EMPTY_SERVICE = { name: '', zone: '', price: '' };
+
 const PartsManagerDashboard = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [user, setUser] = useState({
     name: localStorage.getItem('USER_NAME') || 'Parts Manager',
@@ -23,11 +28,23 @@ const PartsManagerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('inventory'); // 'inventory' | 'requests'
   const [search, setSearch] = useState('');
-  const [requestSearch, setRequestSearch] = useState(''); // NEW: for requests filter
+  const [requestSearch, setRequestSearch] = useState('');
   const [message, setMessage] = useState(null);
   const [messageType, setMessageType] = useState('');
   const [actionLoading, setActionLoading] = useState(null);
   const [declineModal, setDeclineModal] = useState({ show: false, id: null, notes: '' });
+
+  // --- Add Part Modal ---
+  const [showAddPartModal, setShowAddPartModal] = useState(false);
+  const [partForm, setPartForm] = useState(EMPTY_PART);
+  const [partFormErrors, setPartFormErrors] = useState({});
+  const [submittingPart, setSubmittingPart] = useState(false);
+
+  // --- Add Service Modal ---
+  const [showAddServiceModal, setShowAddServiceModal] = useState(false);
+  const [serviceForm, setServiceForm] = useState(EMPTY_SERVICE);
+  const [serviceFormErrors, setServiceFormErrors] = useState({});
+  const [submittingService, setSubmittingService] = useState(false);
 
   const token = localStorage.getItem('ACCESS_TOKEN');
   const headers = { Authorization: `Bearer ${token}` };
@@ -70,9 +87,7 @@ const PartsManagerDashboard = () => {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const handleApprove = async (id) => {
     setActionLoading(id);
@@ -110,13 +125,90 @@ const PartsManagerDashboard = () => {
     navigate('/login');
   };
 
+  // ─── ADD PART ────────────────────────────────────────────────────────
+  const openAddPart = () => { setPartForm(EMPTY_PART); setPartFormErrors({}); setShowAddPartModal(true); };
+  const closeAddPart = () => { setShowAddPartModal(false); };
+
+  const handlePartChange = (e) => {
+    const { name, value } = e.target;
+    setPartForm(prev => ({ ...prev, [name]: value }));
+    setPartFormErrors(prev => ({ ...prev, [name]: '' }));
+  };
+
+  const validatePart = () => {
+    const errs = {};
+    if (!partForm.name.trim()) errs.name = 'Name is required';
+    if (!partForm.zone.trim()) errs.zone = 'Zone is required';
+    if (!partForm.category.trim()) errs.category = 'Category is required';
+    if (partForm.cost === '' || isNaN(Number(partForm.cost))) errs.cost = 'Valid cost required';
+    if (partForm.price === '' || isNaN(Number(partForm.price))) errs.price = 'Valid price required';
+    if (partForm.stock_quantity === '' || isNaN(Number(partForm.stock_quantity))) errs.stock_quantity = 'Valid stock quantity required';
+    return errs;
+  };
+
+  const handleSubmitPart = async (e) => {
+    e.preventDefault();
+    const errs = validatePart();
+    if (Object.keys(errs).length > 0) { setPartFormErrors(errs); return; }
+    setSubmittingPart(true);
+    try {
+      const res = await axios.post(`${BASE}/parts-manager/parts`, partForm, { headers });
+      showMsg(res.data.message || 'Part added!', 'success');
+      closeAddPart();
+      fetchData();
+    } catch (err) {
+      const serverErrors = err.response?.data?.errors;
+      if (serverErrors) setPartFormErrors(serverErrors);
+      else showMsg(err.response?.data?.message || 'Failed to add part.', 'error');
+    } finally {
+      setSubmittingPart(false);
+    }
+  };
+
+  // ─── ADD SERVICE ─────────────────────────────────────────────────────
+  const openAddService = () => { setServiceForm(EMPTY_SERVICE); setServiceFormErrors({}); setShowAddServiceModal(true); };
+  const closeAddService = () => { setShowAddServiceModal(false); };
+
+  const handleServiceChange = (e) => {
+    const { name, value } = e.target;
+    setServiceForm(prev => ({ ...prev, [name]: value }));
+    setServiceFormErrors(prev => ({ ...prev, [name]: '' }));
+  };
+
+  const validateService = () => {
+    const errs = {};
+    if (!serviceForm.name.trim()) errs.name = 'Name is required';
+    if (!serviceForm.zone.trim()) errs.zone = 'Zone is required';
+    if (serviceForm.price === '' || isNaN(Number(serviceForm.price))) errs.price = 'Valid price required';
+    return errs;
+  };
+
+  const handleSubmitService = async (e) => {
+    e.preventDefault();
+    const errs = validateService();
+    if (Object.keys(errs).length > 0) { setServiceFormErrors(errs); return; }
+    setSubmittingService(true);
+    try {
+      const res = await axios.post(`${BASE}/parts-manager/services`, serviceForm, { headers });
+      showMsg(res.data.message || 'Service added!', 'success');
+      closeAddService();
+    } catch (err) {
+      const serverErrors = err.response?.data?.errors;
+      if (serverErrors) setServiceFormErrors(serverErrors);
+      else showMsg(err.response?.data?.message || 'Failed to add service.', 'error');
+    } finally {
+      setSubmittingService(false);
+    }
+  };
+
+  // ─── Filters ─────────────────────────────────────────────────────────
   const filteredParts = parts.filter(p =>
     !search ||
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     p.zone?.toLowerCase().includes(search.toLowerCase()) ||
     p.category?.toLowerCase().includes(search.toLowerCase()) ||
     p.reference_number?.toLowerCase().includes(search.toLowerCase()) ||
-    (search === 'LOW_STOCK' && p.stock_quantity <= 30) // Magic string for low stock filter
+    (search === 'LOW_STOCK' && p.stock_quantity <= 30)
   );
 
   const pendingRequests = requests.filter(r => r.status === 'Pending');
@@ -127,13 +219,26 @@ const PartsManagerDashboard = () => {
   );
 
   const statusBadge = (status) => {
-    const map = {
-      Pending: 'badge-pending',
-      Approved: 'badge-approved',
-      Declined: 'badge-declined',
-    };
+    const map = { Pending: 'badge-pending', Approved: 'badge-approved', Declined: 'badge-declined' };
     return <span className={`pm-badge ${map[status] || ''}`}>{status}</span>;
   };
+
+  // ─── Reusable input field component ──────────────────────────────────
+  const Field = ({ label, name, type = 'text', value, onChange, errors, placeholder = '', required = true, step }) => (
+    <div className="pm-form-group">
+      <label className="pm-form-label">{label}{required && <span className="pm-required">*</span>}</label>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        step={step}
+        className={`pm-form-input ${errors[name] ? 'pm-input-error' : ''}`}
+      />
+      {errors[name] && <span className="pm-field-error">{errors[name]}</span>}
+    </div>
+  );
 
   return (
     <div className="pm-container">
@@ -146,6 +251,14 @@ const PartsManagerDashboard = () => {
             <h1>Parts Manager Dashboard</h1>
             <p>Monitor inventory and approve mechanic part requests</p>
           </div>
+          <div className="pm-header-actions">
+            <button className="pm-btn-add-part" onClick={openAddPart}>
+              <i className="fa-solid fa-plus"></i> Add Part
+            </button>
+            <button className="pm-btn-add-service" onClick={openAddService}>
+              <i className="fa-solid fa-plus"></i> Add Service
+            </button>
+          </div>
         </div>
 
         {message && <div className={`pm-alert ${messageType}`}>{message}</div>}
@@ -154,39 +267,24 @@ const PartsManagerDashboard = () => {
         <div className="pm-kpis">
           <div className="pm-kpi-card pm-kpi-blue" onClick={() => { setActiveTab('inventory'); setSearch(''); }} style={{ cursor: 'pointer' }}>
             <div className="pm-kpi-icon"><i className="fa-solid fa-boxes-stacked"></i></div>
-            <div className="pm-kpi-text">
-              <p>Total Parts</p>
-              <h2>{kpis.total_parts}</h2>
-            </div>
+            <div className="pm-kpi-text"><p>Total Parts</p><h2>{kpis.total_parts}</h2></div>
           </div>
           <div className="pm-kpi-card pm-kpi-yellow" onClick={() => { setActiveTab('requests'); setRequestSearch('PENDING'); }} style={{ cursor: 'pointer' }}>
             <div className="pm-kpi-icon"><i className="fa-solid fa-clock"></i></div>
-            <div className="pm-kpi-text">
-              <p>Pending Requests</p>
-              <h2>{kpis.pending_count}</h2>
-            </div>
+            <div className="pm-kpi-text"><p>Pending Requests</p><h2>{kpis.pending_count}</h2></div>
           </div>
           <div className="pm-kpi-card pm-kpi-red" onClick={() => { setActiveTab('inventory'); setSearch('LOW_STOCK'); }} style={{ cursor: 'pointer' }}>
             <div className="pm-kpi-icon"><i className="fa-solid fa-triangle-exclamation"></i></div>
-            <div className="pm-kpi-text">
-              <p>Low Stock Alerts</p>
-              <h2>{kpis.low_stock_count}</h2>
-            </div>
+            <div className="pm-kpi-text"><p>Low Stock Alerts</p><h2>{kpis.low_stock_count}</h2></div>
           </div>
         </div>
 
         {/* Tabs */}
         <div className="pm-tabs">
-          <button
-            className={`pm-tab ${activeTab === 'inventory' ? 'pm-tab-active' : ''}`}
-            onClick={() => setActiveTab('inventory')}
-          >
+          <button className={`pm-tab ${activeTab === 'inventory' ? 'pm-tab-active' : ''}`} onClick={() => setActiveTab('inventory')}>
             <i className="fa-solid fa-warehouse"></i> Parts Inventory
           </button>
-          <button
-            className={`pm-tab ${activeTab === 'requests' ? 'pm-tab-active' : ''}`}
-            onClick={() => setActiveTab('requests')}
-          >
+          <button className={`pm-tab ${activeTab === 'requests' ? 'pm-tab-active' : ''}`} onClick={() => setActiveTab('requests')}>
             <i className="fa-solid fa-clipboard-list"></i> Part Requests
             {pendingCount > 0 && <span className="pm-tab-badge">{pendingCount}</span>}
           </button>
@@ -250,21 +348,7 @@ const PartsManagerDashboard = () => {
               <h3>Part Requests from Mechanics</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 {requestSearch === 'PENDING' && (
-                  <button
-                    onClick={() => setRequestSearch('')}
-                    style={{
-                      background: 'transparent',
-                      border: '1px solid var(--border-light)',
-                      color: 'var(--muted)',
-                      padding: '4px 10px',
-                      borderRadius: '4px',
-                      fontSize: '0.8rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '5px'
-                    }}
-                  >
+                  <button onClick={() => setRequestSearch('')} style={{ background: 'transparent', border: '1px solid var(--border-light)', color: 'var(--muted)', padding: '4px 10px', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
                     <i className="fa-solid fa-xmark"></i> Clear Filter
                   </button>
                 )}
@@ -311,18 +395,10 @@ const PartsManagerDashboard = () => {
                       <td>
                         {req.status === 'Pending' && (
                           <div className="pm-action-btns">
-                            <button
-                              className="pm-btn-approve"
-                              disabled={actionLoading === req.id}
-                              onClick={() => handleApprove(req.id)}
-                            >
+                            <button className="pm-btn-approve" disabled={actionLoading === req.id} onClick={() => handleApprove(req.id)}>
                               {actionLoading === req.id ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-check"></i> Approve</>}
                             </button>
-                            <button
-                              className="pm-btn-decline"
-                              disabled={actionLoading === req.id}
-                              onClick={() => setDeclineModal({ show: true, id: req.id, notes: '' })}
-                            >
+                            <button className="pm-btn-decline" disabled={actionLoading === req.id} onClick={() => setDeclineModal({ show: true, id: req.id, notes: '' })}>
                               <i className="fa-solid fa-xmark"></i> Decline
                             </button>
                           </div>
@@ -337,7 +413,7 @@ const PartsManagerDashboard = () => {
         )}
       </div>
 
-      {/* Decline Modal */}
+      {/* ─── DECLINE MODAL ─────────────────────────────────────────────── */}
       {declineModal.show && (
         <div className="pm-modal-overlay" onClick={() => setDeclineModal({ show: false, id: null, notes: '' })}>
           <div className="pm-modal" onClick={(e) => e.stopPropagation()}>
@@ -356,6 +432,56 @@ const PartsManagerDashboard = () => {
                 {actionLoading === declineModal.id ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Decline Request'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── ADD PART MODAL ────────────────────────────────────────────── */}
+      {showAddPartModal && (
+        <div className="pm-modal-overlay" onClick={closeAddPart}>
+          <div className="pm-modal pm-modal-wide" onClick={(e) => e.stopPropagation()}>
+            <h2><i className="fa-solid fa-boxes-stacked" style={{ marginRight: '8px', color: 'var(--red)' }}></i>Add New Part</h2>
+            <p>Fill in the details to add a new part to the inventory.</p>
+            <form onSubmit={handleSubmitPart} noValidate>
+              <div className="pm-form-grid">
+                <Field label="Part Name" name="name" value={partForm.name} onChange={handlePartChange} errors={partFormErrors} placeholder="e.g. Brake Pad" />
+                <Field label="Zone" name="zone" value={partForm.zone} onChange={handlePartChange} errors={partFormErrors} placeholder="e.g. Brakes" />
+                <Field label="Category" name="category" value={partForm.category} onChange={handlePartChange} errors={partFormErrors} placeholder="e.g. Pièces principales" />
+                <Field label="Reference Number" name="reference_number" value={partForm.reference_number} onChange={handlePartChange} errors={partFormErrors} placeholder="e.g. REF-0042" required={false} />
+                <Field label="Cost (MAD)" name="cost" type="number" step="0.01" value={partForm.cost} onChange={handlePartChange} errors={partFormErrors} placeholder="0.00" />
+                <Field label="Price (MAD)" name="price" type="number" step="0.01" value={partForm.price} onChange={handlePartChange} errors={partFormErrors} placeholder="0.00" />
+                <Field label="Stock Quantity" name="stock_quantity" type="number" step="1" value={partForm.stock_quantity} onChange={handlePartChange} errors={partFormErrors} placeholder="0" />
+              </div>
+              <div className="pm-modal-actions" style={{ marginTop: '24px' }}>
+                <button type="button" className="pm-btn-cancel" onClick={closeAddPart} disabled={submittingPart}>Cancel</button>
+                <button type="submit" className="pm-btn-submit" disabled={submittingPart}>
+                  {submittingPart ? <><i className="fa-solid fa-spinner fa-spin"></i> Saving...</> : <><i className="fa-solid fa-floppy-disk"></i> Save Part</>}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─── ADD SERVICE MODAL ─────────────────────────────────────────── */}
+      {showAddServiceModal && (
+        <div className="pm-modal-overlay" onClick={closeAddService}>
+          <div className="pm-modal" onClick={(e) => e.stopPropagation()}>
+            <h2><i className="fa-solid fa-screwdriver-wrench" style={{ marginRight: '8px', color: 'var(--red)' }}></i>Add New Service</h2>
+            <p>Fill in the details to add a new service.</p>
+            <form onSubmit={handleSubmitService} noValidate>
+              <div className="pm-form-grid">
+                <Field label="Service Name" name="name" value={serviceForm.name} onChange={handleServiceChange} errors={serviceFormErrors} placeholder="e.g. Oil Change" />
+                <Field label="Zone" name="zone" value={serviceForm.zone} onChange={handleServiceChange} errors={serviceFormErrors} placeholder="e.g. Engine" />
+                <Field label="Price (MAD)" name="price" type="number" step="0.01" value={serviceForm.price} onChange={handleServiceChange} errors={serviceFormErrors} placeholder="0.00" />
+              </div>
+              <div className="pm-modal-actions" style={{ marginTop: '24px' }}>
+                <button type="button" className="pm-btn-cancel" onClick={closeAddService} disabled={submittingService}>Cancel</button>
+                <button type="submit" className="pm-btn-submit" disabled={submittingService}>
+                  {submittingService ? <><i className="fa-solid fa-spinner fa-spin"></i> Saving...</> : <><i className="fa-solid fa-floppy-disk"></i> Save Service</>}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Part;
 use App\Models\PartRequest;
+use App\Models\Service;
 use Illuminate\Http\Request;
 
 class PartsManagerController extends Controller
@@ -97,5 +98,47 @@ class PartsManagerController extends Controller
             'message'      => 'Part request declined.',
             'part_request' => $partRequest,
         ]);
+    }
+
+    /**
+     * Add a new part to the inventory
+     */
+    public function storePart(Request $request)
+    {
+        $validated = $request->validate([
+            'name'             => 'required|string|max:255',
+            'zone'             => 'required|string|max:255',
+            'category'         => 'required|string|max:255',
+            'cost'             => 'required|numeric|min:0',
+            'price'            => 'required|numeric|min:0',
+            'stock_quantity'   => 'required|integer|min:0',
+            'reference_number' => 'nullable|string|max:255',
+        ]);
+
+        $part = Part::create($validated);
+
+        return response()->json([
+            'message' => 'Part added successfully.',
+            'part'    => $part,
+        ], 201);
+    }
+
+    /**
+     * Add a new service
+     */
+    public function storeService(Request $request)
+    {
+        $validated = $request->validate([
+            'name'  => 'required|string|max:255',
+            'zone'  => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        $service = Service::create($validated);
+
+        return response()->json([
+            'message' => 'Service added successfully.',
+            'service' => $service,
+        ], 201);
     }
 }

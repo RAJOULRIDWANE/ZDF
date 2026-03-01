@@ -44,20 +44,13 @@ const ClientDashboard = () => {
         }
     ]);
 
-    useEffect(() => {
-        const hasCompletedTour = localStorage.getItem('hasCompletedTour');
-        if (!hasCompletedTour) {
-            setRunTour(true);
-            localStorage.setItem('hasCompletedTour', 'true');
-        }
-    }, []);
+    // Tour is triggered inside fetchData after we know the user ID
 
     const handleJoyrideCallback = (data) => {
         const { status } = data;
         const finishedStatuses = [STATUS.FINISHED, STATUS.SKIPPED];
         if (finishedStatuses.includes(status)) {
             setRunTour(false);
-            localStorage.setItem('hasCompletedTour', 'true');
         }
     };
 
@@ -118,11 +111,20 @@ const ClientDashboard = () => {
             setVehicles(vehicleRes.data || []);
             setAppointments(apptRes.data || []);
 
-            setUser({
+            const userData = {
                 name: userRes.data.name,
                 email: userRes.data.email,
                 role: 'Client'
-            });
+            };
+            setUser(userData);
+
+            // --- Per-user tour check ---
+            const userId = userRes.data.id || userRes.data.email;
+            const tourKey = `tour_done_${userId}`;
+            if (!localStorage.getItem(tourKey)) {
+                setRunTour(true);
+                localStorage.setItem(tourKey, 'true');
+            }
 
             localStorage.setItem('USER_NAME', userRes.data.name);
 
