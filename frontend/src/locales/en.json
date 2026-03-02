@@ -421,7 +421,14 @@
         "already_verified": "Email already verified. Please login.",
         "no_otp_found": "No verification code found. Please request a new one.",
         "otp_expired": "Verification code has expired. Please request a new one.",
-        "invalid_otp": "Invalid verification code."
+        "invalid_otp": "Invalid verification code.",
+        "reset_pw_title": "Set New Password",
+        "reset_pw_subtitle": "Create a strong password for your account.",
+        "new_password_label": "New Password",
+        "new_password_placeholder": "Enter new password",
+        "reset_password_button": "Reset Password",
+        "passwords_no_match": "Passwords do not match.",
+        "something_went_wrong": "Something went wrong. Please try again."
     },
     "navbar": {
         "home": "Home",
@@ -489,7 +496,7 @@
         "rating": "Average customer rating",
         "technicians": "Expert technicians",
         "serviced": "Vehicles serviced annually",
-        "see_more": "See More",
+        "see_more": "See More →",
         "why_title": "Why Choose MecaPro?",
         "certified": "Certified Experts",
         "certified_desc": "Our team consists of certified mechanics who undergo regular training to stay updated with modern car technologies.",

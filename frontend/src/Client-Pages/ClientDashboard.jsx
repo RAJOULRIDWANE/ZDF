@@ -1066,7 +1066,7 @@ const ClientDashboard = () => {
                                     type="text"
                                     placeholder={t('dashboard.modal_maker_placeholder', 'e.g., Toyota')}
                                     value={newVehicle.make}
-                                    onChange={(e) => setNewVehicle({ ...newVehicle, make: e.target.value })}
+                                    onChange={(e) => setNewVehicle({ ...newVehicle, make: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
                                     required
                                 />
                             </div>

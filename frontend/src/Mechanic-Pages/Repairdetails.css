@@ -6,7 +6,7 @@
 .repair-details-container {
   min-height: 100vh;
   background: var(--black);
-  font-family: 'Barlow', 'Inter', -apple-system, sans-serif;
+  font-family: var(--font-family-latin);
   color: var(--white);
   line-height: 1.6;
 }
@@ -71,7 +71,7 @@
 }
 
 .repair-details-container h2 {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-family-title);
   font-size: 1.5rem;
   color: var(--white);
   margin-bottom: 20px;
@@ -99,7 +99,7 @@
 }
 
 .repair-details-container h3 {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--white);
@@ -144,7 +144,7 @@
   font-size: 0.95rem;
   resize: none;
   transition: border-color 0.2s, box-shadow 0.2s;
-  font-family: 'Barlow', sans-serif;
+  font-family: var(--font-family-latin);
 }
 
 .repair-details-container .info-item input:focus,
@@ -203,7 +203,7 @@
   border: 1px solid var(--border-light);
   color: var(--white);
   font-size: 0.95rem;
-  font-family: 'Barlow', sans-serif;
+  font-family: var(--font-family-latin);
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
 }
@@ -242,7 +242,7 @@
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-size: 0.88rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -259,7 +259,7 @@
 
 /* Category Headers */
 .repair-details-container .category-header {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-size: 1rem;
   font-weight: 700;
   color: var(--white);
@@ -367,7 +367,7 @@
   background: var(--red);
   color: var(--white);
   border: none;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-size: 1rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -414,7 +414,7 @@
   background: var(--red);
   color: var(--white);
   padding: 4px 14px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -434,7 +434,7 @@
 .repair-details-container .summary-list-header {
   background: var(--steel);
   font-weight: 700;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-size: 0.78rem;
   color: var(--muted);
   text-transform: uppercase;
@@ -512,7 +512,7 @@
   font-size: 0.95rem;
   outline: none;
   transition: border-color 0.2s;
-  font-family: 'Barlow', sans-serif;
+  font-family: var(--font-family-latin);
 }
 
 .repair-details-container .qty-custom-input:focus {
@@ -560,7 +560,7 @@
 }
 
 .repair-details-container .total-row span:first-child {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-size: 1rem;
   font-weight: 700;
   color: var(--muted);
@@ -569,7 +569,7 @@
 }
 
 .repair-details-container .total-number {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-family-title);
   font-size: 1.6rem;
   font-weight: 400;
   color: var(--red);
@@ -591,7 +591,7 @@
   background: transparent;
   border: 1px solid var(--border-light);
   color: var(--muted);
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-weight: 700;
   font-size: 0.88rem;
   text-transform: uppercase;
@@ -637,7 +637,7 @@
 }
 
 .repair-details-container .confirmation-success h2 {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-family-title);
   font-size: 2rem;
   color: var(--white);
   margin-bottom: 28px;
@@ -703,7 +703,7 @@
   background: var(--red);
   color: var(--white);
   border: none;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-weight: 700;
   font-size: 0.95rem;
   text-transform: uppercase;
@@ -727,7 +727,7 @@
   background: transparent;
   color: var(--muted);
   border: 1px solid var(--border-light);
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-weight: 700;
   font-size: 0.95rem;
   text-transform: uppercase;
@@ -894,7 +894,7 @@
 
 /* Row number indicator */
 .part-row-num {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-family-title);
   font-size: 1.2rem;
   color: var(--muted);
   text-align: center;
@@ -926,7 +926,7 @@
   background: var(--charcoal-light);
   border: 1px solid var(--border-light);
   color: var(--white);
-  font-family: 'Barlow', sans-serif;
+  font-family: var(--font-family-latin);
   font-size: 0.88rem;
   box-sizing: border-box;
   transition: border-color 0.2s;
@@ -1043,7 +1043,7 @@
 .part-row-selected-info strong {
   color: var(--white);
   font-size: 0.88rem;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1123,7 +1123,7 @@
   background: var(--charcoal-light);
   border: 1px solid var(--border-light);
   color: var(--white);
-  font-family: 'Barlow', sans-serif;
+  font-family: var(--font-family-latin);
   font-size: 0.9rem;
   font-weight: 700;
   text-align: center;
@@ -1175,7 +1175,7 @@
   background: transparent;
   border: 1px dashed var(--border-light);
   color: var(--muted);
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-weight: 700;
   font-size: 0.88rem;
   text-transform: uppercase;

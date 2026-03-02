@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
-import './ForgotPassword.css'; // Reusing the same CSS for consistency
+import './ForgotPassword.css';
 
 function ResetPassword() {
-  const { token } = useParams(); // Get token from URL path
+  const { t } = useTranslation();
+  const { token } = useParams();
   const [searchParams] = useSearchParams();
-  const email = searchParams.get('email'); // Get email from URL query
+  const email = searchParams.get('email');
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -20,7 +22,7 @@ function ResetPassword() {
     setMessage('');
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(t('auth.passwords_no_match'));
       return;
     }
 
@@ -34,7 +36,6 @@ function ResetPassword() {
 
       setMessage(res.data.message);
 
-      // Redirect to login after 3 seconds
       setTimeout(() => {
         navigate('/login');
       }, 3000);
@@ -45,10 +46,10 @@ function ResetPassword() {
           const firstError = Object.values(err.response.data.errors)[0][0];
           setError(firstError);
         } else {
-          setError(err.response.data.message || "Something went wrong.");
+          setError(err.response.data.message || t('auth.something_went_wrong'));
         }
       } else {
-        setError("Could not connect to the server.");
+        setError(t('auth.network_error'));
       }
     }
   };
@@ -60,43 +61,40 @@ function ResetPassword() {
           <div className="info-icon" style={{ width: '70px', height: '70px' }}>
             <i className="fa-solid fa-key icon-lock" style={{ fontSize: '45px' }}></i>
           </div>
-          <h1>Set New Password</h1>
-          <p>Create a strong password for your account.</p>
+          <h1>{t('auth.reset_pw_title')}</h1>
+          <p>{t('auth.reset_pw_subtitle')}</p>
         </div>
 
         {message && <div className="alert success">{message}</div>}
         {error && <div className="alert error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="auth-form">
-
           <div className="form-group">
-            <label>New Password</label>
+            <label>{t('auth.new_password_label')}</label>
             <input
               type="password"
               className="form-input"
               value={password}
-              placeholder='Set New Password'
+              placeholder={t('auth.new_password_placeholder')}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
 
           <div className="form-group">
-            <label>Confirm Password</label>
+            <label>{t('auth.confirm_password_label')}</label>
             <input
               type="password"
               className="form-input"
               value={confirmPassword}
-              placeholder='Confirm New Password'
+              placeholder={t('auth.confirm_password_placeholder')}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
           </div>
 
-          <button type="submit" className="submit-button">Reset Password</button>
+          <button type="submit" className="submit-button">{t('auth.reset_password_button')}</button>
         </form>
-
-
       </div>
     </div>
   );

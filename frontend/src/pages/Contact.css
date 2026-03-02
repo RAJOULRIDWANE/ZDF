@@ -6,7 +6,7 @@
 .contact-page {
   background: var(--black);
   color: var(--white);
-  font-family: 'Barlow', sans-serif;
+  font-family: inherit;
 }
 
 /* ─────────────────────────────────────────
@@ -23,7 +23,7 @@
 }
 
 .contact-page .contact-header-content h1 {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-family-title);
   font-size: clamp(48px, 6vw, 80px);
   margin-bottom: 16px;
 }
@@ -42,7 +42,7 @@
 }
 
 .contact-page .contact-container h2 {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-family-title);
   font-size: clamp(36px, 5vw, 64px);
   margin-bottom: 8px;
   color: var(--white);
@@ -78,6 +78,13 @@
   color: var(--red);
 }
 
+/* Red star for required fields */
+.contact-page .required-star {
+  color: var(--red);
+  font-weight: bold;
+  margin-inline-start: 2px;
+}
+
 .contact-page .form-group label {
   font-weight: 600;
   margin-bottom: 6px;
@@ -92,7 +99,7 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--white);
-  font-family: 'Barlow', sans-serif;
+  font-family: inherit;
   transition: all 0.2s;
 }
 
@@ -125,7 +132,7 @@
   background: var(--red);
   color: var(--white);
   padding: 14px 28px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-weight: 700;
   font-size: 14px;
   text-transform: uppercase;
@@ -194,4 +201,18 @@
   .contact-page .contact-info-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ─── RTL FIXES ─── */
+[dir="rtl"] .contact-page .form-group label {
+  text-align: right;
+}
+
+[dir="rtl"] .contact-page .form-group input,
+[dir="rtl"] .contact-page .form-group textarea {
+  text-align: right;
+}
+
+[dir="rtl"] .contact-page .form-group input[type="tel"] {
+  direction: rtl;
 }

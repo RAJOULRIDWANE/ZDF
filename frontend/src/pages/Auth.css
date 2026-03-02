@@ -109,6 +109,24 @@ body.light-mode .auth-hero-overlay {
   text-align: left;
 }
 
+/* RTL: align auth form labels to right for Arabic */
+[dir="rtl"] .auth-form {
+  text-align: right;
+}
+
+[dir="rtl"] .auth-field {
+  direction: rtl;
+}
+
+[dir="rtl"] .auth-field input {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .auth-extra-row {
+  justify-content: flex-start;
+}
+
 .auth-form span {
   color: var(--red);
   font-weight: bold;

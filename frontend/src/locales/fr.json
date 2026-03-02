@@ -407,7 +407,14 @@
         "already_verified": "E-mail déjà vérifié. Veuillez vous connecter.",
         "no_otp_found": "Aucun code de vérification trouvé. Veuillez en demander un nouveau.",
         "otp_expired": "Le code de vérification a expiré. Veuillez en demander un nouveau.",
-        "invalid_otp": "Code de vérification invalide."
+        "invalid_otp": "Code de vérification invalide.",
+        "reset_pw_title": "Définir un nouveau mot de passe",
+        "reset_pw_subtitle": "Créez un mot de passe sécurisé pour votre compte.",
+        "new_password_label": "Nouveau mot de passe",
+        "new_password_placeholder": "Entrez le nouveau mot de passe",
+        "reset_password_button": "Réinitialiser le mot de passe",
+        "passwords_no_match": "Les mots de passe ne correspondent pas.",
+        "something_went_wrong": "Quelque chose s'est mal passé. Veuillez réessayer."
     },
     "navbar": {
         "home": "Accueil",
@@ -475,7 +482,7 @@
         "rating": "Note moyenne des clients",
         "technicians": "Techniciens experts",
         "serviced": "Véhicules entretenus annuellement",
-        "see_more": "Voir Plus",
+        "see_more": "Voir Plus  →",
         "why_title": "Pourquoi Choisir MecaPro ?",
         "certified": "Experts Certifiés",
         "certified_desc": "Notre équipe est composée de mécaniciens certifiés qui suivent des formations régulières pour rester à jour avec les technologies automobiles modernes.",

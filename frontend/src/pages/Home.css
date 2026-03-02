@@ -33,7 +33,7 @@
   right: 4vw;
   top: 50%;
   transform: translateY(-50%);
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-family-title);
   font-size: clamp(160px, 26vw, 360px);
   color: rgba(255, 255, 255, 0.025);
   pointer-events: none;
@@ -51,7 +51,7 @@
 }
 
 .hero-text h1 {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-family-title);
   font-size: clamp(52px, 10vw, 140px);
   line-height: 0.92;
   color: var(--white);
@@ -90,7 +90,7 @@
 }
 
 .section-inner h2 {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-family-title);
   font-size: clamp(38px, 5.5vw, 72px);
   color: var(--white);
   margin-bottom: 12px;
@@ -184,7 +184,7 @@
 }
 
 .info-card h3 {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-size: 19px;
   letter-spacing: 0.05em;
   text-transform: uppercase;

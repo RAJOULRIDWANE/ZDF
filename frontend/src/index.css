@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cairo:wght@200;300;400;600;700;900&display=swap');
+
 :root {
   /* GLOBAL BLACK & RED THEME VARIABLES (Default Dark) */
   --black: #0a0a0a;
@@ -23,13 +25,13 @@
   --danger: var(--red);
   --danger-bg: var(--red-glow);
 
-  /* Add global font import for Arabic */
-  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;900&display=swap');
 
   /* English and French Font */
-  --font-family-latin: 'Bebas Neue', sans-serif;
+  --font-family-latin: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   /* Arabic Font */
   --font-family-arabic: 'Cairo', sans-serif;
+  /* Title Font */
+  --font-family-title: 'Bebas Neue', 'Cairo', sans-serif;
 
   font-family: var(--font-family-latin);
   line-height: 1.5;
@@ -41,8 +43,9 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-[lang="ar"] {
-  font-family: var(--font-family-arabic);
+[lang="ar"],
+[lang="ar"] * {
+  font-family: 'Cairo', sans-serif !important;
 }
 
 [lang="en"],
@@ -113,4 +116,13 @@ img {
 
 button {
   font-family: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-family-title);
 }

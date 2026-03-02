@@ -137,11 +137,30 @@ const PartsManagerDashboard = () => {
 
   const validatePart = () => {
     const errs = {};
-    if (!partForm.name.trim()) errs.name = t('parts_manager.err_name_req', 'Name is required');
+    if (!partForm.name.trim()) {
+      errs.name = t('parts_manager.err_name_req', 'Name is required');
+    } else if (/^\d+$/.test(partForm.name.trim())) {
+      errs.name = t('parts_manager.err_name_digits_only', 'Name cannot be only digits');
+    }
     if (!partForm.zone.trim()) errs.zone = t('parts_manager.err_zone_req', 'Zone is required');
     if (!partForm.category.trim()) errs.category = t('parts_manager.err_category_req', 'Category is required');
-    if (partForm.cost === '' || isNaN(Number(partForm.cost))) errs.cost = t('parts_manager.err_cost_req', 'Valid cost required');
-    if (partForm.price === '' || isNaN(Number(partForm.price))) errs.price = t('parts_manager.err_price_req', 'Valid price required');
+
+    if (partForm.cost === '' || isNaN(Number(partForm.cost))) {
+      errs.cost = t('parts_manager.err_cost_req', 'Valid cost required');
+    } else if (Number(partForm.cost) < 0) {
+      errs.cost = t('parts_manager.err_cost_min', 'Cost minimum is 0 MAD');
+    }
+
+    if (partForm.price === '' || isNaN(Number(partForm.price))) {
+      errs.price = t('parts_manager.err_price_req', 'Valid price required');
+    } else {
+      const costVal = Number(partForm.cost) || 0;
+      const minPrice = costVal - (0.30 * costVal);
+      if (Number(partForm.price) < minPrice) {
+        errs.price = t('parts_manager.err_price_min', `Price minimum is ${minPrice.toFixed(2)} MAD (cost - 30%)`);
+      }
+    }
+
     if (partForm.stock_quantity === '' || isNaN(Number(partForm.stock_quantity))) errs.stock_quantity = t('parts_manager.err_stock_req', 'Valid stock quantity required');
     return errs;
   };
@@ -179,7 +198,11 @@ const PartsManagerDashboard = () => {
     const errs = {};
     if (!serviceForm.name.trim()) errs.name = t('parts_manager.err_name_req', 'Name is required');
     if (!serviceForm.zone.trim()) errs.zone = t('parts_manager.err_zone_req', 'Zone is required');
-    if (serviceForm.price === '' || isNaN(Number(serviceForm.price))) errs.price = t('parts_manager.err_price_req', 'Valid price required');
+    if (serviceForm.price === '' || isNaN(Number(serviceForm.price))) {
+      errs.price = t('parts_manager.err_price_req', 'Valid price required');
+    } else if (Number(serviceForm.price) < 0) {
+      errs.price = t('parts_manager.err_price_min_0', 'Price minimum is 0 MAD');
+    }
     return errs;
   };
 
@@ -445,7 +468,25 @@ const PartsManagerDashboard = () => {
             <form onSubmit={handleSubmitPart} noValidate>
               <div className="pm-form-grid">
                 <Field label={t('parts_manager.label_part_name', 'Part Name')} name="name" value={partForm.name} onChange={handlePartChange} errors={partFormErrors} placeholder="e.g. Brake Pad" />
-                <Field label={t('parts_manager.label_zone', 'Zone')} name="zone" value={partForm.zone} onChange={handlePartChange} errors={partFormErrors} placeholder="e.g. Brakes" />
+                <div className="pm-form-group">
+                  <label className="pm-form-label">{t('parts_manager.label_zone', 'Zone')}<span className="pm-required">*</span></label>
+                  <select
+                    name="zone"
+                    value={partForm.zone}
+                    onChange={handlePartChange}
+                    className={`pm-form-input ${partFormErrors.zone ? 'pm-input-error' : ''}`}
+                  >
+                    <option value="">{t('parts_manager.select_zone', '-- Select Zone --')}</option>
+                    <option value="engine">{t('parts_manager.zone_engine', 'Engine')}</option>
+                    <option value="wheels">{t('parts_manager.zone_wheels', 'Wheels')}</option>
+                    <option value="exhaust">{t('parts_manager.zone_exhaust', 'Exhaust')}</option>
+                    <option value="lights">{t('parts_manager.zone_lights', 'Lights')}</option>
+                    <option value="body">{t('parts_manager.zone_body', 'Body')}</option>
+                    <option value="diagnostic">{t('parts_manager.zone_diagnostic', 'Diagnostic')}</option>
+                    <option value="general">{t('parts_manager.zone_general', 'General')}</option>
+                  </select>
+                  {partFormErrors.zone && <span className="pm-field-error">{partFormErrors.zone}</span>}
+                </div>
                 <Field label={t('parts_manager.label_category', 'Category')} name="category" value={partForm.category} onChange={handlePartChange} errors={partFormErrors} placeholder="e.g. Pièces principales" />
                 <Field label={t('parts_manager.label_reference', 'Reference Number')} name="reference_number" value={partForm.reference_number} onChange={handlePartChange} errors={partFormErrors} placeholder="e.g. REF-0042" required={false} />
                 <Field label={t('parts_manager.label_cost', 'Cost (MAD)')} name="cost" type="number" step="0.01" value={partForm.cost} onChange={handlePartChange} errors={partFormErrors} placeholder="0.00" />
@@ -472,7 +513,25 @@ const PartsManagerDashboard = () => {
             <form onSubmit={handleSubmitService} noValidate>
               <div className="pm-form-grid">
                 <Field label={t('parts_manager.label_service_name', 'Service Name')} name="name" value={serviceForm.name} onChange={handleServiceChange} errors={serviceFormErrors} placeholder="e.g. Oil Change" />
-                <Field label={t('parts_manager.label_zone', 'Zone')} name="zone" value={serviceForm.zone} onChange={handleServiceChange} errors={serviceFormErrors} placeholder="e.g. Engine" />
+                <div className="pm-form-group">
+                  <label className="pm-form-label">{t('parts_manager.label_zone', 'Zone')}<span className="pm-required">*</span></label>
+                  <select
+                    name="zone"
+                    value={serviceForm.zone}
+                    onChange={handleServiceChange}
+                    className={`pm-form-input ${serviceFormErrors.zone ? 'pm-input-error' : ''}`}
+                  >
+                    <option value="">{t('parts_manager.select_zone', '-- Select Zone --')}</option>
+                    <option value="engine">{t('parts_manager.zone_engine', 'Engine')}</option>
+                    <option value="wheels">{t('parts_manager.zone_wheels', 'Wheels')}</option>
+                    <option value="exhaust">{t('parts_manager.zone_exhaust', 'Exhaust')}</option>
+                    <option value="lights">{t('parts_manager.zone_lights', 'Lights')}</option>
+                    <option value="body">{t('parts_manager.zone_body', 'Body')}</option>
+                    <option value="diagnostic">{t('parts_manager.zone_diagnostic', 'Diagnostic')}</option>
+                    <option value="general">{t('parts_manager.zone_general', 'General')}</option>
+                  </select>
+                  {serviceFormErrors.zone && <span className="pm-field-error">{serviceFormErrors.zone}</span>}
+                </div>
                 <Field label={t('parts_manager.label_price', 'Price (MAD)')} name="price" type="number" step="0.01" value={serviceForm.price} onChange={handleServiceChange} errors={serviceFormErrors} placeholder="0.00" />
               </div>
               <div className="pm-modal-actions" style={{ marginTop: '24px' }}>

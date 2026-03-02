@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import './Auth.css';
 
-// ✅ Added imports
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
 function VerifyOtp() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get email from navigation state (passed from Signup)
   const emailFromState = location.state?.email || '';
 
   const [formData, setFormData] = useState({
@@ -25,14 +25,12 @@ function VerifyOtp() {
   const [resendLoading, setResendLoading] = useState(false);
   const [timer, setTimer] = useState(0);
 
-  // Redirect if no email provided
   useEffect(() => {
     if (!emailFromState) {
       navigate('/signup');
     }
   }, [emailFromState, navigate]);
 
-  // Countdown timer for resend button
   useEffect(() => {
     if (timer > 0) {
       const interval = setInterval(() => {
@@ -66,7 +64,7 @@ function VerifyOtp() {
 
       setTimeout(() => {
         navigate('/login', {
-          state: { message: 'Email verified! Please login to continue.' }
+          state: { message: t('auth.verify_success_login') }
         });
       }, 2000);
 
@@ -77,7 +75,7 @@ function VerifyOtp() {
       if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else {
-        setError('Something went wrong. Please try again.');
+        setError(t('auth.network_error'));
       }
     }
   };
@@ -98,7 +96,7 @@ function VerifyOtp() {
 
     } catch (err) {
       console.error('Resend OTP Error:', err);
-      setError(err.response?.data?.message || 'Failed to resend code.');
+      setError(err.response?.data?.message || t('auth.otp_resend_error'));
     } finally {
       setResendLoading(false);
     }
@@ -106,22 +104,19 @@ function VerifyOtp() {
 
   return (
     <>
-      {/* ✅ Navbar */}
       <Navbar />
 
       <main className="page-content auth-page">
         <div className="auth-inner">
 
-          {/* Hero */}
           <section className="auth-hero">
             <div className="auth-hero-overlay" />
             <div className="auth-hero-content">
-              <h1>Verify Your Email</h1>
-              <p>We've sent a 6-digit code to your email</p>
+              <h1>{t('auth.otp_title')}</h1>
+              <p>{t('auth.otp_subtitle', { email: formData.email })}</p>
             </div>
           </section>
 
-          {/* Form */}
           <section className="auth-form-panel">
             <div className="auth-form-card">
 
@@ -131,10 +126,10 @@ function VerifyOtp() {
                 </div>
               </div>
 
-              <h2>Enter Verification Code</h2>
+              <h2>{t('auth.enter_otp')}</h2>
 
               <p className="auth-email-info">
-                Code sent to: <strong>{formData.email}</strong>
+                {t('auth.otp_code_sent_to')}: <strong>{formData.email}</strong>
               </p>
 
               {error && (
@@ -151,13 +146,13 @@ function VerifyOtp() {
 
               <form className="auth-form" onSubmit={handleSubmit}>
                 <label className="auth-field">
-                  <span>Verification Code</span>
+                  <span>{t('auth.otp_code_label')}</span>
                   <input
                     type="text"
                     name="otp"
                     value={formData.otp}
                     onChange={handleChange}
-                    placeholder="Enter 6-digit code"
+                    placeholder={t('auth.otp_placeholder')}
                     maxLength="6"
                     pattern="\d{6}"
                     required
@@ -171,18 +166,18 @@ function VerifyOtp() {
                   className="btn-primary auth-submit"
                   disabled={loading || formData.otp.length !== 6}
                 >
-                  {loading ? 'Verifying...' : 'Verify Email'}
+                  {loading ? t('auth.verifying') : t('auth.verify_email_button')}
                 </button>
               </form>
 
               <div className="auth-resend-wrapper">
                 <p className="auth-resend-text">
-                  Didn't receive the code?
+                  {t('auth.otp_not_received')}
                 </p>
 
                 {timer > 0 ? (
                   <p className="auth-resend-timer">
-                    Resend available in {timer}s
+                    {t('auth.resend_available', { timer })}
                   </p>
                 ) : (
                   <button
@@ -190,15 +185,15 @@ function VerifyOtp() {
                     disabled={resendLoading}
                     className="auth-resend-btn"
                   >
-                    {resendLoading ? 'Sending...' : 'Resend Code'}
+                    {resendLoading ? t('auth.sending') : t('auth.resend_otp')}
                   </button>
                 )}
               </div>
 
               <p className="auth-footer-text auth-footer-spacing">
-                Wrong email?{' '}
+                {t('auth.wrong_email')}{' '}
                 <Link to="/signup" className="auth-link-button">
-                  Sign up again
+                  {t('auth.signup_again')}
                 </Link>
               </p>
 
@@ -207,7 +202,6 @@ function VerifyOtp() {
         </div>
       </main>
 
-      {/* ✅ Footer */}
       <Footer />
     </>
   );
