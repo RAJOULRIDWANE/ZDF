@@ -44,7 +44,7 @@
 }
 
 [lang="ar"],
-[lang="ar"] * {
+[lang="ar"] *:not(.fa):not(.fas):not(.far):not(.fal):not(.fa-solid):not(.fa-regular):not(.fa-brands):not(i) {
   font-family: 'Cairo', sans-serif !important;
 }
 

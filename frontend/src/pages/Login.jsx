@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import axios from "axios";
 import './Auth.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { patterns, validationMessages } from '../utils/validation';
 
 function Login() {
   const { t } = useTranslation();
@@ -22,6 +23,13 @@ function Login() {
     e.preventDefault();
     if (isLoading) return;
     setError("");
+
+    // Validate inputs
+    if (!patterns.password.test(password)) {
+      setError(validationMessages.password);
+      return;
+    }
+
     setIsLoading(true);
 
     try {

@@ -92,6 +92,7 @@ const ClientDashboard = () => {
 
     const fetchData = useCallback(async () => {
         setLoading(true);
+        const loadingTimeout = setTimeout(() => setLoading(false), 3000);
         const token = localStorage.getItem('ACCESS_TOKEN');
 
         if (!token) {
@@ -145,6 +146,7 @@ const ClientDashboard = () => {
             }
             showMessage('Failed to load data. Please refresh.', 'error');
         } finally {
+            clearTimeout(loadingTimeout);
             setLoading(false);
         }
     }, [navigate]);

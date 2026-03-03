@@ -4,9 +4,11 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import DashboardNavbar from '../components/DashboardNavbar';
 import SkeletonLoader from '../components/SkeletonLoader';
+import { patterns, validationMessages, sanitizeInput } from '../utils/validation';
 import './MechanicDashboard.css';
 
 const BASE = 'http://127.0.0.1:8000/api';
+const PAGE_SIZE = 15;
 
 const MechanicDashboard = () => {
     const { t } = useTranslation();
@@ -36,6 +38,10 @@ const MechanicDashboard = () => {
     const [myPartRequests, setMyPartRequests] = useState([]);
     const [showPartRequests, setShowPartRequests] = useState(false);
 
+    // --- KPI filter & Pagination ---
+    const [kpiFilter, setKpiFilter] = useState(''); // '' | 'active' | 'completed' | 'pending'
+    const [jobsPage, setJobsPage] = useState(1);
+
     const token = localStorage.getItem('ACCESS_TOKEN');
     const headers = { Authorization: `Bearer ${token}` };
 
@@ -56,6 +62,7 @@ const MechanicDashboard = () => {
     // --- Data Fetching ---
     const fetchDashboardData = useCallback(async () => {
         setLoading(true);
+        const loadingTimeout = setTimeout(() => setLoading(false), 3000);
         try {
             const [userRes, jobsRes, servicesRes, partReqRes] = await Promise.all([
                 axios.get(`${BASE}/user`, { headers }),
@@ -88,11 +95,13 @@ const MechanicDashboard = () => {
                 showMessage('Failed to load dashboard data.', 'error');
             }
         } finally {
+            clearTimeout(loadingTimeout);
             setLoading(false);
         }
     }, [navigate]);
 
     useEffect(() => { fetchDashboardData(); }, [fetchDashboardData]);
+    useEffect(() => { setJobsPage(1); }, [kpiFilter]);
 
     // --- Check if job is diagnostic ---
     const isDiagnosticJob = (job) => {
@@ -153,6 +162,7 @@ const MechanicDashboard = () => {
     const handleSubmitEstimate = async () => {
         if (selectedServices.length === 0) { showMessage('Please select at least one service', 'error'); return; }
         if (!mechanicNotes.trim()) { showMessage('Please add mechanic notes', 'error'); return; }
+        if (!patterns.description.test(mechanicNotes)) { showMessage(validationMessages.description, 'error'); return; }
         setSubmittingEstimate(true);
         try {
             const response = await axios.post(
@@ -171,8 +181,6 @@ const MechanicDashboard = () => {
             showMessage(err.response?.data?.message || 'Failed to submit estimate', 'error');
         } finally { setSubmittingEstimate(false); }
     };
-
-
 
     const handleLogout = async () => {
         try { await axios.post(`${BASE}/logout`, {}, { headers }); } catch { }
@@ -208,13 +216,23 @@ const MechanicDashboard = () => {
         );
     }, [services, serviceSearch]);
 
-
-
     const totalEstimate = useMemo(() => {
         return selectedServices.reduce((sum, service) => sum + parseFloat(service.price || 0), 0);
     }, [selectedServices]);
 
     const pendingPartReqs = myPartRequests.filter(r => r.status === 'Pending').length;
+
+    // --- KPI Filtered repairs ---
+    const normalize = (s) => s?.toLowerCase() || '';
+    const kpiFilteredRepairs = useMemo(() => {
+        if (kpiFilter === 'active') return repairs.filter(r => !normalize(r.status).includes('completed'));
+        if (kpiFilter === 'completed') return repairs.filter(r => normalize(r.status).includes('completed'));
+        if (kpiFilter === 'pending') return repairs.filter(r => normalize(r.status).includes('pending'));
+        return repairs;
+    }, [repairs, kpiFilter]);
+
+    const totalJobPages = Math.max(1, Math.ceil(kpiFilteredRepairs.length / PAGE_SIZE));
+    const pagedJobs = kpiFilteredRepairs.slice((jobsPage - 1) * PAGE_SIZE, jobsPage * PAGE_SIZE);
 
     // --- Custom Dropdown Component ---
     const StatusDropdown = ({ currentStatus, onStatusChange }) => {
@@ -263,6 +281,15 @@ const MechanicDashboard = () => {
         return <span className={`mpr-badge ${cls[status] || ''}`}>{translatedStatus}</span>;
     };
 
+    // KPI filter label
+    const kpiFilterLabel = kpiFilter === 'active'
+        ? t('mechanic.active_repairs')
+        : kpiFilter === 'completed'
+            ? t('mechanic.completed_repairs')
+            : kpiFilter === 'pending'
+                ? t('mechanic.awaiting_tasks')
+                : null;
+
     return (
         <div className="dashboard-container">
             <header className="dashboard-header">
@@ -281,15 +308,27 @@ const MechanicDashboard = () => {
                 <section className="dashboard-stats">
                     <div className="section-header"><h2>{t('mechanic.title', 'Mechanic Dashboard')}</h2></div>
                     <div className="stats-container">
-                        <div className="stat-card">
+                        <div
+                            className={`stat-card ${kpiFilter === 'active' ? 'stat-card-active' : ''}`}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => { setKpiFilter(kpiFilter === 'active' ? '' : 'active'); setJobsPage(1); }}
+                        >
                             <div className="stat-info"><span>{t('mechanic.active_repairs', 'Active Repairs')}</span><h2>{kpiData.ActiveJobs}</h2></div>
                             <div className="stat-icon blue"><i className="fa-solid fa-wrench"></i></div>
                         </div>
-                        <div className="stat-card">
+                        <div
+                            className={`stat-card ${kpiFilter === 'completed' ? 'stat-card-active' : ''}`}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => { setKpiFilter(kpiFilter === 'completed' ? '' : 'completed'); setJobsPage(1); }}
+                        >
                             <div className="stat-info"><span>{t('mechanic.completed_repairs', 'Completed')}</span><h2>{kpiData.completed}</h2></div>
                             <div className="stat-icon green"><i className="fa-solid fa-check"></i></div>
                         </div>
-                        <div className="stat-card">
+                        <div
+                            className={`stat-card ${kpiFilter === 'pending' ? 'stat-card-active' : ''}`}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => { setKpiFilter(kpiFilter === 'pending' ? '' : 'pending'); setJobsPage(1); }}
+                        >
                             <div className="stat-info"><span>{t('mechanic.awaiting_tasks', 'Awaiting Tasks')}</span><h2>{kpiData.pending}</h2></div>
                             <div className="stat-icon orange"><i className="fa-solid fa-clock-rotate-left"></i></div>
                         </div>
@@ -298,7 +337,20 @@ const MechanicDashboard = () => {
 
                 <section className="tasks-section">
                     <div className="section-header">
-                        <h2>{t('mechanic.job_list', 'My Job List')}</h2>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                            <h2>{t('mechanic.job_list', 'My Job List')}</h2>
+                            {kpiFilter && (
+                                <span className="mech-filter-badge">
+                                    <i className="fa-solid fa-filter"></i> {kpiFilterLabel}
+                                    <button
+                                        className="mech-filter-clear"
+                                        onClick={() => { setKpiFilter(''); setJobsPage(1); }}
+                                    >
+                                        <i className="fa-solid fa-xmark"></i>
+                                    </button>
+                                </span>
+                            )}
+                        </div>
                         <button className="mech-part-req-toggle" onClick={() => setShowPartRequests(!showPartRequests)}>
                             <i className="fa-solid fa-boxes-stacked"></i> {t('mechanic.my_part_requests', 'My Part Requests')}
                             {pendingPartReqs > 0 && <span className="mpr-count">{pendingPartReqs}</span>}
@@ -338,10 +390,10 @@ const MechanicDashboard = () => {
                     <div className="task-list">
                         {loading ? (
                             <SkeletonLoader type="cards" count={4} />
-                        ) : repairs.length === 0 ? (
+                        ) : kpiFilteredRepairs.length === 0 ? (
                             <div className="no-tasks"><p>{t('mechanic.no_jobs_assigned', '🎉 You have no assigned jobs at the moment.')}</p></div>
                         ) : (
-                            repairs.map(job => (
+                            pagedJobs.map(job => (
                                 <div
                                     key={job.id}
                                     className={`task-card ${job.status?.toLowerCase().includes('completed') ? 'card-completed' : ''}`}
@@ -374,7 +426,7 @@ const MechanicDashboard = () => {
                                     <div className="task-action" onClick={(e) => e.stopPropagation()}>
                                         {job.status === 'Pending' && (
                                             <button className="btn-estimate" onClick={(e) => { e.stopPropagation(); handleOpenEstimateModal(job); }}>
-                                                <i className="fa-solid fa-file-invoice"></i> Submit Estimate
+                                                <i className="fa-solid fa-file-invoice"></i> {t('mechanic.submit_estimate', 'Submit Estimate')}
                                             </button>
                                         )}
 
@@ -387,6 +439,29 @@ const MechanicDashboard = () => {
                             ))
                         )}
                     </div>
+
+                    {/* Pagination for jobs */}
+                    {kpiFilteredRepairs.length > PAGE_SIZE && (
+                        <div className="mech-pagination">
+                            <button
+                                className="mech-page-btn"
+                                onClick={() => setJobsPage(p => Math.max(1, p - 1))}
+                                disabled={jobsPage <= 1}
+                            >
+                                <i className="fa-solid fa-chevron-left"></i> {t('pagination.prev')}
+                            </button>
+                            <span className="mech-page-info">
+                                {t('pagination.page_of', { current: jobsPage, total: totalJobPages })}
+                            </span>
+                            <button
+                                className="mech-page-btn"
+                                onClick={() => setJobsPage(p => Math.min(totalJobPages, p + 1))}
+                                disabled={jobsPage >= totalJobPages}
+                            >
+                                {t('pagination.next')} <i className="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    )}
                 </section>
             </div>
 

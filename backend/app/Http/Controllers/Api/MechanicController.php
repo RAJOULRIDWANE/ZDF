@@ -78,9 +78,11 @@ class MechanicController extends Controller
         }
 
         $request->validate([
-            'mechanic_notes' => 'required|string',
+            'mechanic_notes' => ['required', 'string', 'min:25', 'regex:/^[a-zA-Z0-9.,\s\r\n]*[a-zA-Z][a-zA-Z0-9.,\s\r\n]*$/'],
             'service_ids'    => 'required|array',
             'service_ids.*'  => 'exists:services,id',
+        ], [
+            'mechanic_notes.regex' => 'Mechanic notes must contain letters, and only use letters, numbers, periods, and commas.',
         ]);
 
         try {

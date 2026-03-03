@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DashboardNavbar from '../components/DashboardNavbar';
 import { Link } from 'react-router-dom';
 import './UserProfile.css';
+import { patterns, validationMessages } from '../utils/validation';
 
 const UserProfile = () => {
   // 1. STATE: User Data
@@ -47,6 +48,10 @@ const UserProfile = () => {
     }
     if (passwords.newPassword.length < 6) {
       setMessage({ type: 'error', text: 'Password must be at least 6 characters.' });
+      return;
+    }
+    if (!patterns.password.test(passwords.newPassword)) {
+      setMessage({ type: 'error', text: validationMessages.password });
       return;
     }
 

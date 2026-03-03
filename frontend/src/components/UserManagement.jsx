@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import SkeletonLoader from './SkeletonLoader';
+import { patterns, validationMessages, sanitizeInput } from '../utils/validation';
 import './UserManagement.css';
 
 const UserManagement = () => {
@@ -76,7 +77,15 @@ const UserManagement = () => {
     // ── Handlers ──────────────────────────────────────────────────────────
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+
+        let newValue = value;
+        if (name === 'name') {
+            newValue = sanitizeInput('name', value);
+        } else if (name === 'phone') {
+            newValue = sanitizeInput('phone', value);
+        }
+
+        setFormData(prev => ({ ...prev, [name]: newValue }));
     };
 
     const openAddModal = () => {
@@ -107,6 +116,21 @@ const UserManagement = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        // Frontend Validation
+        if (!patterns.name.test(formData.name)) {
+            setError(validationMessages.name);
+            return;
+        }
+        if (formData.phone && !patterns.phone.test(formData.phone)) {
+            setError(validationMessages.phone);
+            return;
+        }
+        if (formData.password && !patterns.password.test(formData.password)) {
+            setError(validationMessages.password);
+            return;
+        }
+
         try {
             if (modalMode === 'add') {
                 await axios.post(`${apiBaseUrl}/supervisor/staff`, formData, getAxiosConfig());

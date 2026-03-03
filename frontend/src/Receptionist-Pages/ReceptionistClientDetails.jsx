@@ -40,6 +40,7 @@ const ReceptionistClientDetails = () => {
 
     const fetchClientDetails = async () => {
         setLoading(true);
+        const loadingTimeout = setTimeout(() => setLoading(false), 3000);
         try {
             const token = localStorage.getItem('ACCESS_TOKEN');
             const res = await axios.get(`http://127.0.0.1:8000/api/receptionist/client/${id}/repairs`, {
@@ -51,6 +52,7 @@ const ReceptionistClientDetails = () => {
         } catch (err) {
             console.error("Error fetching details:", err);
         } finally {
+            clearTimeout(loadingTimeout);
             setLoading(false);
         }
     };

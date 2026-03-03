@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import './Contact.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { patterns, validationMessages, sanitizeInput } from '../utils/validation';
 
 
 const Contact = () => {
@@ -13,7 +14,12 @@ const Contact = () => {
   const [submitted, setSubmitted] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+
+    // Strict typing sanitization
+    if (name === 'name') value = sanitizeInput('name', value);
+    if (name === 'message') value = sanitizeInput('description', value);
+
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
@@ -22,8 +28,11 @@ const Contact = () => {
   const [phoneData, setPhoneData] = useState({ countryCode: '', number: '' });
 
   const handlePhoneChange = (e) => {
-    const { name, value } = e.target;
-    const updated = { ...phoneData, [name]: name === 'countryCode' ? value.replace(/\D/g, '') : value };
+    let { name, value } = e.target;
+    // Both countryCode and number must be digits only
+    value = value.replace(/\D/g, '');
+
+    const updated = { ...phoneData, [name]: value };
     setPhoneData(updated);
     setFormData(prev => ({ ...prev, phone: `+${updated.countryCode}${updated.number}` }));
     if (errors.phone) setErrors(prev => ({ ...prev, phone: '' }));
@@ -33,8 +42,7 @@ const Contact = () => {
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = t('contact.errors.name_required');
-    else if (/\d/.test(formData.name)) newErrors.name = t('contact.errors.name_no_numbers');
-    else if (formData.name.trim().length <= 4) newErrors.name = t('contact.errors.name_length');
+    else if (!patterns.name.test(formData.name)) newErrors.name = validationMessages.name;
 
     if (!formData.email.trim()) newErrors.email = t('contact.errors.email_required');
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = t('contact.errors.email_invalid');
@@ -42,13 +50,12 @@ const Contact = () => {
     if (!formData.phone.trim()) {
       newErrors.phone = t('contact.errors.phone_required');
     } else {
-      const digitsOnly = formData.phone.replace(/\D/g, '');
-      if (digitsOnly.length < 8) newErrors.phone = t('contact.errors.phone_length');
-      else if (!/^[\d\s\-+()]+$/.test(formData.phone)) newErrors.phone = t('contact.errors.phone_invalid');
+      const fullPhone = formData.phone.replace(/\D/g, ''); // Extract digits
+      if (!patterns.phone.test(fullPhone)) newErrors.phone = validationMessages.phone;
     }
 
     if (!formData.message.trim()) newErrors.message = t('contact.errors.message_required');
-    else if (formData.message.trim().length <= 25) newErrors.message = t('contact.errors.message_length');
+    else if (!patterns.description.test(formData.message)) newErrors.message = validationMessages.description;
 
     return newErrors;
   };

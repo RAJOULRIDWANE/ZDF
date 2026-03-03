@@ -10,6 +10,7 @@ use App\Models\Vehicle;
 use App\Models\Repair;
 use App\Models\Service;
 use App\Http\Resources\RepairResource;
+use Illuminate\Support\Facades\DB;
 
 class ReceptionistController extends Controller
 {
@@ -18,17 +19,53 @@ class ReceptionistController extends Controller
         $mechanics = User::whereIn('role', ['Mechanic', 'mechanic', 'MECHANIC'])
                         ->get(['id', 'name']);
 
-        $repairs = Repair::with(['vehicle.client', 'mechanic', 'services', 'parts']) 
+        // Keep dashboard payload intentionally lean for faster first paint.
+        $repairs = Repair::select([
+                'id',
+                'vehicle_id',
+                'mechanic_id',
+                'description',
+                'cost',
+                'status',
+                'date_end',
+                'invoice_number',
+                'created_at',
+                'is_diagnostic',
+                'negotiation_count',
+                'original_cost',
+            ])
+            ->with([
+                'vehicle:id,user_id,make,model,type,license_plate',
+                'vehicle.client:id,name',
+                'mechanic:id,name',
+                'services:id,name,zone,price',
+            ])
             ->orderBy('created_at', 'desc')
+            ->limit(150)
             ->get();
+
+        $today = now()->toDateString();
+        $todaysAppointments = Repair::whereDate('date_end', $today)->count();
+        $confirmedToday = Repair::whereDate('date_end', $today)->where('status', 'Completed')->count();
+
+        $pendingNegotiationsByClient = Repair::join('vehicles', 'repairs.vehicle_id', '=', 'vehicles.id')
+            ->whereRaw('LOWER(repairs.status) = ?', ['negotiation requested'])
+            ->select('vehicles.user_id', DB::raw('COUNT(*) as total'))
+            ->groupBy('vehicles.user_id')
+            ->pluck('total', 'vehicles.user_id');
 
         return response()->json([
             'user' => [
                 'name' => Auth::user()->name,
                 'role' => Auth::user()->role
-            ], 
+            ],
             'mechanics' => $mechanics,
-            'repairs' => RepairResource::collection($repairs) 
+            'stats' => [
+                'todaysAppointments' => $todaysAppointments,
+                'confirmedToday' => $confirmedToday,
+            ],
+            'pending_negotiations_by_client' => $pendingNegotiationsByClient,
+            'repairs' => RepairResource::collection($repairs)
         ]);
     }
 
@@ -59,9 +96,11 @@ class ReceptionistController extends Controller
             'mechanic_id'   => 'required',
             'service_ids'   => 'required|array', 
             'service_ids.*' => 'exists:services,id',
-            'description'   => 'nullable', 
+            'description'   => ['nullable', 'string', 'min:25', 'regex:/^[a-zA-Z0-9.,\s\r\n]*[a-zA-Z][a-zA-Z0-9.,\s\r\n]*$/'], 
             'cost'          => 'required', 
             'date_end'      => 'required|date'
+        ], [
+            'description.regex' => 'Description must contain letters, and only use letters, numbers, periods, and commas.',
         ]);
 
         // Check if "General Diagnostic" is in the selected services
@@ -219,8 +258,9 @@ class ReceptionistController extends Controller
     public function getClientsWithRepairs()
     {
         $clients = User::whereHas('repairs')
+            ->select(['id', 'name', 'email'])
             ->withCount('repairs')
-            ->with(['vehicles'])
+            ->with(['vehicles:id,user_id,make,model,license_plate,type'])
             ->get();
 
         return response()->json($clients);

@@ -3,6 +3,7 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import './ForgotPassword.css';
+import { patterns, validationMessages } from '../utils/validation';
 
 function ResetPassword() {
   const { t } = useTranslation();
@@ -23,6 +24,11 @@ function ResetPassword() {
 
     if (password !== confirmPassword) {
       setError(t('auth.passwords_no_match'));
+      return;
+    }
+
+    if (!patterns.password.test(password)) {
+      setError(validationMessages.password);
       return;
     }
 
