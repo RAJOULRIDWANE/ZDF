@@ -82,7 +82,11 @@ class PartsManagerController extends Controller
      */
     public function decline(Request $request, $id)
     {
-        $request->validate(['notes' => 'nullable|string|max:500']);
+        $request->validate([
+            'notes' => ['nullable', 'string', 'min:25', 'max:500', 'regex:/^[a-zA-Z0-9.,\s\r\n]*[a-zA-Z][a-zA-Z0-9.,\s\r\n]*$/'],
+        ], [
+            'notes.regex' => 'Notes must contain letters, and only use letters, numbers, periods, and commas.',
+        ]);
 
         $partRequest = PartRequest::findOrFail($id);
 
@@ -106,13 +110,16 @@ class PartsManagerController extends Controller
     public function storePart(Request $request)
     {
         $validated = $request->validate([
-            'name'             => 'required|string|max:255',
+            'name'             => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z\s]+$/'],
             'zone'             => 'required|string|max:255',
             'category'         => 'required|string|max:255',
             'cost'             => 'required|numeric|min:0',
             'price'            => 'required|numeric|min:0',
             'stock_quantity'   => 'required|integer|min:0',
-            'reference_number' => 'nullable|string|max:255',
+            'reference_number' => ['nullable', 'string', 'max:255', 'regex:/^[a-zA-Z0-9-]+$/'],
+        ], [
+            'name.regex' => 'Part name must contain only alphabets and spaces.',
+            'reference_number.regex' => 'Reference number must contain only letters, numbers, and dashes.',
         ]);
 
         $part = Part::create($validated);
@@ -129,9 +136,11 @@ class PartsManagerController extends Controller
     public function storeService(Request $request)
     {
         $validated = $request->validate([
-            'name'  => 'required|string|max:255',
+            'name'  => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z\s]+$/'],
             'zone'  => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+        ], [
+            'name.regex' => 'Service name must contain only alphabets and spaces.',
         ]);
 
         $service = Service::create($validated);

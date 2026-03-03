@@ -69,7 +69,7 @@ const About = () => {
             <p dangerouslySetInnerHTML={{ __html: t('about.story_p1_html') }} />
             <p>{t('about.story_p2')}</p>
             <span>
-              <Link to="/moreabout" className="more-link">{t('about.see_more')} →</Link>
+              <Link to="/moreabout" className="more-link">{t('about.see_more')}</Link>
             </span>
           </div>
 

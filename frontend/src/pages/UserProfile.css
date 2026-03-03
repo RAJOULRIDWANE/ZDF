@@ -38,7 +38,7 @@
 
 .card-header h3 {
   margin: 0;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-size: 15px;
   font-weight: 700;
   color: var(--white);
@@ -91,7 +91,7 @@
   color: var(--white);
   box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
-  font-family: 'Barlow', sans-serif;
+  font-family: var(--font-family-latin);
 }
 
 .form-control:focus {
@@ -173,7 +173,7 @@
   color: var(--white);
   border: none;
   padding: 11px 28px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-weight: 700;
   font-size: 14px;
   text-transform: uppercase;

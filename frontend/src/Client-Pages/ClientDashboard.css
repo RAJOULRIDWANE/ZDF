@@ -6,7 +6,7 @@
 .client-space {
     background: var(--black);
     min-height: 100vh;
-    font-family: 'Barlow', -apple-system, sans-serif;
+    font-family: var(--font-family-latin);
     color: var(--white);
 }
 
@@ -24,7 +24,7 @@
 }
 
 .welcome-section h1 {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-family-title);
     font-size: 2rem;
     color: var(--white);
     font-weight: 400;
@@ -56,7 +56,7 @@
 }
 
 .dashboard-title h2 {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-family-title);
     font-size: 1.6rem;
     margin-bottom: 4px;
     font-weight: 400;
@@ -156,7 +156,7 @@
 }
 
 .stat-text h3 {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-family-title);
     font-size: 2rem;
     margin: 0;
     font-weight: 400;
@@ -218,7 +218,7 @@
 }
 
 .vehicles-header-row h3 {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--white);
@@ -246,7 +246,7 @@
     border: none;
     padding: 10px 18px;
     cursor: pointer;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-weight: 700;
     font-size: 0.88rem;
     text-transform: uppercase;
@@ -317,7 +317,7 @@
 
 .vehicle-card-info h4 {
     margin: 0 0 5px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-size: 1rem;
     font-weight: 700;
     color: var(--white);
@@ -337,7 +337,7 @@
     border: 1px solid var(--border-light);
     padding: 8px 16px;
     cursor: pointer;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-weight: 700;
     font-size: 0.88rem;
     text-transform: uppercase;
@@ -360,7 +360,7 @@
 }
 
 .repairs-list h3 {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--white);
@@ -473,7 +473,7 @@
 
 .repair-info h4 {
     margin: 0 0 5px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-size: 1rem;
     font-weight: 700;
     color: var(--white);
@@ -541,7 +541,7 @@
     border: none;
     padding: 9px 18px;
     cursor: pointer;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-weight: 700;
     font-size: 0.88rem;
     text-transform: uppercase;
@@ -568,7 +568,7 @@
     border: 1px solid rgba(34, 197, 94, 0.3);
     padding: 9px 18px;
     cursor: pointer;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-weight: 700;
     font-size: 0.88rem;
     text-transform: uppercase;
@@ -592,7 +592,7 @@
     border: 1px solid var(--border-light);
     padding: 9px 18px;
     cursor: pointer;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-weight: 700;
     font-size: 0.88rem;
     text-transform: uppercase;
@@ -612,7 +612,7 @@
     border: 1px solid rgba(34, 197, 94, 0.3);
     padding: 9px 18px;
     cursor: pointer;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-weight: 700;
     font-size: 0.88rem;
     text-transform: uppercase;
@@ -632,7 +632,7 @@
     border: 1px solid rgba(34, 197, 94, 0.3);
     padding: 11px 22px;
     cursor: pointer;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-weight: 700;
     font-size: 0.88rem;
     text-transform: uppercase;
@@ -674,7 +674,7 @@
 }
 
 .modal-content h2 {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-family-title);
     font-size: 1.5rem;
     font-weight: 400;
     color: var(--white);
@@ -708,7 +708,7 @@
     border: 1px solid var(--border-light);
     color: var(--white);
     font-size: 0.95rem;
-    font-family: 'Barlow', sans-serif;
+    font-family: var(--font-family-latin);
     transition: border-color 0.2s, box-shadow 0.2s;
     box-sizing: border-box;
 }
@@ -739,7 +739,7 @@ select.form-group option,
     background: transparent;
     color: var(--muted);
     cursor: pointer;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-weight: 700;
     font-size: 0.88rem;
     text-transform: uppercase;
@@ -762,7 +762,7 @@ select.form-group option,
     background: var(--red);
     color: var(--white);
     cursor: pointer;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-weight: 700;
     font-size: 0.88rem;
     text-transform: uppercase;
@@ -878,7 +878,7 @@ select.form-group option,
 }
 
 .appointments-section h3 {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--white);
@@ -952,7 +952,7 @@ select.form-group option,
 }
 
 .appt-date {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-size: 1rem;
     font-weight: 700;
     color: var(--white);
@@ -1073,7 +1073,7 @@ select.form-group option,
     border: 1px solid var(--border-light);
     color: var(--white);
     font-size: 0.95rem;
-    font-family: 'Barlow', sans-serif;
+    font-family: var(--font-family-latin);
     resize: vertical;
     box-sizing: border-box;
     transition: border-color 0.2s;

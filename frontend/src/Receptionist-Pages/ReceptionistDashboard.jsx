@@ -4,7 +4,10 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import DashboardNavbar from '../components/DashboardNavbar';
 import SkeletonLoader from '../components/SkeletonLoader';
+import { patterns, validationMessages, sanitizeInput } from '../utils/validation';
 import "./ReceptionistDashboard.css";
+
+const PAGE_SIZE = 15;
 
 const ReceptionistDashboard = () => {
   const { t } = useTranslation();
@@ -21,6 +24,8 @@ const ReceptionistDashboard = () => {
   const [services, setServices] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dashboardStats, setDashboardStats] = useState({ todaysAppointments: 0, confirmedToday: 0 });
+  const [pendingNegotiationsByClient, setPendingNegotiationsByClient] = useState({});
   const [activeTab, setActiveTab] = useState('clients');
   const [dashboardSearch, setDashboardSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -38,11 +43,20 @@ const ReceptionistDashboard = () => {
   const [apptActionLoading, setApptActionLoading] = useState(null);
   const [apptNotes, setApptNotes] = useState({});
 
+  // KPI filter & pagination
+  const [kpiFilter, setKpiFilter] = useState(''); // '' | 'today' | 'confirmed' | 'pending_appts'
+  const [clientsPage, setClientsPage] = useState(1);
+  const [apptsPage, setApptsPage] = useState(1);
+
   useEffect(() => {
     fetchDashboardData();
     fetchServices();
     fetchAppointments();
   }, []);
+
+  // Reset pages when filter/search/tab changes
+  useEffect(() => { setClientsPage(1); }, [dashboardSearch, kpiFilter]);
+  useEffect(() => { setApptsPage(1); }, [kpiFilter, activeTab]);
 
   const fetchServices = async () => {
     try {
@@ -63,15 +77,15 @@ const ReceptionistDashboard = () => {
 
   const fetchDashboardData = async () => {
     setLoading(true);
+    const loadingTimeout = setTimeout(() => setLoading(false), 3000);
     try {
       const token = localStorage.getItem('ACCESS_TOKEN');
-      const clientRes = await axios.get('http://127.0.0.1:8000/api/receptionist/clients-summary', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const authConfig = { headers: { Authorization: `Bearer ${token}` } };
+      const [clientRes, dashRes] = await Promise.all([
+        axios.get('http://127.0.0.1:8000/api/receptionist/clients-summary', authConfig),
+        axios.get('http://127.0.0.1:8000/api/receptionist/dashboard', authConfig)
+      ]);
       setGroupedClients(clientRes.data);
-      const dashRes = await axios.get('http://127.0.0.1:8000/api/receptionist/dashboard', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
       if (dashRes.data.user) {
         setUser(dashRes.data.user);
         localStorage.setItem('USER_NAME', dashRes.data.user.name);
@@ -79,10 +93,13 @@ const ReceptionistDashboard = () => {
       }
       setMechanics(dashRes.data.mechanics || []);
       setRepairs(dashRes.data.repairs || []);
+      setDashboardStats(dashRes.data.stats || { todaysAppointments: 0, confirmedToday: 0 });
+      setPendingNegotiationsByClient(dashRes.data.pending_negotiations_by_client || {});
     } catch (err) {
       console.error(err);
       if (err.response && err.response.status === 401) handleLogout();
     } finally {
+      clearTimeout(loadingTimeout);
       setLoading(false);
     }
   };
@@ -140,6 +157,12 @@ const ReceptionistDashboard = () => {
   };
 
   const getKPIData = () => {
+    if (
+      typeof dashboardStats?.todaysAppointments === 'number' &&
+      typeof dashboardStats?.confirmedToday === 'number'
+    ) {
+      return dashboardStats;
+    }
     const today = new Date().toISOString().split('T')[0];
     const todaysAppointments = repairs.filter(r => r.date_end && r.date_end.startsWith(today)).length;
     const confirmedToday = repairs.filter(r => r.date_end?.startsWith(today) && r.status?.toLowerCase().trim() === 'completed').length;
@@ -149,15 +172,65 @@ const ReceptionistDashboard = () => {
   const { todaysAppointments, confirmedToday } = getKPIData();
   const pendingAppts = appointments.filter(a => a.status === 'Pending').length;
 
+  // ─── KPI click handlers ─────────────────────────────────────────────
+  const handleKpiTodayAppts = () => {
+    setActiveTab('clients');
+    setKpiFilter('today');
+    setDashboardSearch('');
+    setClientsPage(1);
+  };
+
+  const handleKpiConfirmed = () => {
+    setActiveTab('appointments');
+    setKpiFilter('confirmed');
+    setApptsPage(1);
+  };
+
+  const handleKpiPending = () => {
+    setActiveTab('appointments');
+    setKpiFilter('pending_appts');
+    setApptsPage(1);
+  };
+
+  const clearKpiFilter = () => {
+    setKpiFilter('');
+    setClientsPage(1);
+    setApptsPage(1);
+  };
+
+  // ─── Filtered data ──────────────────────────────────────────────────
+  const today = new Date().toISOString().split('T')[0];
+
   const filteredClients = (() => {
-    if (!dashboardSearch) return groupedClients;
-    const lowerSearch = dashboardSearch.toLowerCase();
-    return groupedClients.filter(client =>
-      client.name.toLowerCase().includes(lowerSearch) ||
-      client.email.toLowerCase().includes(lowerSearch)
-    );
+    let list = groupedClients;
+    if (dashboardSearch) {
+      const lwr = dashboardSearch.toLowerCase();
+      list = list.filter(c => c.name.toLowerCase().includes(lwr) || c.email.toLowerCase().includes(lwr));
+    }
+    if (kpiFilter === 'today') {
+      // clients who have at least one repair with date_end today
+      const todayClientIds = new Set(
+        repairs.filter(r => r.date_end?.startsWith(today)).map(r => r.vehicle?.client_id)
+      );
+      list = list.filter(c => todayClientIds.has(c.id));
+    }
+    return list;
   })();
 
+  const filteredAppointments = (() => {
+    if (kpiFilter === 'confirmed') return appointments.filter(a => a.status === 'Approved');
+    if (kpiFilter === 'pending_appts') return appointments.filter(a => a.status === 'Pending');
+    return appointments;
+  })();
+
+  // Pagination slices
+  const totalClientPages = Math.max(1, Math.ceil(filteredClients.length / PAGE_SIZE));
+  const pagedClients = filteredClients.slice((clientsPage - 1) * PAGE_SIZE, clientsPage * PAGE_SIZE);
+
+  const totalApptPages = Math.max(1, Math.ceil(filteredAppointments.length / PAGE_SIZE));
+  const pagedAppointments = filteredAppointments.slice((apptsPage - 1) * PAGE_SIZE, apptsPage * PAGE_SIZE);
+
+  // ─── Helpers ────────────────────────────────────────────────────────
   const handleClientSearch = async (e) => {
     const query = e.target.value;
     setSearchQuery(query);
@@ -232,9 +305,13 @@ const ReceptionistDashboard = () => {
     if (!formData.vehicle_id || !formData.mechanic_id || !formData.date_end) {
       showMessage(t('receptionist.modal.fill_required'), "error"); return;
     }
-    if (formData.description.trim().length > 0 && formData.description.trim().length < 5) {
-      showMessage("Notes must be at least 5 characters long.", "error"); return;
-    } if (selectedServices.length === 0) {
+    if (formData.description.trim().length > 0) {
+      if (!patterns.description.test(formData.description)) {
+        showMessage(validationMessages.description, "error"); return;
+      }
+    }
+
+    if (selectedServices.length === 0) {
       showMessage(t('receptionist.modal.select_service_error'), "error"); return;
     }
     try {
@@ -264,20 +341,56 @@ const ReceptionistDashboard = () => {
     return <span className={`appt-badge-r ${cls[status] || ''}`}>{status}</span>;
   };
 
+  // Active KPI filter label
+  const kpiFilterLabel = kpiFilter === 'today'
+    ? t('receptionist.today_appointments')
+    : kpiFilter === 'confirmed'
+      ? t('receptionist.confirmed_appointments')
+      : kpiFilter === 'pending_appts'
+        ? t('receptionist.add_appointment')
+        : null;
+
+  // ─── Pagination component ────────────────────────────────────────────
+  const Pagination = ({ page, totalPages, onPrev, onNext }) => (
+    <div className="r-pagination">
+      <button className="r-page-btn" onClick={onPrev} disabled={page <= 1}>
+        <i className="fa-solid fa-chevron-left"></i> {t('pagination.prev')}
+      </button>
+      <span className="r-page-info">
+        {t('pagination.page_of', { current: page, total: totalPages })}
+      </span>
+      <button className="r-page-btn" onClick={onNext} disabled={page >= totalPages}>
+        {t('pagination.next')} <i className="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+  );
+
   return (
     <div className="receptionist-container">
       <DashboardNavbar user={user} onLogout={handleLogout} onChangePassword={() => setShowPasswordModal(true)} />
 
       <div className="kpi-container">
-        <div className="kpi-card">
+        <div
+          className={`kpi-card ${kpiFilter === 'today' ? 'kpi-card-active' : ''}`}
+          style={{ cursor: 'pointer' }}
+          onClick={handleKpiTodayAppts}
+        >
           <div className="kpi-icon"><i className="fa-regular fa-calendar"></i></div>
           <div className="kpi-info"><h3>{t('receptionist.today_appointments')}</h3><p className="kpi-number">{todaysAppointments}</p></div>
         </div>
-        <div className="kpi-card">
+        <div
+          className={`kpi-card ${kpiFilter === 'confirmed' ? 'kpi-card-active' : ''}`}
+          style={{ cursor: 'pointer' }}
+          onClick={handleKpiConfirmed}
+        >
           <div className="kpi-icon success-icon"><i className="fa-regular fa-circle-check"></i></div>
           <div className="kpi-info"><h3>{t('receptionist.confirmed_appointments')}</h3><p className="kpi-number">{confirmedToday}</p></div>
         </div>
-        <div className="kpi-card">
+        <div
+          className={`kpi-card ${kpiFilter === 'pending_appts' ? 'kpi-card-active' : ''}`}
+          style={{ cursor: 'pointer' }}
+          onClick={handleKpiPending}
+        >
           <div className="kpi-icon" style={{ background: '#fffbeb' }}><i className="fa-solid fa-calendar-days" style={{ color: '#d97706' }}></i></div>
           <div className="kpi-info"><h3>{t('receptionist.add_appointment')}</h3><p className="kpi-number">{pendingAppts}</p></div>
         </div>
@@ -298,6 +411,17 @@ const ReceptionistDashboard = () => {
           {pendingAppts > 0 && <span className="r-tab-badge">{pendingAppts}</span>}
         </button>
       </div>
+
+      {/* Active KPI Filter indicator */}
+      {kpiFilter && (
+        <div className="r-filter-banner">
+          <i className="fa-solid fa-filter"></i>
+          <span>{t('receptionist.search_placeholder').split('...')[0]}: <strong>{kpiFilterLabel}</strong></span>
+          <button className="r-filter-clear" onClick={clearKpiFilter}>
+            <i className="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      )}
 
       {!showModal && message && (
         <div className={`alert-message ${messageType}`}><span>{message}</span></div>
@@ -327,9 +451,10 @@ const ReceptionistDashboard = () => {
                       <SkeletonLoader type="table-rows" cols={4} count={5} />
                     </td>
                   </tr>
-                ) : filteredClients.length > 0 ? (
-                  filteredClients.map(client => {
-                    const clientPendingNegs = repairs.filter(r => r.vehicle?.client_id === client.id && r.status?.toLowerCase().trim() === 'negotiation requested').length;
+                ) : pagedClients.length > 0 ? (
+                  pagedClients.map(client => {
+                    const clientPendingNegs = pendingNegotiationsByClient[String(client.id)] ??
+                      repairs.filter(r => r.vehicle?.client_id === client.id && r.status?.toLowerCase().trim() === 'negotiation requested').length;
                     return (
                       <tr key={client.id} className="clickable-row" onClick={() => handleClientClick(client)}>
                         <td><strong>{client.name}</strong><div className="sub-text">{client.email}</div></td>
@@ -357,6 +482,14 @@ const ReceptionistDashboard = () => {
                 )}
               </tbody>
             </table>
+            {filteredClients.length > PAGE_SIZE && (
+              <Pagination
+                page={clientsPage}
+                totalPages={totalClientPages}
+                onPrev={() => setClientsPage(p => Math.max(1, p - 1))}
+                onNext={() => setClientsPage(p => Math.min(totalClientPages, p + 1))}
+              />
+            )}
           </div>
         </>
       ) : (
@@ -373,9 +506,9 @@ const ReceptionistDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {appointments.length === 0 ? (
+              {pagedAppointments.length === 0 ? (
                 <tr><td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>{t('receptionist.details.no_repairs')}</td></tr>
-              ) : appointments.map(appt => (
+              ) : pagedAppointments.map(appt => (
                 <tr key={appt.id}>
                   <td><strong>{appt.client?.name}</strong><div className="sub-text">{appt.client?.email}</div></td>
                   <td>{appt.vehicle ? `${appt.vehicle.make} ${appt.vehicle.model}` : '—'}</td>
@@ -409,6 +542,14 @@ const ReceptionistDashboard = () => {
               ))}
             </tbody>
           </table>
+          {filteredAppointments.length > PAGE_SIZE && (
+            <Pagination
+              page={apptsPage}
+              totalPages={totalApptPages}
+              onPrev={() => setApptsPage(p => Math.max(1, p - 1))}
+              onNext={() => setApptsPage(p => Math.min(totalApptPages, p + 1))}
+            />
+          )}
         </div>
       )}
 
@@ -479,7 +620,7 @@ const ReceptionistDashboard = () => {
 
               <div className="form-group">
                 <label>{t('receptionist.modal.notes')}</label>
-                <input type="text" className="form-control" placeholder={t('receptionist.modal.notes_placeholder')} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
+                <input type="text" className="form-control" placeholder={t('receptionist.modal.notes_placeholder')} value={formData.description} onChange={e => setFormData({ ...formData, description: sanitizeInput('description', e.target.value) })} />
               </div>
 
               <div className="form-group">

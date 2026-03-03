@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import SkeletonLoader from './SkeletonLoader';
+import { patterns, validationMessages, sanitizeInput } from '../utils/validation';
 import './UserManagement.css';
 
 const UserManagement = () => {
+    const { t } = useTranslation();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -74,7 +77,15 @@ const UserManagement = () => {
     // ── Handlers ──────────────────────────────────────────────────────────
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+
+        let newValue = value;
+        if (name === 'name') {
+            newValue = sanitizeInput('name', value);
+        } else if (name === 'phone') {
+            newValue = sanitizeInput('phone', value);
+        }
+
+        setFormData(prev => ({ ...prev, [name]: newValue }));
     };
 
     const openAddModal = () => {
@@ -105,6 +116,21 @@ const UserManagement = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        // Frontend Validation
+        if (!patterns.name.test(formData.name)) {
+            setError(validationMessages.name);
+            return;
+        }
+        if (formData.phone && !patterns.phone.test(formData.phone)) {
+            setError(validationMessages.phone);
+            return;
+        }
+        if (formData.password && !patterns.password.test(formData.password)) {
+            setError(validationMessages.password);
+            return;
+        }
+
         try {
             if (modalMode === 'add') {
                 await axios.post(`${apiBaseUrl}/supervisor/staff`, formData, getAxiosConfig());
@@ -135,8 +161,8 @@ const UserManagement = () => {
         <div className="user-management-system">
             {/* Header row */}
             <div className="um-header">
-                <h2>Staff Directory</h2>
-                <button className="add-btn" onClick={openAddModal}>+ Add New Staff</button>
+                <h2>{t('supervisor.users.staff_directory', 'Staff Directory')}</h2>
+                <button className="add-btn" onClick={openAddModal}>{t('supervisor.users.add_new_staff', '+ Add New Staff')}</button>
             </div>
 
             {/* Filters row */}
@@ -146,7 +172,7 @@ const UserManagement = () => {
                     <input
                         type="text"
                         className="filter-input search-input"
-                        placeholder="Search by name, email or role…"
+                        placeholder={t('supervisor.users.search_placeholder', 'Search by name, email or role...')}
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
@@ -160,9 +186,9 @@ const UserManagement = () => {
                     value={roleFilter}
                     onChange={e => setRoleFilter(e.target.value)}
                 >
-                    <option value="all">All Roles</option>
-                    <option value="mechanic">Mechanic</option>
-                    <option value="receptionist">Receptionist</option>
+                    <option value="all">{t('supervisor.users.all_roles', 'All Roles')}</option>
+                    <option value="mechanic">{t('roles.mechanic', 'Mechanic')}</option>
+                    <option value="receptionist">{t('roles.receptionist', 'Receptionist')}</option>
                 </select>
 
                 <select
@@ -170,9 +196,9 @@ const UserManagement = () => {
                     value={statusFilter}
                     onChange={e => setStatusFilter(e.target.value)}
                 >
-                    <option value="all">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="disabled">Disabled</option>
+                    <option value="all">{t('supervisor.users.all_status', 'All Status')}</option>
+                    <option value="active">{t('supervisor.users.active', 'Active')}</option>
+                    <option value="disabled">{t('supervisor.users.disabled', 'Disabled')}</option>
                 </select>
             </div>
 
@@ -192,14 +218,14 @@ const UserManagement = () => {
                                 <th>Email</th>
                                 <th>Role</th>
                                 <th>Status</th>
-                                <th>Actions</th>
+                                <th>{t('supervisor.users.actions', 'Actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredUsers.length === 0 ? (
                                 <tr>
                                     <td colSpan="6" className="text-center">
-                                        No staff members match your filters.
+                                        {t('supervisor.users.no_staff_found', 'No staff members match your filters.')}
                                     </td>
                                 </tr>
                             ) : (
@@ -210,21 +236,21 @@ const UserManagement = () => {
                                         <td>{user.email}</td>
                                         <td>
                                             <span className={`role-badge ${user.role}`}>
-                                                {user.role}
+                                                {t(`roles.${user.role}`, user.role)}
                                             </span>
                                         </td>
                                         <td>
                                             <span className={`status-badge ${user.is_active ? 'active' : 'disabled'}`}>
-                                                {user.is_active ? 'Active' : 'Disabled'}
+                                                {user.is_active ? t('supervisor.users.active', 'Active') : t('supervisor.users.disabled', 'Disabled')}
                                             </span>
                                         </td>
                                         <td className="actions-cell">
-                                            <button className="edit-btn" onClick={() => openEditModal(user)}>Edit</button>
+                                            <button className="edit-btn" onClick={() => openEditModal(user)}>{t('supervisor.users.edit', 'Edit')}</button>
                                             <button
                                                 className={`toggle-btn ${user.is_active ? 'disable' : 'enable'}`}
                                                 onClick={() => toggleStatus(user.id)}
                                             >
-                                                {user.is_active ? 'Disable' : 'Enable'}
+                                                {user.is_active ? t('supervisor.users.disable', 'Disable') : t('supervisor.users.enable', 'Enable')}
                                             </button>
                                         </td>
                                     </tr>
@@ -238,7 +264,7 @@ const UserManagement = () => {
             {/* Result count */}
             {!loading && (
                 <p className="results-count">
-                    Showing {filteredUsers.length} of {users.length} staff members
+                    {t('supervisor.users.showing_x_of_y', 'Showing {{count}} of {{total}} staff members', { count: filteredUsers.length, total: users.length })}
                 </p>
             )}
 
@@ -247,7 +273,7 @@ const UserManagement = () => {
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <div className="modal-header-sup">
-                            <h3>{modalMode === 'add' ? 'Create New Staff' : 'Edit Staff Member'}</h3>
+                            <h3>{modalMode === 'add' ? t('supervisor.users.create_new_staff', 'Create New Staff') : t('supervisor.users.edit_staff_member', 'Edit Staff Member')}</h3>
                             <button className="close-x" onClick={closeModal}>&times;</button>
                         </div>
 
@@ -273,14 +299,14 @@ const UserManagement = () => {
                                 <div className="form-group">
                                     <label>Role</label>
                                     <select name="role" value={formData.role} onChange={handleInputChange}>
-                                        <option value="mechanic">Mechanic</option>
-                                        <option value="receptionist">Receptionist</option>
+                                        <option value="mechanic">{t('roles.mechanic', 'Mechanic')}</option>
+                                        <option value="receptionist">{t('roles.receptionist', 'Receptionist')}</option>
                                     </select>
                                 </div>
                             )}
 
                             <div className="form-group">
-                                <label>Password {modalMode === 'edit' && <span className="hint">(Leave blank to keep current)</span>}</label>
+                                <label>Password {modalMode === 'edit' && <span className="hint">{t('supervisor.users.leave_blank', '(Leave blank to keep current)')}</span>}</label>
                                 <input
                                     type="password"
                                     name="password"
@@ -292,9 +318,9 @@ const UserManagement = () => {
                             </div>
 
                             <div className="modal-footer-sup">
-                                <button type="button" className="cancel-btn" onClick={closeModal}>Cancel</button>
+                                <button type="button" className="cancel-btn" onClick={closeModal}>{t('supervisor.users.cancel_btn', 'Cancel')}</button>
                                 <button type="submit" className="save-btn">
-                                    {modalMode === 'add' ? 'Create Staff' : 'Save Changes'}
+                                    {modalMode === 'add' ? t('supervisor.users.create_btn', 'Create Staff') : t('supervisor.users.save_btn', 'Save Changes')}
                                 </button>
                             </div>
                         </form>

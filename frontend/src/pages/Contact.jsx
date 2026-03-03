@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import './Contact.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { patterns, validationMessages, sanitizeInput } from '../utils/validation';
 
 
 const Contact = () => {
@@ -13,16 +14,35 @@ const Contact = () => {
   const [submitted, setSubmitted] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+
+    // Strict typing sanitization
+    if (name === 'name') value = sanitizeInput('name', value);
+    if (name === 'message') value = sanitizeInput('description', value);
+
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
+
+  const [phoneData, setPhoneData] = useState({ countryCode: '', number: '' });
+
+  const handlePhoneChange = (e) => {
+    let { name, value } = e.target;
+    // Both countryCode and number must be digits only
+    value = value.replace(/\D/g, '');
+
+    const updated = { ...phoneData, [name]: value };
+    setPhoneData(updated);
+    setFormData(prev => ({ ...prev, phone: `+${updated.countryCode}${updated.number}` }));
+    if (errors.phone) setErrors(prev => ({ ...prev, phone: '' }));
+  };
+
+
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = t('contact.errors.name_required');
-    else if (/\d/.test(formData.name)) newErrors.name = t('contact.errors.name_no_numbers');
-    else if (formData.name.trim().length <= 4) newErrors.name = t('contact.errors.name_length');
+    else if (!patterns.name.test(formData.name)) newErrors.name = validationMessages.name;
 
     if (!formData.email.trim()) newErrors.email = t('contact.errors.email_required');
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = t('contact.errors.email_invalid');
@@ -30,13 +50,12 @@ const Contact = () => {
     if (!formData.phone.trim()) {
       newErrors.phone = t('contact.errors.phone_required');
     } else {
-      const digitsOnly = formData.phone.replace(/\D/g, '');
-      if (digitsOnly.length < 10) newErrors.phone = t('contact.errors.phone_length');
-      else if (!/^[\d\s\-+()]+$/.test(formData.phone)) newErrors.phone = t('contact.errors.phone_invalid');
+      const fullPhone = formData.phone.replace(/\D/g, ''); // Extract digits
+      if (!patterns.phone.test(fullPhone)) newErrors.phone = validationMessages.phone;
     }
 
     if (!formData.message.trim()) newErrors.message = t('contact.errors.message_required');
-    else if (formData.message.trim().length <= 25) newErrors.message = t('contact.errors.message_length');
+    else if (!patterns.description.test(formData.message)) newErrors.message = validationMessages.description;
 
     return newErrors;
   };
@@ -88,28 +107,49 @@ const Contact = () => {
 
           <form onSubmit={handleSubmit} className="contact-form">
             <div className="form-group">
-              <label htmlFor="name">{t('contact.name_label')}</label>
+              <label htmlFor="name">{t('contact.name_label')} <span className="required-star">*</span></label>
               <input type="text" id="name" name="name" value={formData.name} onChange={handleChange}
                 placeholder={t('contact.name_placeholder')} className={errors.name ? 'error' : ''} />
               {errors.name && <span className="error-message">{errors.name}</span>}
             </div>
 
             <div className="form-group">
-              <label htmlFor="email">{t('contact.email_label')}</label>
+              <label htmlFor="email">{t('contact.email_label')} <span className="required-star">*</span></label>
               <input type="email" id="email" name="email" value={formData.email} onChange={handleChange}
                 placeholder={t('contact.email_placeholder')} className={errors.email ? 'error' : ''} />
               {errors.email && <span className="error-message">{errors.email}</span>}
             </div>
 
             <div className="form-group">
-              <label htmlFor="phone">{t('contact.phone_label')}</label>
-              <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange}
-                placeholder={t('contact.phone_placeholder')} className={errors.phone ? 'error' : ''} />
+              <label htmlFor="phone">{t('contact.phone_label')} <span className="required-star">*</span></label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', borderRadius: '6px', padding: '0 8px', flexShrink: 0, width: '90px' }} className={errors.phone ? 'error' : ''}>
+                  <span style={{ color: '#8a8a8a', margin: '0px 3px' }}>+</span>
+                  <input
+                    type="tel"
+                    name="countryCode"
+                    value={phoneData.countryCode}
+                    onChange={handlePhoneChange}
+                    placeholder="212"
+                    maxLength={3}
+                    style={{ border: 'none', outline: 'none', width: '100%', padding: '13px 17px' }}
+                  />
+                </div>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="number"
+                  value={phoneData.number}
+                  onChange={handlePhoneChange}
+                  placeholder={t('contact.phone_placeholder')}
+                  className={errors.phone ? 'error' : ''}
+                />
+              </div>
               {errors.phone && <span className="error-message">{errors.phone}</span>}
             </div>
 
             <div className="form-group">
-              <label htmlFor="message">{t('contact.message_label')}</label>
+              <label htmlFor="message">{t('contact.message_label')} <span className="required-star">*</span></label>
               <textarea id="message" name="message" value={formData.message} onChange={handleChange}
                 placeholder={t('contact.message_placeholder')} rows="6" className={errors.message ? 'error' : ''} />
               {errors.message && <span className="error-message">{errors.message}</span>}

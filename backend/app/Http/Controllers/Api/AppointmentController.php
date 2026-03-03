@@ -17,7 +17,9 @@ class AppointmentController extends Controller
         $request->validate([
             'vehicle_id'     => 'nullable|exists:vehicles,id',
             'preferred_date' => 'required|date|after_or_equal:today',
-            'description'    => 'nullable|string|max:500',
+            'description'    => ['nullable', 'string', 'min:25', 'max:500', 'regex:/^[a-zA-Z0-9.,\s\r\n]*[a-zA-Z][a-zA-Z0-9.,\s\r\n]*$/'],
+        ], [
+            'description.regex' => 'Description must contain letters, and only use letters, numbers, periods, and commas.',
         ]);
 
         $appointment = Appointment::create([
@@ -81,7 +83,11 @@ class AppointmentController extends Controller
      */
     public function decline(Request $request, $id)
     {
-        $request->validate(['notes' => 'nullable|string|max:500']);
+        $request->validate([
+            'notes' => ['nullable', 'string', 'min:25', 'max:500', 'regex:/^[a-zA-Z0-9.,\s\r\n]*[a-zA-Z][a-zA-Z0-9.,\s\r\n]*$/'],
+        ], [
+            'notes.regex' => 'Notes must contain letters, and only use letters, numbers, periods, and commas.',
+        ]);
 
         $appointment = Appointment::findOrFail($id);
 

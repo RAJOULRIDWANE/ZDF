@@ -20,11 +20,14 @@ class VehicleController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'make' => 'required',
-            'model' => 'required',
+            'make' => ['required', 'string', 'regex:/^[a-zA-Z\s]+$/'],
+            'model' => ['required', 'string', 'regex:/^[a-zA-Z0-9\s.-]+$/'],
             'license_plate' => 'required|unique:vehicles',
             'year' => 'required|integer',
             'type' => 'required|in:car,moto,truck,bus',
+        ], [
+            'make.regex' => 'Car maker must contain only alphabets and spaces.',
+            'model.regex' => 'Car model must contain only letters, numbers, spaces, dots, and hyphens.',
         ]);
 
         $vehicle = Vehicle::create([

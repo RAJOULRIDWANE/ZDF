@@ -1,7 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@700;800&display=swap');
+
 ::-webkit-scrollbar {
-  display: none;
+    display: none;
 }
+
 /* ─────────────────────────────────────────
    MAIN LAYOUT
 ───────────────────────────────────────── */
@@ -10,7 +12,7 @@
     flex-direction: column;
     min-height: 100vh;
     background: var(--black);
-    font-family: 'Barlow', 'Inter', system-ui, sans-serif;
+    font-family: var(--font-family-latin);
     color: var(--white);
 }
 
@@ -27,7 +29,7 @@
 }
 
 .header-actions h1 {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-family-title);
     font-size: 2rem;
     color: var(--white);
     font-weight: 400;
@@ -54,7 +56,7 @@
     color: var(--white);
     border: none;
     padding: 11px 22px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-weight: 700;
     font-size: 0.9rem;
     text-transform: uppercase;
@@ -154,7 +156,7 @@
 
 .kpi-number {
     margin: 0;
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-family-title);
     font-size: 2rem;
     font-weight: 400;
     color: var(--white);
@@ -180,7 +182,7 @@
     border: 1px solid var(--border-light);
     color: var(--white);
     font-size: 0.9rem;
-    font-family: 'Barlow', sans-serif;
+    font-family: var(--font-family-latin);
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -254,7 +256,7 @@ thead {
 
 th {
     padding: 14px 20px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -309,7 +311,7 @@ tr:hover td {
     font-size: 13px;
     background: transparent;
     color: var(--muted);
-    font-family: 'Barlow', sans-serif;
+    font-family: var(--font-family-latin);
     transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
 
@@ -384,7 +386,7 @@ tr:hover td {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
     animation: modalSlideIn 0.3s ease-out;
     margin-bottom: 50px;
-    max-height: calc(100vh - 100px); 
+    max-height: calc(100vh - 100px);
     overflow-y: auto;
 }
 
@@ -428,7 +430,7 @@ tr:hover td {
     background: var(--charcoal-light);
     border: 1px solid var(--border-light);
     color: var(--white);
-    font-family: 'Barlow', sans-serif;
+    font-family: var(--font-family-latin);
     font-size: 14px;
     box-sizing: border-box;
     transition: border-color 0.2s;
@@ -506,7 +508,7 @@ select.form-control option {
     border: 1px solid var(--border-light);
     padding: 10px 20px;
     cursor: pointer;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-weight: 600;
     font-size: 0.88rem;
     text-transform: uppercase;
@@ -524,7 +526,7 @@ select.form-control option {
     border: none;
     padding: 10px 24px;
     cursor: pointer;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-weight: 700;
     font-size: 0.88rem;
     text-transform: uppercase;
@@ -557,7 +559,7 @@ select.form-control option {
     border: none;
     background: transparent;
     color: var(--muted);
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-weight: 700;
     font-size: 0.88rem;
     text-transform: uppercase;
@@ -638,7 +640,7 @@ select.form-control option {
     border: 1px solid var(--border-light);
     color: var(--white);
     font-size: 0.82rem;
-    font-family: 'Barlow', sans-serif;
+    font-family: var(--font-family-latin);
     width: 100%;
     transition: border-color 0.2s;
 }
@@ -658,7 +660,7 @@ select.form-control option {
     color: var(--success);
     border: 1px solid rgba(34, 197, 94, 0.3);
     padding: 5px 10px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-weight: 700;
     font-size: 0.8rem;
     text-transform: uppercase;
@@ -685,7 +687,7 @@ select.form-control option {
     color: var(--red);
     border: 1px solid var(--red-glow);
     padding: 5px 10px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-weight: 700;
     font-size: 0.8rem;
     text-transform: uppercase;
@@ -773,4 +775,100 @@ select.form-control option {
         display: block;
         overflow-x: auto;
     }
+}
+
+/* ─────────────────────────────────────────
+   KPI ACTIVE FILTER STATE
+───────────────────────────────────────── */
+.kpi-card-active {
+    background: var(--steel) !important;
+    border-color: var(--red) !important;
+}
+
+.kpi-card-active::before {
+    transform: scaleX(1) !important;
+}
+
+/* ─────────────────────────────────────────
+   FILTER BANNER
+───────────────────────────────────────── */
+.r-filter-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 40px 16px;
+    padding: 10px 16px;
+    background: var(--info-bg);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-left: 3px solid var(--info);
+    font-size: 0.88rem;
+    color: var(--info);
+}
+
+.r-filter-banner i {
+    font-size: 0.85rem;
+}
+
+.r-filter-clear {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: var(--info);
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 0.85rem;
+    transition: color 0.2s;
+}
+
+.r-filter-clear:hover {
+    color: var(--red);
+}
+
+/* ─────────────────────────────────────────
+   PAGINATION
+───────────────────────────────────────── */
+.r-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 14px 22px;
+    border-top: 1px solid var(--border);
+    background: var(--steel);
+}
+
+.r-page-btn {
+    padding: 7px 16px;
+    border: 1px solid var(--border-light);
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--font-family-title);
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.r-page-btn:hover:not(:disabled) {
+    border-color: var(--red);
+    color: var(--red);
+    background: var(--red-glow);
+}
+
+.r-page-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.r-page-info {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 600;
+    min-width: 120px;
+    text-align: center;
 }

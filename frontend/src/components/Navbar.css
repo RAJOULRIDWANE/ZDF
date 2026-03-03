@@ -78,7 +78,7 @@
 }
 
 .navbar-logo-text {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-family-title);
   font-size: 22px;
   letter-spacing: 0.1em;
   color: var(--white);
@@ -97,7 +97,7 @@
 }
 
 .nav-link {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.14em;
@@ -152,7 +152,7 @@
   align-items: center;
   background: transparent;
   color: var(--white);
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.12em;
@@ -175,7 +175,7 @@
   align-items: center;
   background: var(--red);
   color: var(--white);
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.12em;
@@ -205,7 +205,7 @@
   background: transparent;
   border: 1px solid var(--border);
   color: var(--muted);
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--font-family-title);
   font-weight: 700;
   font-size: 12px;
   letter-spacing: 0.1em;
@@ -275,7 +275,7 @@
   background: transparent;
   border: none;
   color: var(--muted);
-  font-family: 'Barlow', sans-serif;
+  font-family: var(--font-family-latin);
   font-size: 14px;
   font-weight: 400;
   cursor: pointer;

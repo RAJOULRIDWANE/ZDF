@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import axios from "axios";
 import './Auth.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { patterns, validationMessages, sanitizeInput } from '../utils/validation';
 
 function Signup() {
   const { t } = useTranslation();
@@ -21,14 +22,38 @@ function Signup() {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: '' });
+    let { name, value } = e.target;
+
+    // Apply strict sanitization while typing
+    if (name === 'name') {
+      value = sanitizeInput('name', value);
+    }
+
+    setFormData({ ...formData, [name]: value });
+    if (errors[name]) setErrors({ ...errors, [name]: '' });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
     setGeneralError('');
+
+    // Validate inputs
+    const newErrors = {};
+    if (!patterns.name.test(formData.name)) {
+      newErrors.name = [validationMessages.name];
+    }
+    if (!patterns.password.test(formData.password)) {
+      newErrors.password = [validationMessages.password];
+    }
+    if (formData.password !== formData.password_confirmation) {
+      newErrors.password_confirmation = [t('auth.passwords_no_match', 'Passwords do not match')];
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await axios.post('http://127.0.0.1:8000/api/register', formData);

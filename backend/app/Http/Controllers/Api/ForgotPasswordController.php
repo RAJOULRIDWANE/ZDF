@@ -58,7 +58,10 @@ class ForgotPasswordController extends Controller
         $request->validate([
             'token' => 'required',
             'email' => 'required|email',
-            'password' => 'required|min:8|confirmed', // 'confirmed' checks if password matches password_confirmation
+            'password' => ['required', 'string', 'confirmed', 'size:6', 'regex:/^[a-zA-Z0-9]+$/'],
+        ], [
+            'password.size' => 'Password must be exactly 6 characters.',
+            'password.regex' => 'Password must contain only letters and numbers.',
         ]);
 
         // 2. Check if Token Exists in DB

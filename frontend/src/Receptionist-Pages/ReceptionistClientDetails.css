@@ -8,7 +8,7 @@
     flex-direction: column;
     min-height: 100vh;
     background: var(--black);
-    font-family: 'Barlow', 'Inter', system-ui, sans-serif;
+    font-family: var(--font-family-latin);
     color: var(--white);
 }
 
@@ -27,7 +27,7 @@
 }
 
 .header-actions h1 {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-family-title);
     font-size: 2rem;
     color: var(--white);
     font-weight: 400;
@@ -58,7 +58,7 @@
     color: var(--muted);
     border: 1px solid var(--border-light);
     padding: 10px 20px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-weight: 700;
     font-size: 0.88rem;
     text-transform: uppercase;
@@ -174,7 +174,7 @@
 
 .kpi-number {
     margin: 0;
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-family-title);
     font-size: 2rem;
     font-weight: 400;
     color: var(--white);
@@ -200,7 +200,7 @@
     border: 1px solid var(--border-light);
     color: var(--white);
     font-size: 0.9rem;
-    font-family: 'Barlow', sans-serif;
+    font-family: var(--font-family-latin);
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -233,7 +233,7 @@ thead {
 
 th {
     padding: 14px 20px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-family-title);
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -365,7 +365,7 @@ tr:hover td {
     margin-bottom: 8px;
     color: var(--muted);
     margin-right: 6px;
-    font-family: 'Barlow', sans-serif;
+    font-family: var(--font-family-latin);
     display: inline-flex;
     align-items: center;
     gap: 5px;
