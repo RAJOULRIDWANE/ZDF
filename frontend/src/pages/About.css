@@ -288,10 +288,48 @@
   }
 }
 
+@media (max-width: 768px) {
+  .about-page .story-section {
+    padding: 60px 5vw;
+  }
+
+  .about-page .values-section {
+    padding: 60px 5vw;
+  }
+
+  .about-page .stats-grid {
+    padding: 40px 5vw;
+  }
+
+  .about-page .cta-banner {
+    padding: 48px 5vw;
+    margin-top: 40px;
+  }
+
+  .about-page .story-image-placeholder {
+    max-width: 100%;
+  }
+}
+
 @media (max-width: 700px) {
 
   .about-page .values-grid,
   .about-page .stats-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-page .stat-card {
+    padding: 24px 16px;
+  }
+
+  .about-page .value-card {
+    padding: 24px 16px;
+  }
+
+  .about-page .cta-button {
+    width: 100%;
+    text-align: center;
   }
 }

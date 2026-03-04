@@ -17,12 +17,11 @@ class AuthController extends Controller
         $fields = $request->validate([
             'name' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z\s]+$/'],
             'email' => 'required|string|email|unique:users,email',
-            'password' => ['required', 'string', 'confirmed', 'size:6', 'regex:/^[a-zA-Z0-9]+$/'],
+            'password' => ['required', 'string', 'confirmed', 'min:6'],
             'role' => 'sometimes|string|in:client,mechanic,supervisor,receptionist,parts_manager'
         ], [
             'name.regex' => 'Name must contain only alphabets and spaces.',
-            'password.size' => 'Password must be exactly 6 characters.',
-            'password.regex' => 'Password must contain only letters and numbers.',
+            'password.min' => 'Password must be at least 6 characters.',
         ]);
 
         // Create the user (NOT verified yet)
@@ -214,10 +213,9 @@ class AuthController extends Controller
     {
         $request->validate([
             'currentPassword' => 'required',
-            'newPassword' => ['required', 'confirmed', 'size:6', 'regex:/^[a-zA-Z0-9]+$/'],
+            'newPassword' => ['required', 'confirmed', 'min:6'],
         ], [
-            'newPassword.size' => 'Password must be exactly 6 characters.',
-            'newPassword.regex' => 'Password must contain only letters and numbers.',
+            'newPassword.min' => 'Password must be at least 6 characters.',
         ]);
 
         $user = $request->user();

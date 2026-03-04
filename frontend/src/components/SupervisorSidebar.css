@@ -174,3 +174,63 @@
     z-index: 999;
     pointer-events: none;
 }
+
+/* ─────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+    .supervisor-sidebar {
+        width: 64px;
+    }
+
+    .supervisor-sidebar:not(.collapsed) {
+        width: 64px;
+    }
+
+    .sidebar-brand-text {
+        display: none;
+    }
+
+    .sidebar-label {
+        display: none;
+    }
+
+    .sidebar-nav-item {
+        justify-content: center;
+        padding: 10px 0;
+    }
+
+    .sidebar-footer {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .supervisor-sidebar {
+        width: 56px;
+        min-height: auto;
+        height: auto;
+        position: relative;
+        flex-direction: row;
+        overflow-x: auto;
+    }
+
+    .supervisor-sidebar:not(.collapsed) {
+        width: 56px;
+    }
+
+    .sidebar-nav {
+        flex-direction: row;
+        padding: 0;
+    }
+
+    .active-indicator {
+        top: auto;
+        left: 50%;
+        bottom: 0;
+        transform: translateX(-50%);
+        width: 60%;
+        height: 3px;
+        border-radius: 3px 3px 0 0;
+    }
+}

@@ -809,6 +809,7 @@ body.light-mode .pm-row-low td {
     .pm-form-grid {
         grid-template-columns: 1fr;
     }
+
     .pm-header-actions {
         flex-direction: column;
         align-items: stretch;
@@ -862,4 +863,53 @@ body.light-mode .pm-row-low td {
     font-weight: 600;
     min-width: 120px;
     text-align: center;
+}
+
+/* ─────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────── */
+@media (max-width: 1024px) {
+    .pm-main {
+        padding: 24px 16px;
+    }
+
+    .pm-header {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .pm-main {
+        padding: 20px 14px;
+    }
+
+    .pm-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .pm-header-actions {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .pm-header-actions>button {
+        flex: 1;
+        min-height: 44px;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .pm-main {
+        padding: 16px 12px;
+    }
+
+    .pm-header h1 {
+        font-size: 1.6rem;
+    }
 }

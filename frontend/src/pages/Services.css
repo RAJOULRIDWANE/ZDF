@@ -166,10 +166,37 @@
   .services-page .services-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .services-page .service-category {
+    padding: 60px 5vw;
+  }
 }
 
 @media (max-width: 700px) {
   .services-page .services-grid {
     grid-template-columns: 1fr;
+  }
+
+  .services-page .service-category {
+    padding: 44px 5vw;
+  }
+
+  .services-page .services-hero {
+    min-height: 40vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .services-page .service-card {
+    padding: 24px 16px;
+  }
+
+  .services-page .support-badge {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .services-page .services-footer {
+    padding: 40px 5vw;
   }
 }

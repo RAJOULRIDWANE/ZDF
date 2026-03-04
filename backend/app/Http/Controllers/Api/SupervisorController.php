@@ -26,13 +26,12 @@ class SupervisorController extends Controller
         $fields = $request->validate([
             'name' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z\s]+$/'],
             'email' => 'required|string|email|unique:users,email',
-            'password' => ['required', 'string', 'size:6', 'regex:/^[a-zA-Z0-9]+$/'],
+            'password' => ['required', 'string', 'min:6'],
             'role' => 'required|string|in:mechanic,receptionist',
             'phone' => ['nullable', 'string', 'regex:/^\d{10,13}$/']
         ], [
             'name.regex' => 'Name must contain only alphabets and spaces.',
-            'password.size' => 'Password must be exactly 6 characters.',
-            'password.regex' => 'Password must contain only letters and numbers.',
+            'password.min' => 'Password must be at least 6 characters.',
             'phone.regex' => 'Phone number must be between 10 and 13 digits, numbers only.',
         ]);
 
@@ -62,12 +61,11 @@ class SupervisorController extends Controller
         $fields = $request->validate([
             'name' => ['sometimes', 'string', 'max:255', 'regex:/^[a-zA-Z\s]+$/'],
             'email' => 'sometimes|string|email|unique:users,email,' . $user->id,
-            'password' => ['sometimes', 'string', 'size:6', 'regex:/^[a-zA-Z0-9]+$/'], // Optional password update
+            'password' => ['sometimes', 'string', 'min:6'], // Optional password update
             'phone' => ['nullable', 'string', 'regex:/^\d{10,13}$/']
         ], [
             'name.regex' => 'Name must contain only alphabets and spaces.',
-            'password.size' => 'Password must be exactly 6 characters.',
-            'password.regex' => 'Password must contain only letters and numbers.',
+            'password.min' => 'Password must be at least 6 characters.',
             'phone.regex' => 'Phone number must be between 10 and 13 digits, numbers only.',
         ]);
 

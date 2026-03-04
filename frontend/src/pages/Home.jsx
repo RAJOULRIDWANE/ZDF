@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import "./Home.css";
+import AIDiagnostic from "../components/AIDiagnostic";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import PartnerCarousel from "../components/PartnerCarousel";
 
@@ -29,67 +30,67 @@ function Home({ onNavigate }) {
             </div>
           </div>
           <div className="hero-visual">
-  {/* The "Back Window" for extra depth */}
-  <div className="mockup-bg-layer"></div>
+            {/* The "Back Window" for extra depth */}
+            <div className="mockup-bg-layer"></div>
 
-  <div className="dashboard-mockup-v2">
-    {/* High-tech scanline overlay */}
-    <div className="scanline"></div>
-    
-    <div className="mockup-header">
-      <div className="dots"><span></span><span></span><span></span></div>
-      <div className="mockup-title">MecaPro OS v2.0 _</div>
-    </div>
-    
-    <div className="mockup-body">
-      <div className="mockup-sidebar">
-        <i className="fa-solid fa-layer-group active"></i>
-        <i className="fa-solid fa-screwdriver-wrench"></i>
-        <i className="fa-solid fa-microchip"></i>
-        <i className="fa-solid fa-gear"></i>
-      </div>
+            <div className="dashboard-mockup-v2">
+              {/* High-tech scanline overlay */}
+              <div className="scanline"></div>
 
-      <div className="mockup-content">
-        <div className="status-header">
-          <span>Diagnostic Monitor</span>
-          <div className="pulse-dot-blue"></div>
-        </div>
-        
-        {/* Item 1: Completed */}
-        <div className="mockup-list-item">
-          <div className="item-icon"><i className="fa-solid fa-check" style={{color: '#10b981'}}></i></div>
-          <div className="item-text">
-            <div className="skeleton-line short"></div>
-            <div className="skeleton-line long"></div>
-          </div>
-          <div className="status-badge">DONE</div>
-        </div>
+              <div className="mockup-header">
+                <div className="dots"><span></span><span></span><span></span></div>
+                <div className="mockup-title">MecaPro OS v2.0 _</div>
+              </div>
 
-        {/* Item 2: THE UPDATED BLUE STATUS */}
-        <div className="mockup-list-item active-item-blue">
-          <div className="item-icon"><i className="fa-solid fa-microchip" style={{color: 'white'}}></i></div>
-          <div className="item-text">
-            <div className="skeleton-line short blue"></div>
-            <div className="skeleton-line long"></div>
-          </div>
-          <div className="status-badge-blue">IN PROGRESS</div>
-        </div>
-        
-        {/* New: Activity Feed Section */}
-        <div className="activity-feed">
-           <div className="feed-line"> > CALIBRATING ENGINE SENSORS...</div>
-           <div className="feed-line"> > SYSTEM CHECK: OPTIMAL</div>
-           <div className="feed-line active-line"> > UPDATING INVENTORY...</div>
-        </div>
-      </div>
-    </div>
-    
-    {/* Floating Tag */}
-<div className="floating-success-card">
-  <i className="fa-solid fa-shield-halved" style={{color: '#3b82f6'}}></i>
-  <span>System Secure</span>
-</div>
-  </div>
+              <div className="mockup-body">
+                <div className="mockup-sidebar">
+                  <i className="fa-solid fa-layer-group active"></i>
+                  <i className="fa-solid fa-screwdriver-wrench"></i>
+                  <i className="fa-solid fa-microchip"></i>
+                  <i className="fa-solid fa-gear"></i>
+                </div>
+
+                <div className="mockup-content">
+                  <div className="status-header">
+                    <span>Diagnostic Monitor</span>
+                    <div className="pulse-dot-blue"></div>
+                  </div>
+
+                  {/* Item 1: Completed */}
+                  <div className="mockup-list-item">
+                    <div className="item-icon"><i className="fa-solid fa-check" style={{ color: '#10b981' }}></i></div>
+                    <div className="item-text">
+                      <div className="skeleton-line short"></div>
+                      <div className="skeleton-line long"></div>
+                    </div>
+                    <div className="status-badge">DONE</div>
+                  </div>
+
+                  {/* Item 2: THE UPDATED BLUE STATUS */}
+                  <div className="mockup-list-item active-item-blue">
+                    <div className="item-icon"><i className="fa-solid fa-microchip" style={{ color: 'white' }}></i></div>
+                    <div className="item-text">
+                      <div className="skeleton-line short blue"></div>
+                      <div className="skeleton-line long"></div>
+                    </div>
+                    <div className="status-badge-blue">IN PROGRESS</div>
+                  </div>
+
+                  {/* New: Activity Feed Section */}
+                  <div className="activity-feed">
+                    <div className="feed-line"> > CALIBRATING ENGINE SENSORS...</div>
+                    <div className="feed-line"> > SYSTEM CHECK: OPTIMAL</div>
+                    <div className="feed-line active-line"> > UPDATING INVENTORY...</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Tag */}
+              <div className="floating-success-card">
+                <i className="fa-solid fa-shield-halved" style={{ color: '#3b82f6' }}></i>
+                <span>System Secure</span>
+              </div>
+            </div>
 
           </div>
         </div>
@@ -215,6 +216,16 @@ function Home({ onNavigate }) {
           </div>
         </div>
       </section>
+
+      <section className="ai-section">
+        <div className="section-inner ai-section-inner">
+          <span className="ai-section-badge">🤖 AI Powered</span>
+          <h2>Auto Repair Diagnostic</h2>
+          <p className="section-subtitle">Describe your vehicle symptoms and get instant AI-powered repair predictions with cost estimates.</p>
+          <AIDiagnostic />
+        </div>
+      </section>
+
     </main>
   )
 }

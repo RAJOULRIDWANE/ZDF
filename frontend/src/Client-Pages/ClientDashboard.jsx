@@ -4,6 +4,7 @@ import axios from 'axios';
 import { jsPDF } from 'jspdf';
 import DashboardNavbar from '../components/DashboardNavbar';
 import SkeletonLoader from '../components/SkeletonLoader';
+import AIDiagnostic from "../components/AIDiagnostic";
 import { useTranslation } from 'react-i18next';
 import Joyride, { STATUS } from 'react-joyride';
 import './ClientDashboard.css';
@@ -80,6 +81,9 @@ const ClientDashboard = () => {
 
     // --- Confirmation Modal State ---
     const [confirmModal, setConfirmModal] = useState({ show: false, title: '', message: '', onConfirm: null });
+
+    // --- AI Diagnostic Modal State ---
+    const [showAIModal, setShowAIModal] = useState(false);
 
     const showMessage = (text, type) => {
         setMessage(text);
@@ -815,9 +819,14 @@ const ClientDashboard = () => {
                             <h2>{t('dashboard.welcome', { name: user.name, defaultValue: `Welcome Back, ${user.name} !` })}</h2>
                             <p>{t('dashboard.subtitle', 'Manage your vehicles & appointments')}</p>
                         </div>
-                        <button className="btn-appt" onClick={() => setShowAppointmentModal(true)}>
-                            <i className="fa-solid fa-calendar-plus"></i> {t('dashboard.request_appointment', 'Request Appointment')}
-                        </button>
+                        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <button className="btn-ai-diagnostic" onClick={() => setShowAIModal(true)}>
+                                <i className="fa-solid fa-robot"></i> AI Diagnostic
+                            </button>
+                            <button className="btn-appt" onClick={() => setShowAppointmentModal(true)}>
+                                <i className="fa-solid fa-calendar-plus"></i> {t('dashboard.request_appointment', 'Request Appointment')}
+                            </button>
+                        </div>
                     </div>
                 </section>
 
@@ -1230,6 +1239,15 @@ const ClientDashboard = () => {
                         </form>
                     </div>
                 </div>
+            )}
+
+            {/* AI Diagnostic Modal */}
+            {showAIModal && (
+                <AIDiagnostic
+                    token={localStorage.getItem('ACCESS_TOKEN')}
+                    inModal={true}
+                    onClose={() => setShowAIModal(false)}
+                />
             )}
 
             {/* Confirmation Modal */}
