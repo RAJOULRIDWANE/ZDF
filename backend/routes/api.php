@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\PartsManagerController;
 use App\Http\Controllers\Api\SupervisorController;
+use App\Http\Controllers\Api\AiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,12 +23,19 @@ use App\Http\Controllers\Api\SupervisorController;
 */
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/verifyemail', [AuthController::class, 'verifyemail']); // ✅ Already here
-Route::post('/resend-otp', [AuthController::class, 'resendOtp']); // ✅ Already here
+Route::post('/verifyemail', [AuthController::class, 'verifyemail']);
+Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
 Route::post('/contact', [ContactDetailsController::class, 'store']);
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink']);
 Route::post('/reset-password', [ForgotPasswordController::class, 'reset']);
 Route::get('/services', [ServiceController::class, 'index']);
+
+// AI Routes — PUBLIC (used on homepage without login + by logged-in clients)
+Route::prefix('ai')->group(function () {
+    Route::get('/health',  [AiController::class, 'health']);
+    Route::get('/options', [AiController::class, 'options']);
+    Route::post('/predict', [AiController::class, 'predict']);
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -82,10 +90,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/repairs/{id}/invoice', [ReceptionistController::class, 'invoice']);
         Route::post('/jobs/{id}/negotiate', [ReceptionistController::class, 'handleNegotiation']);
     });
-    
-    Route::middleware(['auth:sanctum'])->prefix('client')->group(function () {
+
+    // --- CLIENT ROUTES ---
+    Route::prefix('client')->group(function () {
         Route::get('/repairs', function (Request $request) {
-            $repairs = \App\Models\Repair::whereHas('vehicle', function($query) use ($request) {
+            $repairs = \App\Models\Repair::whereHas('vehicle', function ($query) use ($request) {
                 $query->where('user_id', $request->user()->id);
             })->with(['vehicle', 'services', 'parts'])->get();
             return \App\Http\Resources\RepairResource::collection($repairs);
@@ -113,10 +122,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- SUPERVISOR ROUTES ---
     Route::prefix('supervisor')->group(function () {
-        // We will do a generic check or explicitly bind middleware
-        // For now, these are within the `auth:sanctum` group.
-        // If we need a custom middleware later we can add it, but usually standard is to just check $request->user()->role in controller,
-        // or we can use custom middleware. Assuming standard middleware usage.
         Route::get('/staff', [SupervisorController::class, 'index']);
         Route::post('/staff', [SupervisorController::class, 'store']);
         Route::put('/staff/{id}', [SupervisorController::class, 'update']);

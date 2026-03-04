@@ -168,6 +168,29 @@
   }
 
   .footer-inner {
-    padding: 64px 5vw 28px;
+    padding: 48px 5vw 24px;
+  }
+
+  .footer-columns {
+    gap: 32px;
+    flex-direction: column;
+  }
+
+  .footer-bottom {
+    margin-top: 20px;
+  }
+
+  .footer-bottom span {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-brand {
+    gap: 8px;
+  }
+
+  .footer-logo-text {
+    font-size: 20px;
   }
 }

@@ -216,6 +216,7 @@ const UserManagement = () => {
                                 <th>ID</th>
                                 <th>Name</th>
                                 <th>Email</th>
+                                <th>{t('supervisor.users.phone', 'Phone')}</th>
                                 <th>Role</th>
                                 <th>Status</th>
                                 <th>{t('supervisor.users.actions', 'Actions')}</th>
@@ -224,7 +225,7 @@ const UserManagement = () => {
                         <tbody>
                             {filteredUsers.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="text-center">
+                                    <td colSpan="7" className="text-center">
                                         {t('supervisor.users.no_staff_found', 'No staff members match your filters.')}
                                     </td>
                                 </tr>
@@ -234,6 +235,7 @@ const UserManagement = () => {
                                         <td>#{user.id}</td>
                                         <td>{user.name}</td>
                                         <td>{user.email}</td>
+                                        <td>{user.phone || <span style={{ color: 'var(--text-muted,#999)' }}>—</span>}</td>
                                         <td>
                                             <span className={`role-badge ${user.role}`}>
                                                 {t(`roles.${user.role}`, user.role)}

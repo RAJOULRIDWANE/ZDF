@@ -11,6 +11,7 @@ function Navbar() {
   const navigate = useNavigate();
 
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Public navbar supports all 3 languages including Arabic
   const languages = [
@@ -36,6 +37,8 @@ function Navbar() {
     }
   };
 
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
   return (
     <header className="navbar">
       <div className="navbar-inner">
@@ -47,6 +50,7 @@ function Navbar() {
           <span className="navbar-logo-text">MecaPro</span>
         </Link>
 
+        {/* Desktop nav links */}
         <nav className="navbar-links">
           <NavLink className={({ isActive }) => isActive ? "nav-link active" : "nav-link"} to="/" end>
             {t('navbar.home')}
@@ -99,8 +103,38 @@ function Navbar() {
             )}
           </div>
 
+          {/* Hamburger — mobile/tablet only */}
+          <button
+            className={`hamburger-btn${isMobileMenuOpen ? ' open' : ''}`}
+            aria-label="Toggle navigation menu"
+            aria-expanded={isMobileMenuOpen}
+            onClick={() => setIsMobileMenuOpen(prev => !prev)}
+          >
+            <span className="ham-line" />
+            <span className="ham-line" />
+            <span className="ham-line" />
+          </button>
         </div>
       </div>
+
+      {/* Mobile dropdown menu */}
+      {isMobileMenuOpen && (
+        <nav className="mobile-nav" aria-label="Mobile navigation">
+          <NavLink className={({ isActive }) => isActive ? "mobile-nav-link active" : "mobile-nav-link"} to="/" end onClick={closeMobileMenu}>
+            {t('navbar.home')}
+          </NavLink>
+          <NavLink className={({ isActive }) => isActive ? "mobile-nav-link active" : "mobile-nav-link"} to="/about" onClick={closeMobileMenu}>
+            {t('navbar.about')}
+          </NavLink>
+          <NavLink className={({ isActive }) => isActive ? "mobile-nav-link active" : "mobile-nav-link"} to="/contact" onClick={closeMobileMenu}>
+            {t('navbar.contact')}
+          </NavLink>
+          <div className="mobile-nav-footer">
+            <Link className="mobile-nav-action outline" to="/login" onClick={closeMobileMenu}>{t('navbar.login')}</Link>
+            <Link className="mobile-nav-action primary" to="/signup" onClick={closeMobileMenu}>{t('navbar.signup')}</Link>
+          </div>
+        </nav>
+      )}
     </header>
   );
 }

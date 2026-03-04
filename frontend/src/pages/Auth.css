@@ -212,10 +212,16 @@ body.light-mode .auth-hero-overlay {
 @media (max-width: 960px) {
   .auth-inner {
     grid-template-columns: 1fr;
+    min-height: 100vh;
+  }
+
+  .auth-hero {
+    min-height: 30vh;
   }
 
   .auth-hero-content {
     padding-inline: 2rem;
+    padding-block: 3rem;
   }
 }
 
@@ -225,8 +231,30 @@ body.light-mode .auth-hero-overlay {
   }
 
   .auth-form-card {
-    margin: 2rem 1.25rem;
-    padding-inline: 1.75rem;
+    margin: 1.5rem 1rem;
+    padding-inline: 1.25rem;
+    padding-block: 2rem 1.5rem;
+  }
+
+  .auth-inner {
+    grid-template-rows: auto 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-form-card {
+    margin: 1rem 0.5rem;
+    border-radius: 0.75rem;
+  }
+
+  .auth-submit {
+    min-height: 48px;
+    font-size: 1rem;
+  }
+
+  .otp-input {
+    letter-spacing: 4px;
+    font-size: 20px;
   }
 }
 

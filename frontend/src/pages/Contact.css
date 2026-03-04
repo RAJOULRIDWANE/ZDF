@@ -197,9 +197,36 @@
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
+  .contact-page .contact-header {
+    min-height: 30vh;
+    padding: 50px 5vw;
+  }
+
+  .contact-page .contact-form-section {
+    padding: 40px 5vw;
+  }
+
   .contact-page .contact-info-grid {
     grid-template-columns: 1fr;
+  }
+
+  .contact-page .submit-button {
+    width: 100%;
+    min-height: 48px;
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-page .contact-header {
+    min-height: auto;
+    padding: 40px 5vw 30px;
+  }
+
+  .contact-page .contact-form-section {
+    padding: 28px 4vw;
   }
 }
 

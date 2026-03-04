@@ -132,10 +132,39 @@
   gap: 20px;
 }
 
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 24px 4vw;
+  }
+
+  .profile-wrapper {
+    max-width: 100%;
+  }
+}
+
 @media (max-width: 600px) {
   .row-split {
     flex-direction: column;
     gap: 0;
+  }
+
+  .form-content {
+    padding: 20px;
+  }
+
+  .card-header {
+    padding: 14px 20px;
+  }
+
+  .update-btn {
+    width: 100%;
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-page {
+    padding: 16px 4vw;
   }
 }
 
