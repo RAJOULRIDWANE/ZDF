@@ -10,13 +10,6 @@ const SEVERITY_COLOR = {
   critical: "#7c3aed",
 };
 
-/**
- * Props:
- *   token   — optional (string). Pass localStorage token when used in ClientDashboard.
- *   onClose — optional (fn).    Pass a close handler when used as a modal.
- *   inModal — optional (bool).  true = renders with overlay + close button (ClientDashboard).
- *                               false (default) = renders inline in the page (Home).
- */
 export default function AIDiagnostic({ token = null, onClose = null, inModal = false }) {
   const [options, setOptions] = useState(null);
   const [loadingOptions, setLoadingOptions] = useState(true);
@@ -39,6 +32,7 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
   const [predictions, setPredictions] = useState(null);
   const [predicting, setPredicting] = useState(false);
   const [predictError, setPredictError] = useState(null);
+  const [predictErrorDetails, setPredictErrorDetails] = useState([]);
 
   const buildHeaders = () => {
     const headers = { "Content-Type": "application/json", Accept: "application/json" };
@@ -73,6 +67,7 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
     e.preventDefault();
     setPredicting(true);
     setPredictError(null);
+    setPredictErrorDetails([]);
     setPredictions(null);
 
     const payload = {
@@ -90,11 +85,17 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
         body: JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Prediction failed");
-      if (!data.success) throw new Error("AI returned no predictions");
+
+      if (!res.ok || !data.success) {
+        setPredictError(data.error || "Prediction failed");
+        setPredictErrorDetails(data.details || []);
+        return;
+      }
+
       setPredictions(data.predictions);
     } catch (err) {
-      setPredictError(err.message);
+      setPredictError("Could not reach the AI service. Make sure Flask is running on port 5000.");
+      setPredictErrorDetails([]);
     } finally {
       setPredicting(false);
     }
@@ -103,10 +104,10 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
   const reset = () => {
     setPredictions(null);
     setPredictError(null);
+    setPredictErrorDetails([]);
     setForm((prev) => ({ ...prev, symptoms: "", probable_cause: "" }));
   };
 
-  // ─── Loading ───────────────────────────────────────────────────────────────
   if (loadingOptions) {
     return (
       <div className={inModal ? "ai-overlay" : "ai-inline-wrapper"}>
@@ -118,12 +119,11 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
     );
   }
 
-  // ─── Error ─────────────────────────────────────────────────────────────────
   if (optionsError) {
     return (
       <div className={inModal ? "ai-overlay" : "ai-inline-wrapper"}>
         <div className="ai-modal ai-modal--error">
-          <h2>⚠️ AI Service Unavailable</h2>
+          <h2><i class="fa-solid fa-triangle-exclamation"></i> AI Service Unavailable</h2>
           <p>{optionsError}</p>
           <p className="ai-hint">Make sure the Flask server is running on port 5000.</p>
           {onClose && (
@@ -134,10 +134,12 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
     );
   }
 
-  const symptomList = options?.symptoms || [];
-  const causeList = options?.probable_causes || [];
+  const vehicleTypeList  = options?.vehicle_type    || [];
+  const makeList         = options?.make            || [];
+  const fuelTypeList     = options?.fuel_type       || [];
+  const transmissionList = options?.transmission    || [];
+  const causeList        = options?.probable_causes || [];
 
-  // ─── Results ───────────────────────────────────────────────────────────────
   if (predictions) {
     return (
       <div className={inModal ? "ai-overlay" : "ai-inline-wrapper"}>
@@ -146,7 +148,7 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
             <button className="ai-close" onClick={onClose}>✕</button>
           )}
           <div className="ai-results-header">
-            <span className="ai-badge">🤖 AI Diagnosis Complete</span>
+            <span className="ai-badge"><i class="fa-solid fa-robot"></i> AI Diagnosis Complete</span>
             <h2>Top Repair Predictions</h2>
           </div>
 
@@ -167,7 +169,7 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
                       {p.confidence_percent.toFixed(1)}% confidence
                     </span>
                     <span className="ai-cost-range">
-                      💰 {p.cost_min_mad.toLocaleString()} – {p.cost_max_mad.toLocaleString()} MAD
+                      <i class="fa-solid fa-dollar-sign"></i> {p.cost_min_mad.toLocaleString()} – {p.cost_max_mad.toLocaleString()} MAD
                     </span>
                   </div>
                 </div>
@@ -177,7 +179,7 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
 
           <div className="ai-results-actions">
             <button className="ai-btn ai-btn--secondary" onClick={reset}>
-              🔄 New Diagnosis
+              <i class="fa-solid fa-arrows-rotate"></i> New Diagnosis
             </button>
             {inModal && onClose && (
               <button className="ai-btn ai-btn--primary" onClick={onClose}>
@@ -190,7 +192,6 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
     );
   }
 
-  // ─── Form ──────────────────────────────────────────────────────────────────
   return (
     <div className={inModal ? "ai-overlay" : "ai-inline-wrapper"}>
       <div className="ai-modal ai-modal--form">
@@ -198,15 +199,9 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
           <button className="ai-close" onClick={onClose}>✕</button>
         )}
 
-        <div className="ai-form-header">
-          <span className="ai-badge">🤖 AI Powered</span>
-          <h2>Auto Repair Diagnostic</h2>
-          <p>Fill in your vehicle details to get AI-powered repair predictions.</p>
-        </div>
 
         <form onSubmit={handleSubmit} className="ai-form">
 
-          {/* Vehicle Info */}
           <fieldset className="ai-fieldset">
             <legend>Vehicle Information</legend>
             <div className="ai-grid ai-grid--3">
@@ -215,7 +210,7 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
                 <label>Vehicle Type</label>
                 <select name="vehicle_type" value={form.vehicle_type} onChange={handleChange} required>
                   <option value="">Select…</option>
-                  {(options?.vehicle_types || ["car", "moto", "truck", "bus"]).map((t) => (
+                  {vehicleTypeList.map((t) => (
                     <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
                   ))}
                 </select>
@@ -225,7 +220,7 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
                 <label>Make</label>
                 <select name="make" value={form.make} onChange={handleChange} required>
                   <option value="">Select…</option>
-                  {(options?.make || []).map((m) => (
+                  {makeList.map((m) => (
                     <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
@@ -248,7 +243,7 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
                 <input
                   type="number"
                   name="year"
-                  min="1990"
+                  min="1980"
                   max={new Date().getFullYear()}
                   value={form.year}
                   onChange={handleChange}
@@ -286,7 +281,7 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
                 <label>Fuel Type</label>
                 <select name="fuel_type" value={form.fuel_type} onChange={handleChange} required>
                   <option value="">Select…</option>
-                  {(options?.fuel_types || ["petrol", "diesel", "hybrid"]).map((f) => (
+                  {fuelTypeList.map((f) => (
                     <option key={f} value={f}>{f.charAt(0).toUpperCase() + f.slice(1)}</option>
                   ))}
                 </select>
@@ -296,7 +291,7 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
                 <label>Transmission</label>
                 <select name="transmission" value={form.transmission} onChange={handleChange} required>
                   <option value="">Select…</option>
-                  {(options?.transmissions || ["manual", "automatic"]).map((t) => (
+                  {transmissionList.map((t) => (
                     <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
                   ))}
                 </select>
@@ -316,7 +311,6 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
             </div>
           </fieldset>
 
-          {/* Symptoms */}
           <fieldset className="ai-fieldset">
             <legend>Symptoms</legend>
             <div className="ai-field">
@@ -333,7 +327,6 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
             </div>
           </fieldset>
 
-          {/* Probable Cause */}
           <fieldset className="ai-fieldset">
             <legend>Probable Cause <span className="ai-legend-hint">(optional)</span></legend>
             <div className="ai-field">
@@ -347,7 +340,16 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
           </fieldset>
 
           {predictError && (
-            <div className="ai-error-banner">⚠️ {predictError}</div>
+            <div className="ai-error-banner">
+              <strong><i class="fa-solid fa-triangle-exclamation"></i> {predictError}</strong>
+              {predictErrorDetails.length > 0 && (
+                <ul className="ai-error-details">
+                  {predictErrorDetails.map((d, i) => (
+                    <li key={i}>{d}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
           )}
 
           <div className="ai-form-actions">
@@ -364,7 +366,7 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
               {predicting ? (
                 <><span className="ai-btn-spinner" /> Analysing…</>
               ) : (
-                "🔍 Get AI Diagnosis"
+                <><i className="fa-brands fa-searchengin"></i> Get AI Diagnosis</>
               )}
             </button>
           </div>

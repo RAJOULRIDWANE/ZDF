@@ -213,7 +213,6 @@ const UserManagement = () => {
                     <table className="staff-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>{t('supervisor.users.phone', 'Phone')}</th>
@@ -232,7 +231,6 @@ const UserManagement = () => {
                             ) : (
                                 filteredUsers.map(user => (
                                     <tr key={user.id} className={!user.is_active ? 'disabled-row' : ''}>
-                                        <td>#{user.id}</td>
                                         <td>{user.name}</td>
                                         <td>{user.email}</td>
                                         <td>{user.phone || <span style={{ color: 'var(--text-muted,#999)' }}>—</span>}</td>
