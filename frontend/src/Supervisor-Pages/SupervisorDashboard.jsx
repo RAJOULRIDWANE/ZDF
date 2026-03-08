@@ -152,11 +152,11 @@ const SupervisorDashboard = () => {
   const [activeSection, setActiveSection] = useState('analytics');
 
   const user = {
-    name: localStorage.getItem('name') || 'Supervisor',
+    name: localStorage.getItem('name') || t('common.supervisor', 'Supervisor'),
     role: localStorage.getItem('USER_ROLE') || 'supervisor',
   };
 
-  const chiffredaffaire = "http://localhost:3000/public/dashboard/5ebdbcbd-6511-4114-a95b-9c36580188b7#theme=night&background=false&bordered=false";
+  const chiffredaffaire = "http://localhost:3000/public/dashboard/75bf10c1-b61c-4514-94be-236a8b3ba7ff#theme=night&background=false&bordered=false";
   const appointments = "http://localhost:3000/public/dashboard/b29fcdbd-0395-4012-a450-3582e4e96174#theme=night&background=false&bordered=false";
   const topclients = "http://localhost:3000/public/dashboard/dcfafa27-a88d-4564-a34e-380fa7d42cf5#theme=night&background=false&bordered=false";
   const topservices = "http://localhost:3000/public/dashboard/0baf9b88-8e53-44c3-bbad-68a429a6a338#theme=night&background=false&bordered=false";

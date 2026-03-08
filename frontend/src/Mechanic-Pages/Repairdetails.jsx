@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import './Repairdetails.css';
 import DashboardNavbar from '../components/DashboardNavbar';
@@ -10,6 +11,7 @@ const BASE = 'http://127.0.0.1:8000/api';
 const MAX_PARTS = 20;
 
 const RepairDetails = () => {
+    const { t } = useTranslation();
     const { jobId } = useParams();
     const navigate = useNavigate();
 
@@ -57,7 +59,7 @@ const RepairDetails = () => {
                 if (error.response && (error.response.status === 401 || error.response.status === 403)) {
                     navigate('/login');
                 } else {
-                    showMessage('Failed to load job details', 'error');
+                    showMessage(t('mechanic.messages.load_job_failed', 'Failed to load job details'), 'error');
                 }
             } finally {
                 setLoading(false);
@@ -78,7 +80,7 @@ const RepairDetails = () => {
         if (job.vehicle?.client?.name) return job.vehicle.client.name;
         if (job.vehicle?.user?.name) return job.vehicle.user.name;
         if (job.client?.name) return job.client.name;
-        return 'Unknown Client';
+        return t('mechanic.unknown_client', 'Unknown Client');
     };
 
     // ─────────────────────────────────────────
@@ -118,7 +120,7 @@ const RepairDetails = () => {
     // ─────────────────────────────────────────
     const handleSubmitPartRequests = async () => {
         const validRows = partRows.filter(r => r.selectedPart);
-        if (validRows.length === 0) { showMessage('Please select at least one part.', 'error'); return; }
+        if (validRows.length === 0) { showMessage(t('mechanic.messages.select_one_part', 'Please select at least one part.'), 'error'); return; }
 
         setSubmittingPart(true);
         const token = localStorage.getItem('ACCESS_TOKEN');
@@ -136,7 +138,7 @@ const RepairDetails = () => {
                 );
                 successCount++;
             } catch (err) {
-                const errMsg = err.response?.data?.message || `Failed for ${row.selectedPart.name}`;
+                const errMsg = err.response?.data?.message || t('mechanic.messages.part_request_failed_single', 'Failed for {{name}}', { name: row.selectedPart.name });
                 errorMessages.push(errMsg);
             }
         }
@@ -144,7 +146,7 @@ const RepairDetails = () => {
         setSubmittingPart(false);
 
         if (successCount > 0) {
-            showMessage(`${successCount} part request${successCount > 1 ? 's' : ''} sent successfully!`, 'success');
+            showMessage(t('mechanic.messages.parts_requested_success', '{{count}} part request(s) sent successfully!', { count: successCount }), 'success');
             setPartRows([emptyRow()]);
         }
         if (errorMessages.length > 0) {
@@ -165,9 +167,9 @@ const RepairDetails = () => {
         <div className="repair-details-container">
             <DashboardNavbar user={user} onLogout={handleLogout} />
             <div className="error-state" style={{ textAlign: 'center', marginTop: '50px' }}>
-                <h2>Job not found</h2>
+                <h2>{t('mechanic.details.job_not_found', 'Job not found')}</h2>
                 <button className="btn-error-action" onClick={() => navigate('/mechanic/dashboard')}>
-                    Return to Dashboard
+                    {t('mechanic.details.return_dashboard', 'Return to Dashboard')}
                 </button>
             </div>
         </div>
@@ -193,46 +195,46 @@ const RepairDetails = () => {
             <div className="repair-content-wrapper">
                 <div className="back-link-container">
                     <Link to="/mechanic/dashboard" className="back-link">
-                        <i className="fa-solid fa-arrow-left"></i> Back to Dashboard
+                        <i className="fa-solid fa-arrow-left"></i> {t('mechanic.details.back_to_dashboard', 'Back to Dashboard')}
                     </Link>
                 </div>
 
                 <div className="repair-content">
                     {/* --- VEHICLE INFORMATION SECTION --- */}
                     <section className="vehicle-info-section">
-                        <h2><i className="fa-solid fa-car"></i> Repair Information</h2>
+                        <h2><i className="fa-solid fa-car"></i> {t('mechanic.details.repair_information', 'Repair Information')}</h2>
                         <div className="info-grid">
                             <div className="info-item">
-                                <label>Client Name</label>
+                                <label>{t('mechanic.details.client_name', 'Client Name')}</label>
                                 <input type="text" value={getClientName()} readOnly />
                             </div>
                             <div className="info-item">
-                                <label>Make</label>
+                                <label>{t('dashboard.make', 'Make')}</label>
                                 <input type="text" value={job.vehicle?.make || 'N/A'} readOnly />
                             </div>
                             <div className="info-item">
-                                <label>Model</label>
+                                <label>{t('dashboard.model', 'Model')}</label>
                                 <input type="text" value={job.vehicle?.model || 'N/A'} readOnly />
                             </div>
                             <div className="info-item">
-                                <label>License Plate</label>
+                                <label>{t('dashboard.plate_number', 'License Plate')}</label>
                                 <input type="text" value={job.vehicle?.plate_number || job.vehicle?.license_plate || 'N/A'} readOnly />
                             </div>
                             <div className="info-item full-width">
-                                <label>Service Requested</label>
+                                <label>{t('mechanic.details.service_requested', 'Service Requested')}</label>
                                 <div className="service-badges-container">
                                     {job.services && job.services.length > 0 ? (
                                         job.services.map((s, i) => <span key={i} className="service-badge">{s.name}</span>)
                                     ) : job.service ? (
                                         <span className="service-badge">{job.service.name}</span>
                                     ) : (
-                                        <span className="service-badge">General Repair</span>
+                                        <span className="service-badge">{t('dashboard.general_service', 'General Repair')}</span>
                                     )}
                                 </div>
                             </div>
                             <div className="info-item full-width">
-                                <label>Description</label>
-                                <textarea value={job.description || 'No description provided'} readOnly></textarea>
+                                <label>{t('dashboard.description', 'Description')}</label>
+                                <textarea value={job.description || t('mechanic.no_description', 'No description provided')} readOnly></textarea>
                             </div>
                         </div>
                     </section>
@@ -241,9 +243,9 @@ const RepairDetails = () => {
                     {!isJobCompleted && (
                         <section className="services-section">
                             <div className="services-header">
-                                <h2><i className="fa-solid fa-screwdriver-wrench"></i> Request Parts from Inventory</h2>
+                                <h2><i className="fa-solid fa-screwdriver-wrench"></i> {t('mechanic.details.request_parts', 'Request Parts from Inventory')}</h2>
                                 <p className="parts-section-subtitle">
-                                    Add up to {MAX_PARTS} parts per request — all will be sent to the Parts Manager at once.
+                                    {t('mechanic.details.add_up_to', 'Add up to {{max}} parts per request — all will be sent to the Parts Manager at once.', { max: MAX_PARTS })}
                                 </p>
                             </div>
 
@@ -260,15 +262,15 @@ const RepairDetails = () => {
                                                 <div className="part-row-selected">
                                                     <div className="part-row-selected-info">
                                                         <strong>{row.selectedPart.name}</strong>
-                                                        <span className="part-row-ref">Ref: {row.selectedPart.reference_number || 'N/A'}</span>
+                                                        <span className="part-row-ref">{t('mechanic.details.ref', 'Ref')}: {row.selectedPart.reference_number || 'N/A'}</span>
                                                     </div>
                                                     <div className="part-row-selected-meta">
                                                         <span className="part-row-price">{Number(row.selectedPart.price).toFixed(2)} MAD</span>
                                                         <span className={`part-row-stock ${row.selectedPart.stock_quantity <= 30 ? 'low' : 'ok'}`}>
-                                                            Stock: {row.selectedPart.stock_quantity}
+                                                            {t('mechanic.details.stock', 'Stock')}: {row.selectedPart.stock_quantity}
                                                         </span>
                                                     </div>
-                                                    <button className="part-row-clear" title="Clear" onClick={() => updateRow(index, { selectedPart: null, search: '' })}>
+                                                    <button className="part-row-clear" title={t('common.clear', 'Clear')} onClick={() => updateRow(index, { selectedPart: null, search: '' })}>
                                                         <i className="fa-solid fa-xmark"></i>
                                                     </button>
                                                 </div>
@@ -278,7 +280,7 @@ const RepairDetails = () => {
                                                     <input
                                                         type="text"
                                                         className="part-row-input"
-                                                        placeholder="Search part by name, ref, category..."
+                                                        placeholder={t('mechanic.details.search_part_placeholder', 'Search part by name, ref, category...')}
                                                         value={row.search}
                                                         onChange={e => updateRow(index, { search: e.target.value, showDropdown: true })}
                                                         onFocus={() => updateRow(index, { showDropdown: true })}
@@ -294,18 +296,18 @@ const RepairDetails = () => {
                                                                 >
                                                                     <div className="pdd-left">
                                                                         <strong>{part.name}</strong>
-                                                                        <span>{part.reference_number} — {part.category || 'General'}</span>
+                                                                        <span>{part.reference_number} — {part.category || t('dashboard.general_service', 'General')}</span>
                                                                     </div>
                                                                     <div className="pdd-right">
                                                                         <span className="pdd-price">{Number(part.price).toFixed(2)} MAD</span>
                                                                         <span className={`pdd-stock ${part.stock_quantity <= 30 ? 'low' : ''}`}>
-                                                                            Stock: {part.stock_quantity}
+                                                                            {t('mechanic.details.stock', 'Stock')}: {part.stock_quantity}
                                                                         </span>
                                                                     </div>
                                                                 </div>
                                                             ))}
                                                             {getFilteredParts(row.search, index).length === 0 && (
-                                                                <div className="pdd-empty">No parts found.</div>
+                                                                <div className="pdd-empty">{t('mechanic.details.no_parts_found', 'No parts found.')}</div>
                                                             )}
                                                         </div>
                                                     )}
@@ -315,7 +317,7 @@ const RepairDetails = () => {
 
                                         {/* Quantity */}
                                         <div className="part-row-qty">
-                                            <label>Qty</label>
+                                            <label>{t('mechanic.details.qty', 'Qty')}</label>
                                             <input
                                                 type="number"
                                                 min="1"
@@ -328,7 +330,7 @@ const RepairDetails = () => {
 
                                         {/* Remove row */}
                                         {partRows.length > 1 && (
-                                            <button className="part-row-remove" title="Remove row" onClick={() => removeRow(index)}>
+                                            <button className="part-row-remove" title={t('mechanic.details.remove_row', 'Remove row')} onClick={() => removeRow(index)}>
                                                 <i className="fa-solid fa-trash-can"></i>
                                             </button>
                                         )}
@@ -340,7 +342,7 @@ const RepairDetails = () => {
                             <div className="multi-part-actions">
                                 {partRows.length < MAX_PARTS && (
                                     <button className="btn-add-part-row" onClick={addRow}>
-                                        <i className="fa-solid fa-plus"></i> Add Another Part
+                                        <i className="fa-solid fa-plus"></i> {t('mechanic.details.add_another_part', 'Add Another Part')}
                                         <span className="row-counter">{partRows.length}/{MAX_PARTS}</span>
                                     </button>
                                 )}
@@ -350,8 +352,8 @@ const RepairDetails = () => {
                                     disabled={submittingPart || filledRows === 0}
                                 >
                                     {submittingPart
-                                        ? <><i className="fa-solid fa-spinner fa-spin"></i> Sending {filledRows} request{filledRows > 1 ? 's' : ''}...</>
-                                        : <><i className="fa-solid fa-paper-plane"></i> Send {filledRows > 0 ? filledRows : ''} Part Request{filledRows > 1 ? 's' : ''}</>
+                                        ? <><i className="fa-solid fa-spinner fa-spin"></i> {t('mechanic.details.sending_requests', 'Sending {{count}} request(s)...', { count: filledRows })}</>
+                                        : <><i className="fa-solid fa-paper-plane"></i> {t('mechanic.details.send_part_request', 'Send {{count}} Part Request(s)', { count: filledRows })}</>
                                     }
                                 </button>
                             </div>

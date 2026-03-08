@@ -126,3 +126,19 @@ h5,
 h6 {
   font-family: var(--font-family-title);
 }
+
+[dir="rtl"] .footer-columns {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .navbar-inner {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .navbar-links {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .navbar-actions {
+  flex-direction: row-reverse;
+}

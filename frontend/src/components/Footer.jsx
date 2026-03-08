@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
 import MECHANIC from "/images/MECHANIC.png";
+import { useTranslation } from 'react-i18next';
 import './Footer.css'
 
 function Footer() {
+  const { t } = useTranslation();
+
   return (
     <footer className="footer">
       <div className="footer-inner">
@@ -16,32 +19,32 @@ function Footer() {
           <div className="footer-columns">
 
             <div className="footer-column Services">
-              <h4>Services</h4>
+              <h4>{t('footer.services')}</h4>
               <div className="Services1">
                 <div>
-                  <Link to="/services#maintenance" className="link"> Maintenance </Link>
-                  <Link to="/services#brakes" className="link"> Brakes, Tires & Suspension </Link>
-                  <Link to="/services#engine" className="link"> Engine & Transmission </Link>
+                  <Link to="/services#maintenance" className="link"> {t('footer.maintenance')} </Link>
+                  <Link to="/services#brakes" className="link"> {t('footer.brakes')} </Link>
+                  <Link to="/services#engine" className="link"> {t('footer.engine')} </Link>
                 </div>
                 <div>
-                  <Link to="/services#electrical" className="link"> Electrical & Fuel Systems </Link>
-                  <Link to="/services#cooling" className="link"> Cooling, Exhaust & Climate </Link>
-                  <Link to="/services#inspection" className="link"> Inspection & Detailing </Link>
+                  <Link to="/services#electrical" className="link"> {t('footer.electrical')} </Link>
+                  <Link to="/services#cooling" className="link"> {t('footer.cooling')} </Link>
+                  <Link to="/services#inspection" className="link"> {t('footer.inspection')} </Link>
                 </div>
               </div>
             </div>
             <div className="footer-column Company">
-              <h4>Company</h4>
-              <Link to="/about" className="link"> About </Link>
+              <h4>{t('footer.company')}</h4>
+              <Link to="/about" className="link"> {t('footer.about')} </Link>
             </div>
             <div className="footer-column Support">
-              <h4>Support</h4>
-              <Link to="/contact" className="link"> Contact </Link>
+              <h4>{t('footer.support')}</h4>
+              <Link to="/contact" className="link"> {t('footer.contact')} </Link>
             </div>
           </div>
         </div>
         <div className="footer-bottom">
-          <span>© 2026 All Rights Reserved to Auto Repair</span>
+          <span>{t('footer.rights')}</span>
         </div>
       </div>
     </footer>

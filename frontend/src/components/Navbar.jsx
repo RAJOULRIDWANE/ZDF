@@ -20,10 +20,11 @@ function Navbar() {
     { code: 'ar', label: 'العربية' },
   ];
 
-  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+  const currentLanguage = languages.find(lang => lang.code === i18n.language?.split('-')[0]) || languages[0];
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
+    localStorage.setItem('language', lng);
   };
 
   const handleScrollToTracking = (e) => {

@@ -48,7 +48,7 @@ const UserManagement = () => {
             setUsers(response.data);
         } catch (err) {
             console.error('Error fetching users:', err);
-            setError('Failed to load staff list. Please try again.');
+            setError(t('supervisor.users.fetch_error', 'Failed to load staff list. Please try again.'));
         } finally {
             setLoading(false);
         }
@@ -143,7 +143,7 @@ const UserManagement = () => {
             fetchUsers();
         } catch (err) {
             console.error('Error saving user:', err);
-            setError(err.response?.data?.message || 'Failed to save staff member.');
+            setError(err.response?.data?.message || t('supervisor.users.save_error', 'Failed to save staff member.'));
         }
     };
 
@@ -213,11 +213,11 @@ const UserManagement = () => {
                     <table className="staff-table">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Email</th>
+                                <th>{t('supervisor.users.name', 'Name')}</th>
+                                <th>{t('supervisor.users.email', 'Email')}</th>
                                 <th>{t('supervisor.users.phone', 'Phone')}</th>
-                                <th>Role</th>
-                                <th>Status</th>
+                                <th>{t('supervisor.users.role', 'Role')}</th>
+                                <th>{t('supervisor.users.status', 'Status')}</th>
                                 <th>{t('supervisor.users.actions', 'Actions')}</th>
                             </tr>
                         </thead>
@@ -281,23 +281,23 @@ const UserManagement = () => {
                             {error && <div className="error-alert">{error}</div>}
 
                             <div className="form-group">
-                                <label>Name</label>
+                                <label>{t('supervisor.users.name', 'Name')}</label>
                                 <input type="text" name="name" value={formData.name} onChange={handleInputChange} required />
                             </div>
 
                             <div className="form-group">
-                                <label>Email</label>
+                                <label>{t('supervisor.users.email', 'Email')}</label>
                                 <input type="email" name="email" value={formData.email} onChange={handleInputChange} required />
                             </div>
 
                             <div className="form-group">
-                                <label>Phone</label>
+                                <label>{t('supervisor.users.phone', 'Phone')}</label>
                                 <input type="text" name="phone" value={formData.phone} onChange={handleInputChange} />
                             </div>
 
                             {modalMode === 'add' && (
                                 <div className="form-group">
-                                    <label>Role</label>
+                                    <label>{t('supervisor.users.role', 'Role')}</label>
                                     <select name="role" value={formData.role} onChange={handleInputChange}>
                                         <option value="mechanic">{t('roles.mechanic', 'Mechanic')}</option>
                                         <option value="receptionist">{t('roles.receptionist', 'Receptionist')}</option>
@@ -306,7 +306,7 @@ const UserManagement = () => {
                             )}
 
                             <div className="form-group">
-                                <label>Password {modalMode === 'edit' && <span className="hint">{t('supervisor.users.leave_blank', '(Leave blank to keep current)')}</span>}</label>
+                                <label>{t('supervisor.users.password', 'Password')} {modalMode === 'edit' && <span className="hint">{t('supervisor.users.leave_blank', '(Leave blank to keep current)')}</span>}</label>
                                 <input
                                     type="password"
                                     name="password"

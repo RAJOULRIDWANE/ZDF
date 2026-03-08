@@ -6,83 +6,85 @@ import AIDiagnostic from "../components/AIDiagnostic";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import PartnerCarousel from "../components/PartnerCarousel";
 
-const TABS = [
-  {
-    icon: "fa-solid fa-layer-group",
-    label: "Dashboard",
-    header: "Diagnostic Monitor",
-    items: [
-      { icon: "fa-solid fa-check", iconColor: "#10b981", badge: "DONE", badgeType: "done", lineShortColor: "", lineLong: true },
-      { icon: "fa-solid fa-microchip", iconColor: "white", badge: "IN PROGRESS", badgeType: "blue", lineShortColor: "blue", lineLong: true },
-    ],
-    feed: [
-      { text: "> CALIBRATING ENGINE SENSORS...", active: false },
-      { text: "> SYSTEM CHECK: OPTIMAL",        active: false },
-      { text: "> UPDATING INVENTORY...",         active: true  },
-    ],
-  },
-  {
-    icon: "fa-solid fa-screwdriver-wrench",
-    label: "Repairs",
-    header: "Active Repairs",
-    items: [
-      { icon: "fa-solid fa-car",        iconColor: "#f59e0b", badge: "PENDING",  badgeType: "warn", lineShortColor: "orange", lineLong: true },
-      { icon: "fa-solid fa-oil-can",    iconColor: "#10b981", badge: "DONE",     badgeType: "done", lineShortColor: "",       lineLong: true },
-      { icon: "fa-solid fa-car-burst",  iconColor: "white",   badge: "ASSIGNED", badgeType: "blue", lineShortColor: "blue",   lineLong: true },
-    ],
-    feed: [
-      { text: "> BRAKE PAD REPLACEMENT — BAY 3", active: false },
-      { text: "> OIL CHANGE COMPLETE",            active: false },
-      { text: "> ASSIGNING MECHANIC...",           active: true  },
-    ],
-  },
-  {
-    icon: "fa-solid fa-microchip",
-    label: "AI Scan",
-    header: "AI Scan Engine",
-    items: [
-      { icon: "fa-solid fa-brain",     iconColor: "#a78bfa", badge: "SCANNING", badgeType: "purple", lineShortColor: "purple", lineLong: true },
-      { icon: "fa-solid fa-chart-bar", iconColor: "#3b82f6", badge: "READY",    badgeType: "blue",   lineShortColor: "blue",   lineLong: true },
-    ],
-    feed: [
-      { text: "> LOADING XGBOOST MODEL...",   active: false },
-      { text: "> 20 REPAIR CLASSES ACTIVE",   active: false },
-      { text: "> ANALYZING SYMPTOMS...",      active: true  },
-    ],
-  },
-  {
-    icon: "fa-solid fa-gear",
-    label: "Settings",
-    header: "System Settings",
-    items: [
-      { icon: "fa-solid fa-shield-halved", iconColor: "#10b981", badge: "SECURE", badgeType: "done", lineShortColor: "",     lineLong: true },
-      { icon: "fa-solid fa-database",      iconColor: "#f59e0b", badge: "SYNC",   badgeType: "warn", lineShortColor: "orange", lineLong: true },
-    ],
-    feed: [
-      { text: "> FIREWALL: ACTIVE",         active: false },
-      { text: "> DB SYNC: 99.8% UPTIME",    active: false },
-      { text: "> APPLYING CONFIG...",        active: true  },
-    ],
-  },
-];
-
+// TABS generated inside component to allow dynamic translation
 const BADGE_STYLES = {
-  done:   { background: "#222",    color: "#555" },
-  blue:   { background: "#3b82f6", color: "#fff", boxShadow: "0 0 10px rgba(59,130,246,0.3)" },
-  warn:   { background: "#f59e0b", color: "#000" },
+  done: { background: "#222", color: "#555" },
+  blue: { background: "#3b82f6", color: "#fff", boxShadow: "0 0 10px rgba(59,130,246,0.3)" },
+  warn: { background: "#f59e0b", color: "#000" },
   purple: { background: "#7c3aed", color: "#fff", boxShadow: "0 0 10px rgba(124,58,237,0.3)" },
 };
 
 const LINE_COLORS = {
-  "":       "#222",
-  blue:     "#3b82f6",
-  orange:   "#f59e0b",
-  purple:   "#7c3aed",
+  "": "#222",
+  blue: "#3b82f6",
+  orange: "#f59e0b",
+  purple: "#7c3aed",
 };
 
 function Home({ onNavigate }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
+
+  const TABS = [
+    {
+      icon: "fa-solid fa-layer-group",
+      label: "Dashboard",
+      header: "Diagnostic Monitor",
+      items: [
+        { icon: "fa-solid fa-check", iconColor: "#10b981", badge: "DONE", badgeType: "done", lineShortColor: "", lineLong: true },
+        { icon: "fa-solid fa-microchip", iconColor: "white", badge: "IN PROGRESS", badgeType: "blue", lineShortColor: "blue", lineLong: true },
+      ],
+      feed: [
+        { text: "> CALIBRATING ENGINE SENSORS...", active: false },
+        { text: "> SYSTEM CHECK: OPTIMAL", active: false },
+        { text: "> UPDATING INVENTORY...", active: true },
+      ],
+    },
+    {
+      icon: "fa-solid fa-screwdriver-wrench",
+      label: "Repairs",
+      header: "Active Repairs",
+      items: [
+        { icon: "fa-solid fa-car", iconColor: "#f59e0b", badge: "PENDING", badgeType: "warn", lineShortColor: "orange", lineLong: true },
+        { icon: "fa-solid fa-oil-can", iconColor: "#10b981", badge: "DONE", badgeType: "done", lineShortColor: "", lineLong: true },
+        { icon: "fa-solid fa-car-burst", iconColor: "white", badge: "ASSIGNED", badgeType: "blue", lineShortColor: "blue", lineLong: true },
+      ],
+      feed: [
+        { text: "> BRAKE PAD REPLACEMENT — BAY 3", active: false },
+        { text: "> OIL CHANGE COMPLETE", active: false },
+        { text: "> ASSIGNING MECHANIC...", active: true },
+      ],
+    },
+    {
+      icon: "fa-solid fa-microchip",
+      label: t('home.tabs.ai.label', "AI Scan"),
+      header: t('home.tabs.ai.header', "AI Scan Engine"),
+      items: [
+        { icon: "fa-solid fa-brain", iconColor: "#a78bfa", badge: "SCANNING", badgeType: "purple", lineShortColor: "purple", lineLong: true },
+        { icon: "fa-solid fa-chart-bar", iconColor: "#3b82f6", badge: "READY", badgeType: "blue", lineShortColor: "blue", lineLong: true },
+      ],
+      feed: [
+        { text: t('home.tabs.ai.feed1', "> LOADING XGBOOST MODEL..."), active: false },
+        { text: t('home.tabs.ai.feed2', "> 20 REPAIR CLASSES ACTIVE"), active: false },
+        { text: t('home.tabs.ai.feed3', "> ANALYZING SYMPTOMS..."), active: true },
+      ],
+    },
+    {
+      icon: "fa-solid fa-gear",
+      label: "Settings",
+      header: "System Settings",
+      items: [
+        { icon: "fa-solid fa-shield-halved", iconColor: "#10b981", badge: "SECURE", badgeType: "done", lineShortColor: "", lineLong: true },
+        { icon: "fa-solid fa-database", iconColor: "#f59e0b", badge: "SYNC", badgeType: "warn", lineShortColor: "orange", lineLong: true },
+      ],
+      feed: [
+        { text: "> FIREWALL: ACTIVE", active: false },
+        { text: "> DB SYNC: 99.8% UPTIME", active: false },
+        { text: "> APPLYING CONFIG...", active: true },
+      ],
+    },
+  ];
+
   const tab = TABS[activeTab];
 
   return (
@@ -143,8 +145,8 @@ function Home({ onNavigate }) {
                         item.badgeType === "purple"
                           ? { background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.25)" }
                           : item.badgeType === "warn"
-                          ? { background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)" }
-                          : {}
+                            ? { background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)" }
+                            : {}
                       }
                     >
                       <div className="item-icon">
@@ -261,9 +263,9 @@ function Home({ onNavigate }) {
 
       <section className="ai-section">
         <div className="section-inner ai-section-inner">
-          <span className="ai-section-badge"><i class="fa-solid fa-robot"></i> AI Powered</span>
-          <h2>Auto Repair Diagnostic</h2>
-          <p className="section-subtitle">Describe your vehicle symptoms and get instant AI-powered repair predictions with cost estimates.</p>
+          <span className="ai-section-badge"><i class="fa-solid fa-robot"></i> {t('home.ai_badge', 'AI Powered')}</span>
+          <h2>{t("home.ai_title", "Auto Repair Diagnostic")}</h2>
+          <p className="section-subtitle">{t("home.ai_subtitle", "Describe your vehicle symptoms and get instant AI-powered repair predictions with cost estimates.")}</p>
           <AIDiagnostic />
         </div>
       </section>

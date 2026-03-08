@@ -88,7 +88,7 @@ const PartsManagerDashboard = () => {
 
     } catch (err) {
       if (err.response?.status === 401) { localStorage.removeItem('ACCESS_TOKEN'); localStorage.removeItem('USER_NAME'); localStorage.removeItem('USER_ROLE'); navigate('/login'); }
-      showMsg('Failed to load data.', 'error');
+      showMsg(t('dashboard.failed_load', 'Failed to load data.'), 'error');
     } finally {
       clearTimeout(loadingTimeout);
       setLoading(false);
@@ -105,10 +105,10 @@ const PartsManagerDashboard = () => {
     setActionLoading(id);
     try {
       const res = await axios.post(`${BASE}/parts-manager/requests/${id}/approve`, {}, { headers });
-      showMsg(res.data.message || 'Approved!', 'success');
+      showMsg(res.data.message || t('parts_manager.messages.approved', 'Approved!'), 'success');
       fetchData();
     } catch (err) {
-      showMsg(err.response?.data?.message || 'Failed to approve.', 'error');
+      showMsg(err.response?.data?.message || t('parts_manager.messages.approve_failed', 'Failed to approve.'), 'error');
     } finally {
       setActionLoading(null);
     }
@@ -119,11 +119,11 @@ const PartsManagerDashboard = () => {
     setActionLoading(id);
     try {
       const res = await axios.post(`${BASE}/parts-manager/requests/${id}/decline`, { notes }, { headers });
-      showMsg(res.data.message || 'Declined.', 'success');
+      showMsg(res.data.message || t('parts_manager.messages.declined', 'Declined.'), 'success');
       setDeclineModal({ show: false, id: null, notes: '' });
       fetchData();
     } catch (err) {
-      showMsg(err.response?.data?.message || 'Failed to decline.', 'error');
+      showMsg(err.response?.data?.message || t('parts_manager.messages.decline_failed', 'Failed to decline.'), 'error');
     } finally {
       setActionLoading(null);
     }
@@ -188,13 +188,13 @@ const PartsManagerDashboard = () => {
     setSubmittingPart(true);
     try {
       const res = await axios.post(`${BASE}/parts-manager/parts`, partForm, { headers });
-      showMsg(res.data.message || 'Part added!', 'success');
+      showMsg(res.data.message || t('parts_manager.messages.part_added', 'Part added!'), 'success');
       closeAddPart();
       fetchData();
     } catch (err) {
       const serverErrors = err.response?.data?.errors;
       if (serverErrors) setPartFormErrors(serverErrors);
-      else showMsg(err.response?.data?.message || 'Failed to add part.', 'error');
+      else showMsg(err.response?.data?.message || t('parts_manager.messages.add_part_failed', 'Failed to add part.'), 'error');
     } finally {
       setSubmittingPart(false);
     }
@@ -229,12 +229,12 @@ const PartsManagerDashboard = () => {
     setSubmittingService(true);
     try {
       const res = await axios.post(`${BASE}/parts-manager/services`, serviceForm, { headers });
-      showMsg(res.data.message || 'Service added!', 'success');
+      showMsg(res.data.message || t('parts_manager.messages.service_added', 'Service added!'), 'success');
       closeAddService();
     } catch (err) {
       const serverErrors = err.response?.data?.errors;
       if (serverErrors) setServiceFormErrors(serverErrors);
-      else showMsg(err.response?.data?.message || 'Failed to add service.', 'error');
+      else showMsg(err.response?.data?.message || t('parts_manager.messages.add_service_failed', 'Failed to add service.'), 'error');
     } finally {
       setSubmittingService(false);
     }
@@ -456,9 +456,9 @@ const PartsManagerDashboard = () => {
                     <tr><td colSpan="8" className="pm-empty-cell">{t('parts_manager.no_requests')}</td></tr>
                   ) : pagedRequests.map(req => (
                     <tr key={req.id}>
-                      <td><strong>{req.mechanic?.name || '—'}</strong></td>
+                      <td><strong>{req.mechanic?.name || t('common.unknown', '—')}</strong></td>
                       <td>
-                        <strong>{req.part?.name || '—'}</strong>
+                        <strong>{req.part?.name || t('common.unknown', '—')}</strong>
                         <div className="pm-sub">{req.part?.reference_number}</div>
                       </td>
                       <td><span className="pm-qty-badge">{req.quantity}</span></td>
@@ -473,7 +473,7 @@ const PartsManagerDashboard = () => {
                         <div className="pm-sub">{req.repair?.vehicle?.make} {req.repair?.vehicle?.model}</div>
                       </td>
                       <td>{statusBadge(req.status)}</td>
-                      <td className="pm-sub">{req.notes || '—'}</td>
+                      <td className="pm-sub">{req.notes || t('common.unknown', '—')}</td>
                       <td>
                         {req.status === 'Pending' && (
                           <div className="pm-action-btns">

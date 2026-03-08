@@ -4,11 +4,11 @@
 export const patterns = {
     phone: /^\d{10,13}$/,
     // description: Must contain at least one alphabet, only letters, numbers, periods, commas, and spaces. Min 25.
-    description: /^(?=.*[a-zA-Z])[a-zA-Z0-9.,\s]{25,}$/,
+    description: /^(?=.*[a-zA-Z])[a-zA-Z0-9.,\s]{10,}$/,
     // name: Alphabets and spaces only
     name: /^[a-zA-Z\s]+$/,
-    // password: Minimum 6 characters, any characters allowed
-    password: /^.{6,}$/,
+    // password: Min 6 chars, must include uppercase, lowercase, number, and symbol
+    password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{6,}$/,
     // price: Function instead of regex, must be number >= 1
     price: (value) => !isNaN(value) && Number(value) >= 1 && value.toString().trim() !== '',
     // carModel: Alphanumeric and spaces only
@@ -24,7 +24,7 @@ export const validationMessages = {
     phone: "Phone number must be between 10 and 13 digits, numbers only.",
     description: "Description must be at least 25 characters, contain letters, and only use letters, numbers, periods, and commas.",
     name: "Name must contain letters only, no numbers or symbols.",
-    password: "Password must be at least 6 characters.",
+    password: "Password must be at least 6 characters and include an uppercase letter, lowercase letter, number, and symbol.",
     price: "Price must be at least 1 MAD.",
     carModel: "Car model cannot contain symbols.",
     carMaker: "Car maker must contain letters only.",

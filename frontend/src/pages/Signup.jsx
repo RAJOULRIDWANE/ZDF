@@ -20,6 +20,8 @@ function Signup() {
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     let { name, value } = e.target;
@@ -112,16 +114,77 @@ function Signup() {
               {/* PASSWORD */}
               <label className="auth-field">
                 {t('auth.password_label')} <span>*</span>
-                <input type="password" name="password" value={formData.password} onChange={handleChange}
-                  placeholder={t('auth.password_placeholder')} required />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder={t('auth.password_placeholder')}
+                    required
+                    style={{ paddingRight: '40px', width: '100%', boxSizing: 'border-box' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(prev => !prev)}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#888',
+                      padding: '0',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                    tabIndex={-1}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    <i className={`fa-regular ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                  </button>
+                </div>
                 {errors.password && <small style={{ color: 'red' }}>{errors.password[0]}</small>}
               </label>
 
               {/* CONFIRM PASSWORD */}
               <label className="auth-field">
                 {t('auth.confirm_password_label')} <span>*</span>
-                <input type="password" name="password_confirmation" value={formData.password_confirmation}
-                  onChange={handleChange} placeholder={t('auth.confirm_password_placeholder')} required />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="password_confirmation"
+                    value={formData.password_confirmation}
+                    onChange={handleChange}
+                    placeholder={t('auth.confirm_password_placeholder')}
+                    required
+                    style={{ paddingRight: '40px', width: '100%', boxSizing: 'border-box' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(prev => !prev)}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#888',
+                      padding: '0',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                    tabIndex={-1}
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    <i className={`fa-regular ${showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                  </button>
+                </div>
+                {errors.password_confirmation && <small style={{ color: 'red' }}>{errors.password_confirmation[0]}</small>}
               </label>
 
               <button type="submit" className="btn-primary auth-submit" disabled={loading}>
