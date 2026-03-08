@@ -85,7 +85,7 @@
 /* ── Badge ── */
 .ai-badge {
   display: inline-block;
-  background: linear-gradient(135deg, var(--red), #a855f7);
+  background: linear-gradient(135deg, var(--red), var(--red-dark));
   color: #fff;
   font-size: 0.72rem;
   font-weight: 700;
@@ -395,8 +395,8 @@
   padding: 1rem 1.25rem;
 }
 
-.ai-card--rank-1 {
-  border-color: rgba(250, 204, 21, 0.4);
+/* .ai-card--rank-1 {
+  border-color: var(--warning-bg);
 }
 
 .ai-card--rank-2 {
@@ -407,6 +407,10 @@
   border-color: rgba(205, 127, 50, 0.25);
 }
 
+.light-mode .ai-card--rank-3 {
+  border-color: rgba(160, 93, 33, 0.25);
+} */
+
 .ai-card-rank {
   font-size: 1.5rem;
   font-weight: 800;
@@ -416,7 +420,7 @@
 }
 
 .ai-card--rank-1 .ai-card-rank {
-  color: #facc15;
+  color: var(--warning);
 }
 
 .ai-card--rank-2 .ai-card-rank {
@@ -425,6 +429,10 @@
 
 .ai-card--rank-3 .ai-card-rank {
   color: #cd7f32;
+}
+
+.light-mode .ai-card--rank-3 .ai-card-rank {
+  color: #a05d21;
 }
 
 .ai-card-body {
@@ -447,7 +455,7 @@
 }
 
 .ai-confidence-fill {
-  background: linear-gradient(90deg, var(--red), #a855f7);
+  background: linear-gradient(90deg, var(--red), var(--red-dark));
   height: 100%;
   border-radius: 20px;
   transition: width 0.6s ease;

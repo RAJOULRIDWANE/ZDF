@@ -21,7 +21,7 @@ const DashboardNavbar = ({ user }) => {
     { code: 'en', label: 'English' },
     { code: 'fr', label: 'Français' },
   ];
-  const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
+  const currentLang = languages.find(l => l.code === i18n.language?.split('-')[0]) || languages[0];
 
   const handleLogout = () => {
     localStorage.removeItem('ACCESS_TOKEN');
@@ -62,7 +62,11 @@ const DashboardNavbar = ({ user }) => {
                 <button
                   key={lang.code}
                   className={`language-option ${currentLang.code === lang.code ? 'active' : ''}`}
-                  onMouseDown={() => { i18n.changeLanguage(lang.code); setShowLangDropdown(false); }}
+                  onMouseDown={() => {
+                    i18n.changeLanguage(lang.code);
+                    localStorage.setItem('language', lang.code);
+                    setShowLangDropdown(false);
+                  }}
                 >
                   <span className="language-label">{lang.label}</span>
                   {currentLang.code === lang.code && (

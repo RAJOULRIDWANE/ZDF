@@ -905,3 +905,60 @@ select.form-control option {
         margin-bottom: 18px;
     }
 }
+
+/* Mechanic Load List within Autocomplete */
+.suggestions-list .mechanic-load-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: transparent;
+    border-bottom: 1px solid var(--border-light);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.suggestions-list .mechanic-load-item:last-child {
+    border-bottom: none;
+}
+
+.suggestions-list .mechanic-load-item:hover:not(.ml-disabled) {
+    background: var(--steel);
+}
+
+.suggestions-list .mechanic-load-item.ml-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+    background: transparent;
+}
+
+.suggestions-list .ml-name {
+    font-weight: 500;
+    color: var(--white);
+    font-family: 'Barlow', sans-serif;
+}
+
+.suggestions-list .ml-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-family: 'Barlow Condensed', sans-serif;
+    text-transform: uppercase;
+}
+
+.suggestions-list .ml-badge-green {
+    background: rgba(16, 185, 129, 0.15);
+    color: #059669;
+}
+
+.suggestions-list .ml-badge-orange {
+    background: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+}
+
+.suggestions-list .ml-badge-red {
+    background: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+}

@@ -45,6 +45,6 @@ class User extends Authenticatable
     // A Mechanic has many repairs assigned to them
     public function repairs()
     {
-        return $this->hasManyThrough(Repair::class, Vehicle::class);
+        return $this->hasMany(Repair::class, 'mechanic_id');
     }
 }

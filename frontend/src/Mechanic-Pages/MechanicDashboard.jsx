@@ -86,13 +86,13 @@ const MechanicDashboard = () => {
         } catch (err) {
             console.error("Dashboard Error:", err);
             if (err.response && err.response.status === 401) {
-                showMessage('Session expired. Please log in again.', 'error');
+                showMessage(t('common.messages.session_expired', 'Session expired. Please log in again.'), 'error');
                 localStorage.removeItem('ACCESS_TOKEN');
                 localStorage.removeItem('USER_NAME');
                 localStorage.removeItem('USER_ROLE');
                 navigate('/login');
             } else {
-                showMessage('Failed to load dashboard data.', 'error');
+                showMessage(t('dashboard.failed_load', 'Failed to load dashboard data.'), 'error');
             }
         } finally {
             clearTimeout(loadingTimeout);
@@ -122,11 +122,11 @@ const MechanicDashboard = () => {
         );
         try {
             await axios.patch(`${BASE}/mechanic/jobs/${repairId}`, { status: newStatus }, { headers });
-            showMessage('Repair status updated successfully', 'success');
+            showMessage(t('mechanic.messages.status_updated', 'Repair status updated successfully'), 'success');
         } catch (err) {
             console.error(err);
             setRepairs(previousRepairs);
-            showMessage('Failed to update status.', 'error');
+            showMessage(t('mechanic.messages.status_update_failed', 'Failed to update status.'), 'error');
         }
     };
 
@@ -148,7 +148,7 @@ const MechanicDashboard = () => {
 
     const handleServiceSelect = (service) => {
         if (selectedServices.some(s => s.id === service.id)) {
-            showMessage('Service already added', 'error');
+            showMessage(t('mechanic.messages.service_already_added', 'Service already added'), 'error');
             return;
         }
         setSelectedServices(prev => [...prev, service]);
@@ -160,8 +160,8 @@ const MechanicDashboard = () => {
     };
 
     const handleSubmitEstimate = async () => {
-        if (selectedServices.length === 0) { showMessage('Please select at least one service', 'error'); return; }
-        if (!mechanicNotes.trim()) { showMessage('Please add mechanic notes', 'error'); return; }
+        if (selectedServices.length === 0) { showMessage(t('mechanic.messages.select_one_service', 'Please select at least one service'), 'error'); return; }
+        if (!mechanicNotes.trim()) { showMessage(t('mechanic.messages.add_mechanic_notes', 'Please add mechanic notes'), 'error'); return; }
         if (!patterns.description.test(mechanicNotes)) { showMessage(validationMessages.description, 'error'); return; }
         setSubmittingEstimate(true);
         try {
@@ -175,10 +175,10 @@ const MechanicDashboard = () => {
                     r.id === selectedJob.id ? { ...r, status: 'Estimate Sent', services: selectedServices } : r
                 )
             );
-            showMessage(response.data.message || 'Estimate sent successfully!', 'success');
+            showMessage(response.data.message || t('mechanic.messages.estimate_sent_success', 'Estimate sent successfully!'), 'success');
             handleCloseEstimateModal();
         } catch (err) {
-            showMessage(err.response?.data?.message || 'Failed to submit estimate', 'error');
+            showMessage(err.response?.data?.message || t('mechanic.messages.estimate_submit_failed', 'Failed to submit estimate'), 'error');
         } finally { setSubmittingEstimate(false); }
     };
 

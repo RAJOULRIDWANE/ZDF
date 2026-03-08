@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import DashboardNavbar from '../components/DashboardNavbar';
 import { Link } from 'react-router-dom';
 import './UserProfile.css';
 import { patterns, validationMessages } from '../utils/validation';
 
 const UserProfile = () => {
+  const { t } = useTranslation();
+
   // 1. STATE: User Data
   const [user, setUser] = useState({ name: '', role: '' });
 
@@ -43,11 +46,11 @@ const UserProfile = () => {
 
     // --- Frontend Validation ---
     if (passwords.newPassword !== passwords.confirmPassword) {
-      setMessage({ type: 'error', text: 'New passwords do not match!' });
+      setMessage({ type: 'error', text: t('profile.errors.password_mismatch', 'New passwords do not match!') });
       return;
     }
     if (passwords.newPassword.length < 6) {
-      setMessage({ type: 'error', text: 'Password must be at least 6 characters.' });
+      setMessage({ type: 'error', text: t('profile.errors.password_length', 'Password must be at least 6 characters.') });
       return;
     }
     if (!patterns.password.test(passwords.newPassword)) {
@@ -63,7 +66,7 @@ const UserProfile = () => {
       const token = localStorage.getItem('ACCESS_TOKEN');
 
       if (!token) {
-        throw new Error("You are not logged in.");
+        throw new Error(t('profile.errors.not_logged_in', "You are not logged in."));
       }
 
       // --- FETCH REQUEST ---
@@ -87,12 +90,12 @@ const UserProfile = () => {
       // --- Handle Errors ---
       if (!response.ok) {
         // If Laravel sends validation errors (e.g. "Password incorrect"), show them
-        const errorMsg = data.message || 'Failed to update password';
+        const errorMsg = data.message || t('profile.errors.update_failed', 'Failed to update password');
         throw new Error(errorMsg);
       }
 
       // --- Success ---
-      setMessage({ type: 'success', text: 'Password updated successfully!' });
+      setMessage({ type: 'success', text: t('profile.success.password_updated', 'Password updated successfully!') });
       setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
 
     } catch (error) {
@@ -116,27 +119,27 @@ const UserProfile = () => {
               to={`/${user.role ? user.role.toLowerCase().replace(/_/g, '') : 'client'}/dashboard`}
               className="back-link"
             >
-              ← Back to Dashboard
+              ← {t('profile.back_to_dashboard')}
             </Link>
           </div>
 
           <div className="header-actions">
-            <h1>My Profile</h1>
+            <h1>{t('profile.title')}</h1>
           </div>
 
           {/* CARD 1: User Info (Read Only) */}
           <div className="table-card profile-card">
             <div className="card-header">
-              <h3>Account Details</h3>
+              <h3>{t('profile.account_details')}</h3>
             </div>
             <div className="form-content">
 
               <div className="form-group">
-                <label>Full Name</label>
+                <label>{t('profile.full_name')}</label>
                 <input
                   type="text"
                   className="form-control locked-input"
-                  value={user.name || 'Loading...'}
+                  value={user.name || t('profile.loading')}
                   readOnly
                   disabled
                 />
@@ -146,7 +149,7 @@ const UserProfile = () => {
               </div>
 
               <div className="form-group">
-                <label>Role</label>
+                <label>{t('profile.role')}</label>
                 <input
                   type="text"
                   className="form-control locked-input"
@@ -164,17 +167,17 @@ const UserProfile = () => {
           {/* CARD 2: Change Password Form */}
           <div className="table-card profile-card">
             <div className="card-header">
-              <h3>Security Settings</h3>
+              <h3>{t('profile.security_settings')}</h3>
             </div>
             <form className="form-content" onSubmit={handleSave}>
 
               <div className="form-group">
-                <label>Current Password</label>
+                <label>{t('profile.current_password')}</label>
                 <input
                   type="password"
                   name="currentPassword"
                   className="form-control"
-                  placeholder="Enter current password"
+                  placeholder={t('profile.current_password_placeholder')}
                   value={passwords.currentPassword}
                   onChange={handleChange}
                   required
@@ -183,24 +186,24 @@ const UserProfile = () => {
 
               <div className="row-split">
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label>New Password</label>
+                  <label>{t('profile.new_password')}</label>
                   <input
                     type="password"
                     name="newPassword"
                     className="form-control"
-                    placeholder="New password"
+                    placeholder={t('profile.new_password_placeholder')}
                     value={passwords.newPassword}
                     onChange={handleChange}
                     required
                   />
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label>Confirm Password</label>
+                  <label>{t('profile.confirm_password')}</label>
                   <input
                     type="password"
                     name="confirmPassword"
                     className="form-control"
-                    placeholder="Confirm new password"
+                    placeholder={t('profile.confirm_password_placeholder')}
                     value={passwords.confirmPassword}
                     onChange={handleChange}
                     required
@@ -218,7 +221,7 @@ const UserProfile = () => {
 
               <div style={{ marginTop: '20px', textAlign: 'right' }}>
                 <button type="submit" className="update-btn" disabled={isLoading}>
-                  {isLoading ? 'Updating...' : 'Update Password'}
+                  {isLoading ? t('profile.updating') : t('profile.update_password')}
                 </button>
               </div>
 

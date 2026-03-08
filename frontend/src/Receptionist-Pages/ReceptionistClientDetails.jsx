@@ -2,6 +2,7 @@
 import axios from 'axios';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { jsPDF } from "jspdf";
+import { useTranslation } from 'react-i18next';
 import DashboardNavbar from '../components/DashboardNavbar';
 import SkeletonLoader from '../components/SkeletonLoader';
 import "./ReceptionistClientDetails.css";
@@ -9,13 +10,14 @@ import "./ReceptionistClientDetails.css";
 const ReceptionistClientDetails = () => {
     const { id, name } = useParams();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     // --- 1. STATE MANAGEMENT ---
-    const clientNameDisplay = name ? decodeURIComponent(name).replace(/-/g, ' ') : 'Client';
+    const clientNameDisplay = name ? decodeURIComponent(name).replace(/-/g, ' ') : t('common.client', 'Client');
 
     const [user, setUser] = useState({
-        name: localStorage.getItem('USER_NAME') || 'Receptionist',
-        role: localStorage.getItem('USER_ROLE') || 'Receptionist'
+        name: localStorage.getItem('USER_NAME') || t('common.receptionist', 'Receptionist'),
+        role: localStorage.getItem('USER_ROLE') || t('common.receptionist', 'Receptionist')
     });
 
     const [client, setClient] = useState(null);
@@ -56,344 +58,6 @@ const ReceptionistClientDetails = () => {
             setLoading(false);
         }
     };
-
-    // --- 3. HANDLE STATUS UPDATE (DELIVERED) ---
-    const handleUpdateStatus = (jobId, newStatus) => {
-        setConfirmModal({
-            show: true,
-            title: 'Mark as Delivered',
-            body: 'Are you sure you want to mark this vehicle as delivered? This action cannot be undone.',
-            onConfirm: async () => {
-                setConfirmModal({ show: false, title: '', body: '', job: null, isNegotiation: false, onConfirm: null });
-                try {
-                    const token = localStorage.getItem('ACCESS_TOKEN');
-                    await axios.put(`http://127.0.0.1:8000/api/receptionist/repairs/${jobId}/status`,
-                        { status: newStatus },
-                        { headers: { Authorization: `Bearer ${token}` } }
-                    );
-                    setRepairs(prevRepairs =>
-                        prevRepairs.map(job =>
-                            job.id === jobId ? { ...job, status: newStatus } : job
-                        )
-                    );
-                    setMessage('Vehicle marked as delivered successfully.');
-                    setMessageType('success');
-                    setTimeout(() => { setMessage(null); setMessageType(''); }, 4000);
-                } catch (error) {
-                    console.error('Status update failed', error);
-                    setMessage('Failed to update status. ' + (error.response?.data?.message || error.response?.data?.error || 'Repair must be fully Completed first.'));
-                    setMessageType('error');
-                    setTimeout(() => { setMessage(null); setMessageType(''); }, 5000);
-                }
-            }
-        });
-    };
-
-    // --- HANDLE NEGOTIATION APPROVAL/REJECTION ---
-    const handleNegotiation = (job, decision) => {
-        if (negotiatingId) return;
-
-        const isApprove = decision === 'approve';
-
-        // Initialize custom prices with original prices
-        let initialPrices = { services: {}, parts: {} };
-        if (isApprove) {
-            if (job.services) {
-                job.services.forEach(s => initialPrices.services[s.id] = Number(s.price || 0));
-            } else if (job.service) { // Fallback for single service structure
-                initialPrices.services[job.service.id] = Number(job.service.price || 0);
-            }
-            if (job.parts) {
-                job.parts.forEach(p => initialPrices.parts[p.id] = Number(p.pivot?.price || p.price || 0));
-            }
-        }
-        setCustomPrices(initialPrices);
-
-        setConfirmModal({
-            show: true,
-            title: isApprove ? 'Accept Discount Request & Set Custom Prices' : 'Reject Discount Request',
-            body: isApprove
-                ? 'Review the repair details below and set a custom new price for any individual item.'
-                : 'Reject this discount request? The client will be notified.',
-            job: job,
-            isNegotiation: isApprove,
-            onConfirm: async (payloadPrices) => {
-                setConfirmModal({ show: false, title: '', body: '', job: null, isNegotiation: false, onConfirm: null });
-                setNegotiatingId(job.id);
-                try {
-                    const token = localStorage.getItem('ACCESS_TOKEN');
-                    const response = await axios.post(
-                        `http://127.0.0.1:8000/api/receptionist/jobs/${job.id}/negotiate`,
-                        { decision, custom_prices: payloadPrices },
-                        { headers: { Authorization: `Bearer ${token}` } }
-                    );
-                    setRepairs(prevRepairs =>
-                        prevRepairs.map(j =>
-                            j.id === job.id
-                                ? { ...j, status: 'In Progress', cost: response.data.repair.cost }
-                                : j
-                        )
-                    );
-                    setMessage(response.data.message || 'Negotiation processed successfully');
-                    setMessageType('success');
-                    setTimeout(() => { setMessage(null); setMessageType(''); }, 4000);
-                } catch (error) {
-                    console.error('Negotiation failed', error);
-                    setMessage(error.response?.data?.message || 'Failed to process negotiation');
-                    setMessageType('error');
-                    setTimeout(() => { setMessage(null); setMessageType(''); }, 4000);
-                } finally {
-                    setNegotiatingId(null);
-                }
-            }
-        });
-    };
-
-    const handleLogout = async () => {
-        try {
-            const token = localStorage.getItem('ACCESS_TOKEN');
-            await axios.post('http://127.0.0.1:8000/api/logout', {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-        } catch (error) { console.error("Logout failed", error); }
-        localStorage.removeItem('ACCESS_TOKEN');
-        localStorage.removeItem('USER_NAME');
-        localStorage.removeItem('USER_ROLE');
-        navigate('/login');
-    };
-
-    // ==========================================
-    //      PDF GENERATOR LOGIC (FIXED)
-    // ==========================================
-    const generatePDF = async (job) => {
-        const doc = new jsPDF();
-
-        // A. HELPER: Load Image
-        const getBase64ImageFromUrl = (url) => {
-            return new Promise((resolve, reject) => {
-                var img = new Image();
-                img.setAttribute("crossOrigin", "anonymous");
-                img.onload = () => {
-                    var canvas = document.createElement("canvas");
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    var ctx = canvas.getContext("2d");
-                    ctx.drawImage(img, 0, 0);
-                    var dataURL = canvas.toDataURL("image/png");
-                    resolve(dataURL);
-                };
-                img.onerror = error => reject(error);
-                img.src = url;
-            });
-        };
-
-        // B. LOAD LOGO
-        let logoData = null;
-        try {
-            logoData = await getBase64ImageFromUrl("/images/MECHANIC.png");
-        } catch (error) {
-            console.warn("Logo not found");
-        }
-
-        // C. STYLES
-        const brandColor = [0, 180, 216];
-        const lightGray = [245, 247, 250];
-        const darkText = [51, 51, 51];
-        const grayText = [128, 128, 128];
-
-        // D. HEADER
-        doc.setFillColor(...brandColor);
-        doc.rect(0, 0, 210, 40, 'F');
-
-        doc.setTextColor(255, 255, 255);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(26);
-        doc.text("MECAPRO", 20, 28);
-
-        if (logoData) doc.addImage(logoData, 'PNG', 160, 5, 30, 30);
-
-        // E. INFO
-        doc.setTextColor(...darkText);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
-        doc.text("ESTN Selouane", 20, 55);
-        doc.text("Nador, Morocco", 20, 60);
-        doc.text("mecapro.info@gmail.com", 20, 65);
-
-        // F. INVOICE META
-        const invoiceNum = job.invoice_number || `INV-${job.id}`;
-        const dateIn = job.created_at ? new Date(job.created_at).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB');
-        const dateDue = job.date_end ? new Date(job.date_end).toLocaleDateString('en-GB') : "TBD";
-
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(14);
-        doc.text("INVOICE", 140, 55);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
-        doc.setTextColor(...grayText);
-        doc.text(`No: ${invoiceNum}`, 140, 62);
-        doc.text(`Date In: ${dateIn}`, 140, 67);
-        doc.text(`Due Date: ${dateDue}`, 140, 72);
-
-        // G. BILL TO
-        doc.setDrawColor(200);
-        doc.line(20, 80, 190, 80);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(...brandColor);
-        doc.text("BILL TO:", 20, 90);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(0);
-        doc.text(job.vehicle?.client?.name || "Guest Client", 20, 97);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(...grayText);
-        const carInfo = `${job.vehicle?.type ? job.vehicle.type.toUpperCase() + ' - ' : ''}${job.vehicle?.make || ''} ${job.vehicle?.model || ''} - ${job.vehicle?.plate_number || job.vehicle?.plate || ''}`;
-        doc.text(carInfo, 20, 103);
-
-        // H. TABLE HEADER
-        let y = 120;
-        doc.setFillColor(...brandColor);
-        doc.rect(20, y - 6, 170, 10, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(10);
-        doc.text("DESCRIPTION", 25, y);
-        doc.text("QTY", 110, y);
-        doc.text("PRICE", 140, y);
-        doc.text("TOTAL", 185, y, { align: "right" });
-
-        // I. TABLE ROWS & LOGIC FIX
-        y += 12;
-        doc.setTextColor(0);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
-
-        let grandTotal = 0;
-        let rowIndex = 0;
-
-        const addRow = (description, qty, price) => {
-            const parsedQty = typeof qty === 'number' ? qty : 1;
-            const lineTotal = parsedQty * price;
-            grandTotal += lineTotal;
-            if (rowIndex % 2 === 0) {
-                doc.setFillColor(...lightGray);
-                doc.rect(20, y - 5, 170, 8, 'F');
-            }
-            doc.text(description, 25, y);
-            doc.text(qty.toString(), 110, y);
-            doc.text(price.toFixed(2), 140, y);
-            doc.text(lineTotal.toFixed(2), 185, y, { align: "right" });
-            y += 10;
-            rowIndex++;
-            if (y > 270) { doc.addPage(); y = 20; rowIndex = 0; }
-        };
-
-        // --- FIX STARTS HERE ---
-        // We check if we have detailed services. 
-        // If YES: We only sum the services. We DO NOT add job.cost (which is likely the cached total).
-        // If NO: We use job.cost as a fallback "Lump Sum" (Legacy Data).
-
-        const hasServices = job.services && Array.isArray(job.services) && job.services.length > 0;
-        const hasParts = job.parts && Array.isArray(job.parts) && job.parts.length > 0;
-
-        if (hasServices || hasParts) {
-            // 1. Add Services
-            if (hasServices) {
-                job.services.forEach(service => {
-                    const price = Number(service.price || 0);
-                    const qty = '-';
-                    if (price > 0) addRow(service.name, qty, price);
-                });
-            }
-            // 2. Add Parts
-            if (hasParts) {
-                job.parts.forEach(part => {
-                    const qty = Number(part.quantity || part.pivot?.quantity || 1);
-                    const price = Number(part.price || part.pivot?.price || 0);
-                    if (price > 0) addRow(`Part: ${part.name}`, qty, price);
-                });
-            }
-        } else {
-            // Fallback: No details found, use the Main Total Cost
-            const labor = Number(job.cost || 0);
-            if (labor > 0) {
-                addRow(job.service?.name || "Repair Service (Total)", '-', labor);
-            }
-        }
-        // --- FIX ENDS HERE ---
-
-        // J. TOTALS
-        y += 5;
-        doc.setDrawColor(0);
-        doc.setLineWidth(1);
-        doc.line(100, y, 190, y);
-        y += 10;
-
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(...darkText);
-        doc.text("Total a payer  : ", 100, y);
-
-        doc.setFontSize(14);
-        doc.setTextColor(...brandColor);
-        doc.text(`${grandTotal.toFixed(2)} MAD`, 185, y, { align: "right" });
-
-        // K. FOOTER
-        y = doc.internal.pageSize.height - 20;
-        doc.setFontSize(9);
-        doc.setTextColor(...grayText);
-        doc.setFont("helvetica", "italic");
-        doc.text("Thank you for choosing MecaPro!", 105, y, { align: "center" });
-
-        doc.save(`Invoice_${invoiceNum}.pdf`);
-    };
-
-    // --- 4. DOWNLOAD HANDLER ---
-    const handleDownloadInvoice = async (jobId) => {
-        if (downloadingId === jobId) return;
-        setDownloadingId(jobId);
-
-        try {
-            const token = localStorage.getItem('ACCESS_TOKEN');
-            const response = await axios.get(`http://127.0.0.1:8000/api/receptionist/repairs/${jobId}/invoice`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            // Handle both raw model and Resource wrapper 'data'
-            const fullRepairData = response.data.data || response.data;
-
-            await generatePDF(fullRepairData);
-        } catch (error) {
-            console.error("Could not fetch invoice data:", error);
-            alert("Error generating invoice.");
-        } finally {
-            setDownloadingId(null);
-        }
-    };
-
-    // --- 5. KPI & HELPERS ---
-    const totalSpent = repairs.reduce((sum, job) => sum + Number(job.cost || 0), 0);
-    const totalVisits = repairs.length;
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
-
-    const todaysAppointments = repairs.filter(r => r.date_end && r.date_end.startsWith(todayStr)).length;
-
-    const completedToday = repairs.filter(r => {
-        if (!r.date_end || !r.status) return false;
-        const isToday = r.date_end.startsWith(todayStr);
-        return isToday && r.status.toLowerCase().trim() === 'completed';
-    }).length;
-
-    const deliveredCount = repairs.filter(r => r.status && r.status.toLowerCase().trim() === 'delivered').length;
-
-    const filteredRepairs = repairs.filter(job => {
-        if (!searchTerm) return true;
-        const term = searchTerm.toLowerCase();
-        const plate = job.vehicle?.plate_number || job.vehicle?.plate || job.vehicle?.license_plate || '';
-        const mechanic = job.mechanic?.name || '';
-        const servicesStr = job.services ? job.services.map(s => s.name).join(' ') : (job.service?.name || '');
-        return plate.toLowerCase().includes(term) || mechanic.toLowerCase().includes(term) || servicesStr.toLowerCase().includes(term);
-    });
-
     const getBadgeClass = (status) => {
         if (!status) return 'pending';
         const s = status.toLowerCase().trim();
@@ -413,9 +77,9 @@ const ReceptionistClientDetails = () => {
                 <div className="header-actions">
                     <div>
                         <Link to="/receptionist/dashboard" className="back-link-container back-link">
-                            ← Back to Dashboard
+                            ← {t('receptionist.details.back_dashboard', 'Back to Dashboard')}
                         </Link>
-                        <h1>{clientNameDisplay}'s Repair History</h1>
+                        <h1>{t('receptionist.details.repair_history', '{{name}}\'s Repair History', { name: clientNameDisplay })}</h1>
                     </div>
                 </div>
 
@@ -423,23 +87,23 @@ const ReceptionistClientDetails = () => {
                 <div className="kpi-container">
                     <div className="kpi-card">
                         <div className="kpi-icon"><i className="fa-regular fa-calendar"></i></div>
-                        <div className="kpi-info"><h3>Today's Appt</h3><p className="kpi-number">{todaysAppointments}</p></div>
+                        <div className="kpi-info"><h3>{t('receptionist.details.todays_appt', 'Today\'s Appt')}</h3><p className="kpi-number">{todaysAppointments}</p></div>
                     </div>
                     <div className="kpi-card">
                         <div className="kpi-icon delivered-icon"><i className="fa-solid fa-handshake"></i></div>
-                        <div className="kpi-info"><h3>Delivered</h3><p className="kpi-number">{deliveredCount}</p></div>
+                        <div className="kpi-info"><h3>{t('receptionist.details.delivered_count', 'Delivered')}</h3><p className="kpi-number">{deliveredCount}</p></div>
                     </div>
                     <div className="kpi-card">
                         <div className="kpi-icon success-icon"><i className="fa-regular fa-circle-check"></i></div>
-                        <div className="kpi-info"><h3>Completed Today</h3><p className="kpi-number">{completedToday}</p></div>
+                        <div className="kpi-info"><h3>{t('receptionist.details.completed_today', 'Completed Today')}</h3><p className="kpi-number">{completedToday}</p></div>
                     </div>
                     <div className="kpi-card">
                         <div className="kpi-icon"><i className="fa-solid fa-wrench"></i></div>
-                        <div className="kpi-info"><h3>Total Visits</h3><p className="kpi-number">{totalVisits}</p></div>
+                        <div className="kpi-info"><h3>{t('receptionist.details.total_visits', 'Total Visits')}</h3><p className="kpi-number">{totalVisits}</p></div>
                     </div>
                     <div className="kpi-card">
                         <div className="kpi-icon success-icon"><i className="fa-solid fa-wallet"></i></div>
-                        <div className="kpi-info"><h3>Total Spent</h3><p className="kpi-number">{totalSpent} MAD</p></div>
+                        <div className="kpi-info"><h3>{t('receptionist.details.total_spent', 'Total Spent')}</h3><p className="kpi-number">{totalSpent} MAD</p></div>
                     </div>
                 </div>
 
@@ -461,7 +125,7 @@ const ReceptionistClientDetails = () => {
                 <div className="search-filter-bar">
                     <input
                         type="text"
-                        placeholder="Search by License Plate, Mechanic, or Service..."
+                        placeholder={t('receptionist.details.search_placeholder', 'Search by License Plate, Mechanic, or Service...')}
                         className="dashboard-search-input"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -472,15 +136,15 @@ const ReceptionistClientDetails = () => {
                     <table>
                         <thead>
                             <tr>
-                                <th>Vehicle</th>
-                                <th>Type</th>
-                                <th>Service</th>
-                                <th>Mechanic</th>
-                                <th>Cost</th>
-                                <th>Start Date</th>
-                                <th>Predicted End</th>
-                                <th>Status</th>
-                                <th>Action</th>
+                                <th>{t('receptionist.details.vehicle', 'Vehicle')}</th>
+                                <th>{t('dashboard.type', 'Type')}</th>
+                                <th>{t('receptionist.details.service', 'Service')}</th>
+                                <th>{t('receptionist.modal.mechanic', 'Mechanic')}</th>
+                                <th>{t('receptionist.modal.total_cost', 'Cost')}</th>
+                                <th>{t('receptionist.details.start_date', 'Start Date')}</th>
+                                <th>{t('receptionist.details.predicted_end', 'Predicted End')}</th>
+                                <th>{t('receptionist.details.status', 'Status')}</th>
+                                <th>{t('receptionist.details.action', 'Action')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -510,13 +174,13 @@ const ReceptionistClientDetails = () => {
                                                     ))
                                                 ) : (
                                                     <span className="service-badge">
-                                                        {job.service?.name || 'General Service'}
+                                                        {job.service?.name || t('dashboard.general_service', 'General Service')}
                                                     </span>
                                                 )}
                                             </div>
                                         </td>
 
-                                        <td>{job.mechanic ? <span className="mechanic-name">{job.mechanic.name}</span> : <span className="unassigned">Unassigned</span>}</td>
+                                        <td>{job.mechanic ? <span className="mechanic-name">{job.mechanic.name}</span> : <span className="unassigned">{t('receptionist.details.unassigned', 'Unassigned')}</span>}</td>
                                         <td style={{ fontWeight: 'bold' }}>{job.cost} MAD</td>
                                         <td>{new Date(job.created_at).toLocaleDateString('en-GB')}</td>
                                         <td>{job.date_end ? new Date(job.date_end).toLocaleString('en-GB') : 'TBD'}</td>
@@ -569,192 +233,85 @@ const ReceptionistClientDetails = () => {
                                     </tr>
                                 ))
                             ) : (
-                                <tr><td colSpan="9" style={{ textAlign: 'center', padding: '20px' }}>No Repairs found.</td></tr>
+                                <tr><td colSpan="9" style={{ textAlign: 'center', padding: '20px' }}>{t('receptionist.details.no_repairs', 'No Repairs found.')}</td></tr>
                             )}
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            {
-                confirmModal.show && (
+            {confirmModal.show && (
+                <div
+                    style={{
+                        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        zIndex: 9999, backdropFilter: 'blur(3px)'
+                    }}
+                    onClick={() => setConfirmModal({ show: false, title: '', body: '', job: null, isNegotiation: false, onConfirm: null })}
+                >
                     <div
                         style={{
-                            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            zIndex: 9999, backdropFilter: 'blur(3px)'
+                            background: 'var(--charcoal)', border: '1px solid var(--border-light)',
+                            borderTop: '3px solid var(--red)', borderRadius: '8px',
+                            padding: '28px 32px', maxWidth: confirmModal.isNegotiation ? 600 : 420, width: '90%',
+                            boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+                            maxHeight: '90vh', overflowY: 'auto'
                         }}
-                        onClick={() => setConfirmModal({ show: false, title: '', body: '', job: null, isNegotiation: false, onConfirm: null })}
+                        onClick={e => e.stopPropagation()}
                     >
-                        <div
-                            style={{
-                                background: 'var(--charcoal)', border: '1px solid var(--border-light)',
-                                borderTop: '3px solid var(--red)', borderRadius: '8px',
-                                padding: '28px 32px', maxWidth: confirmModal.isNegotiation ? 600 : 420, width: '90%',
-                                boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-                                maxHeight: '90vh', overflowY: 'auto'
-                            }}
-                            onClick={e => e.stopPropagation()}
-                        >
-                            <h3 style={{ margin: '0 0 10px', color: 'var(--white)', fontSize: '1.1rem' }}>
-                                {confirmModal.title}
-                            </h3>
-                            <p style={{ margin: '0 0 24px', color: 'var(--muted)', fontSize: '0.92rem', lineHeight: 1.5 }}>
-                                {confirmModal.body}
-                            </p>
+                        <h3 style={{ margin: '0 0 10px', color: 'var(--white)', fontSize: '1.1rem' }}>
+                            {confirmModal.title}
+                        </h3>
+                        <p style={{ margin: '0 0 24px', color: 'var(--muted)', fontSize: '0.92rem', lineHeight: 1.5 }}>
+                            {confirmModal.body}
+                        </p>
 
-                            {confirmModal.isNegotiation && confirmModal.job && (
-                                <div style={{ marginBottom: '20px', color: 'var(--white)' }}>
-                                    <h4 style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '8px', marginBottom: '10px' }}>Repair Services</h4>
-                                    <ul style={{ listStyleType: 'none', padding: 0, margin: '0 0 15px 0' }}>
-                                        {confirmModal.job.services && confirmModal.job.services.length > 0 ? (
-                                            confirmModal.job.services.map((s, idx) => (
-                                                <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                                    <div>
-                                                        <span style={{ fontSize: '0.95rem' }}>{s.name}</span>
-                                                        <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Original: {s.price} MAD</div>
-                                                    </div>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <label style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>New Price:</label>
-                                                        <input
-                                                            type="number" min="0" step="0.01" max={s.original_price || s.price}
-                                                            value={customPrices.services[s.id] !== undefined ? customPrices.services[s.id] : s.price}
-                                                            onChange={(e) => {
-                                                                let val = e.target.value === '' ? '' : Number(e.target.value);
-                                                                const maxVal = Number(s.original_price || s.price);
-                                                                if (val !== '' && val > maxVal) val = maxVal;
-                                                                setCustomPrices(prev => ({ ...prev, services: { ...prev.services, [s.id]: val } }));
-                                                            }}
-                                                            style={{ width: '80px', padding: '4px 6px', borderRadius: '4px', border: '1px solid var(--border-light)', background: 'var(--dark)', color: 'var(--white)', textAlign: 'right' }}
-                                                        />
-                                                    </div>
-                                                </li>
-                                            ))
-                                        ) : confirmModal.job.service ? (
-                                            <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        {/* Modal Body / Negotiation Logic */}
+                        {confirmModal.isNegotiation && confirmModal.job && (
+                            <div style={{ marginBottom: '20px', color: 'var(--white)' }}>
+                                <h4 style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '8px', marginBottom: '10px' }}>Repair Services</h4>
+                                <ul>
+                                    {confirmModal.job.services && confirmModal.job.services.length > 0 ? (
+                                        confirmModal.job.services.map((s, idx) => (
+                                            <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                                                 <div>
-                                                    <span style={{ fontSize: '0.95rem' }}>{confirmModal.job.service.name}</span>
-                                                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Original: {confirmModal.job.service.original_price || confirmModal.job.service.price} MAD</div>
-                                                </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <label style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>New Price:</label>
-                                                    <input
-                                                        type="number" min="0" step="0.01" max={confirmModal.job.service.original_price || confirmModal.job.service.price}
-                                                        value={customPrices.services[confirmModal.job.service.id] !== undefined ? customPrices.services[confirmModal.job.service.id] : confirmModal.job.service.price}
-                                                        onChange={(e) => {
-                                                            let val = e.target.value === '' ? '' : Number(e.target.value);
-                                                            const maxVal = Number(confirmModal.job.service.original_price || confirmModal.job.service.price);
-                                                            if (val !== '' && val > maxVal) val = maxVal;
-                                                            setCustomPrices(prev => ({ ...prev, services: { ...prev.services, [confirmModal.job.service.id]: val } }));
-                                                        }}
-                                                        style={{ width: '80px', padding: '4px 6px', borderRadius: '4px', border: '1px solid var(--border-light)', background: 'var(--dark)', color: 'var(--white)', textAlign: 'right' }}
-                                                    />
+                                                    <span style={{ fontSize: '0.95rem' }}>{s.name}</span>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Original: {s.price} MAD</div>
                                                 </div>
                                             </li>
-                                        ) : (
-                                            <li style={{ fontSize: '0.9rem', fontStyle: 'italic', color: 'var(--muted)' }}>No specific services listed.</li>
-                                        )}
-                                    </ul>
-
-                                    <h4 style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '8px', marginBottom: '10px' }}>Parts Requested</h4>
-                                    <ul style={{ listStyleType: 'none', padding: 0, margin: '0 0 15px 0' }}>
-                                        {confirmModal.job.parts && confirmModal.job.parts.length > 0 ? (
-                                            confirmModal.job.parts.map((p, idx) => (
-                                                <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                                    <div>
-                                                        <span style={{ fontSize: '0.95rem' }}>{p.name} (Qty: {p.quantity || 1})</span>
-                                                        <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Cost: {Number(p.cost || 0).toFixed(2)} | Original Sell: {Number(p.original_price || p.price).toFixed(2)} MAD</div>
-                                                    </div>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <label style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>New Price:</label>
-                                                        <input
-                                                            type="number" min="0" step="0.01" max={p.original_price || p.price}
-                                                            value={customPrices.parts[p.id] !== undefined ? customPrices.parts[p.id] : Number(p.price)}
-                                                            onChange={(e) => {
-                                                                let val = e.target.value === '' ? '' : Number(e.target.value);
-                                                                const maxVal = Number(p.original_price || p.price);
-                                                                if (val !== '' && val > maxVal) val = maxVal;
-                                                                setCustomPrices(prev => ({ ...prev, parts: { ...prev.parts, [p.id]: val } }));
-                                                            }}
-                                                            style={{ width: '80px', padding: '4px 6px', borderRadius: '4px', border: '1px solid var(--border-light)', background: 'var(--dark)', color: 'var(--white)', textAlign: 'right' }}
-                                                        />
-                                                    </div>
-                                                </li>
-                                            ))
-                                        ) : (
-                                            <li style={{ fontSize: '0.9rem', fontStyle: 'italic', color: 'var(--muted)' }}>No parts requested.</li>
-                                        )}
-                                    </ul>
-
-                                    <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '15px', borderRadius: '6px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                            <label style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>Original Total Cost:</label>
-                                            <span style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--red)' }}>
-                                                {(() => {
-                                                    let sOrigTotal = 0;
-                                                    if (confirmModal.job.services) {
-                                                        sOrigTotal = confirmModal.job.services.reduce((sum, s) => sum + Number(s.original_price || s.price || 0), 0);
-                                                    } else if (confirmModal.job.service) { // Fallback single service
-                                                        sOrigTotal = Number(confirmModal.job.service.price || 0);
-                                                    }
-
-                                                    let pOrigTotal = 0;
-                                                    if (confirmModal.job.parts) {
-                                                        pOrigTotal = confirmModal.job.parts.reduce((sum, p) => sum + (Number(p.original_price || p.price || 0) * (p.quantity || 1)), 0);
-                                                    }
-                                                    return (sOrigTotal + pOrigTotal).toFixed(2);
-                                                })()} MAD
-                                            </span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px dashed rgba(255,255,255,0.2)' }}>
-                                            <label style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>New Total Cost:</label>
-                                            <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#10b981' }}>
-                                                {(() => {
-                                                    let sTotal = 0;
-                                                    if (confirmModal.job.services) {
-                                                        sTotal = confirmModal.job.services.reduce((sum, s) => sum + (customPrices.services[s.id] !== undefined ? customPrices.services[s.id] : Number(s.price || 0)), 0);
-                                                    } else if (confirmModal.job.service) { // Fallback single service
-                                                        sTotal = customPrices.services[confirmModal.job.service.id] !== undefined ? customPrices.services[confirmModal.job.service.id] : Number(confirmModal.job.service.price || 0);
-                                                    }
-
-                                                    let pTotal = 0;
-                                                    if (confirmModal.job.parts) {
-                                                        pTotal = confirmModal.job.parts.reduce((sum, p) => sum + ((customPrices.parts[p.id] !== undefined ? customPrices.parts[p.id] : Number(p.price || 0)) * (p.quantity || 1)), 0);
-                                                    }
-                                                    return (sTotal + pTotal).toFixed(2);
-                                                })()} MAD
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-                                <button
-                                    onClick={() => setConfirmModal({ show: false, title: '', body: '', job: null, isNegotiation: false, onConfirm: null })}
-                                    style={{
-                                        padding: '9px 20px', border: '1px solid var(--border-light)',
-                                        background: 'transparent', color: 'var(--muted)', borderRadius: 6,
-                                        cursor: 'pointer', fontSize: '0.9rem'
-                                    }}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={() => confirmModal.onConfirm(confirmModal.isNegotiation ? customPrices : null)}
-                                    style={{
-                                        padding: '9px 20px', border: 'none',
-                                        background: 'var(--red)', color: '#fff', borderRadius: 6,
-                                        cursor: 'pointer', fontSize: '0.9rem', fontWeight: 700
-                                    }}
-                                >
-                                    Confirm
-                                </button>
+                                        ))
+                                    ) : (
+                                        <li style={{ fontSize: '0.9rem', fontStyle: 'italic', color: 'var(--muted)' }}>No specific services listed.</li>
+                                    )}
+                                </ul>
                             </div>
+                        )}
+
+                        <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                            <button
+                                onClick={() => setConfirmModal({ show: false, title: '', body: '', job: null, isNegotiation: false, onConfirm: null })}
+                                style={{
+                                    padding: '9px 20px', border: '1px solid var(--border-light)',
+                                    background: 'transparent', color: 'var(--muted)', borderRadius: 6,
+                                    cursor: 'pointer', fontSize: '0.9rem'
+                                }}
+                            >
+                                {t('receptionist.modal.cancel', 'Cancel')}
+                            </button>
+                            <button
+                                onClick={() => confirmModal.onConfirm(confirmModal.isNegotiation ? customPrices : null)}
+                                style={{
+                                    padding: '9px 20px', border: 'none',
+                                    background: 'var(--red)', color: '#fff', borderRadius: 6,
+                                    cursor: 'pointer', fontSize: '0.9rem', fontWeight: 700
+                                }}
+                            >
+                                {t('receptionist.modal.confirm', 'Confirm')}
+                            </button>
                         </div>
                     </div>
-                )
-            }
+                </div>
+            )}
         </>
     );
 };

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import DashboardNavbar from '../components/DashboardNavbar';
 import SkeletonLoader from '../components/SkeletonLoader';
 import { patterns, validationMessages, sanitizeInput } from '../utils/validation';
+import { isWeekend } from '../utils/dateUtils';
 import "./ReceptionistDashboard.css";
 
 const PAGE_SIZE = 15;
@@ -42,6 +43,11 @@ const ReceptionistDashboard = () => {
   const [formData, setFormData] = useState({ vehicle_id: '', mechanic_id: '', description: '', cost: '', date_end: '' });
   const [apptActionLoading, setApptActionLoading] = useState(null);
   const [apptNotes, setApptNotes] = useState({});
+  const [mechanicsLoad, setMechanicsLoad] = useState([]);
+  const [mechanicsLoadLoading, setMechanicsLoadLoading] = useState(false);
+  const [mechanicSearch, setMechanicSearch] = useState('');
+  const [showMechanicList, setShowMechanicList] = useState(false);
+  const [modalError, setModalError] = useState(null);
 
   // KPI filter & pagination
   const [kpiFilter, setKpiFilter] = useState(''); // '' | 'today' | 'confirmed' | 'pending_appts'
@@ -53,6 +59,21 @@ const ReceptionistDashboard = () => {
     fetchServices();
     fetchAppointments();
   }, []);
+
+  const fetchMechanicsLoad = async () => {
+    setMechanicsLoadLoading(true);
+    try {
+      const token = localStorage.getItem('ACCESS_TOKEN');
+      const res = await axios.get('http://127.0.0.1:8000/api/receptionist/mechanics-load', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMechanicsLoad(res.data || []);
+    } catch (err) {
+      console.error('Error fetching mechanics load', err);
+    } finally {
+      setMechanicsLoadLoading(false);
+    }
+  };
 
   // Reset pages when filter/search/tab changes
   useEffect(() => { setClientsPage(1); }, [dashboardSearch, kpiFilter]);
@@ -290,6 +311,13 @@ const ReceptionistDashboard = () => {
   const handleDatePartChange = (e) => {
     const newDate = e.target.value;
     if (!newDate) { setFormData({ ...formData, date_end: '' }); return; }
+
+    if (isWeekend(newDate)) {
+      showMessage(t('receptionist.modal.weekend_not_allowed', 'Weekends (Saturday & Sunday) are not allowed.'), 'error');
+      setFormData({ ...formData, date_end: '' });
+      return;
+    }
+
     const currentTime = getTimePart() || '08:00';
     setFormData({ ...formData, date_end: `${newDate}T${currentTime}` });
   };
@@ -302,17 +330,12 @@ const ReceptionistDashboard = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setModalError(null);
     if (!formData.vehicle_id || !formData.mechanic_id || !formData.date_end) {
-      showMessage(t('receptionist.modal.fill_required'), "error"); return;
+      setModalError(t('receptionist.modal.fill_required')); return;
     }
-    if (formData.description.trim().length > 0) {
-      if (!patterns.description.test(formData.description)) {
-        showMessage(validationMessages.description, "error"); return;
-      }
-    }
-
     if (selectedServices.length === 0) {
-      showMessage(t('receptionist.modal.select_service_error'), "error"); return;
+      setModalError(t('receptionist.modal.select_service_error')); return;
     }
     try {
       const token = localStorage.getItem('ACCESS_TOKEN');
@@ -327,12 +350,19 @@ const ReceptionistDashboard = () => {
         setSearchQuery('');
         setServiceSearch('');
         setSelectedClient(null);
+        setModalError(null);
         fetchDashboardData();
         showMessage(t('receptionist.modal.success'), "success");
       }
     } catch (err) {
       console.error("Error:", err);
-      showMessage(t('receptionist.modal.error'), "error");
+      const msg = err.response?.data?.message || t('receptionist.modal.error');
+      setModalError(msg);
+      if (err.response?.status !== 422) {
+        showMessage(msg, "error");
+      }
+      // Refresh mechanics load so the UI reflects current state
+      fetchMechanicsLoad();
     }
   };
 
@@ -398,7 +428,7 @@ const ReceptionistDashboard = () => {
 
       <div className="header-actions">
         <h1>{t('receptionist.title')}</h1>
-        <button className="add-btn" onClick={() => setShowModal(true)}>+ {t('receptionist.add_appointment')}</button>
+        <button className="add-btn" onClick={() => { setShowModal(true); fetchMechanicsLoad(); setModalError(null); }}>+ {t('receptionist.add_appointment')}</button>
       </div>
 
       {/* Tabs */}
@@ -557,7 +587,13 @@ const ReceptionistDashboard = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>{t('receptionist.modal.title')}</h2>
-            {message && <div className={`alert-message ${messageType}`}>{message}</div>}
+            {modalError && (
+              <div className="alert-message error" style={{ marginBottom: '12px' }}>
+                <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '6px' }}></i>
+                {modalError}
+              </div>
+            )}
+            {!modalError && message && <div className={`alert-message ${messageType}`}>{message}</div>}
 
             <form onSubmit={handleSubmit}>
               <div className="form-group">
@@ -623,12 +659,68 @@ const ReceptionistDashboard = () => {
                 <input type="text" className="form-control" placeholder={t('receptionist.modal.notes_placeholder')} value={formData.description} onChange={e => setFormData({ ...formData, description: sanitizeInput('description', e.target.value) })} />
               </div>
 
-              <div className="form-group">
+              <div className="form-group" style={{ position: 'relative' }}>
                 <label>{t('receptionist.modal.mechanic')}</label>
-                <select className="form-control" value={formData.mechanic_id} onChange={e => setFormData({ ...formData, mechanic_id: e.target.value })}>
-                  <option value="">{t('receptionist.modal.select_mechanic')}</option>
-                  {mechanics.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-                </select>
+                {mechanicsLoadLoading ? (
+                  <div style={{ padding: '10px', color: 'var(--muted)', fontSize: '0.9rem' }}>
+                    <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '6px' }}></i>
+                    {t('receptionist.modal.loading_mechanics', 'Loading mechanics...')}
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder={t('receptionist.modal.mechanic_placeholder', 'Select a mechanic...')}
+                      value={mechanicSearch}
+                      onChange={(e) => {
+                        setMechanicSearch(e.target.value);
+                        setShowMechanicList(true);
+                        // Reset selection if typing starts matching nothing or something else
+                        if (formData.mechanic_id) setFormData({ ...formData, mechanic_id: '' });
+                      }}
+                      onFocus={() => setShowMechanicList(true)}
+                      onBlur={() => setTimeout(() => setShowMechanicList(false), 200)}
+                    />
+                    {showMechanicList && (
+                      <ul className="suggestions-list service-list">
+                        {mechanicsLoad.filter(m => m.name.toLowerCase().includes(mechanicSearch.toLowerCase())).map(m => {
+                          const count = m.repairs_today || 0;
+                          const isFull = count >= 5;
+                          const badgeClass = count <= 2 ? 'ml-badge-green' : count <= 4 ? 'ml-badge-orange' : 'ml-badge-red';
+                          return (
+                            <li
+                              key={m.id}
+                              className={`mechanic-load-item ${isFull ? 'ml-disabled' : ''}`}
+                              onMouseDown={() => {
+                                if (!isFull) {
+                                  setFormData({ ...formData, mechanic_id: m.id });
+                                  setMechanicSearch(m.name);
+                                  setShowMechanicList(false);
+                                }
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                                <span className="ml-name">
+                                  <i className="fa-solid fa-user-gear" style={{ marginRight: '8px', opacity: 0.6 }}></i>
+                                  {m.name}
+                                </span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', minWidth: '60px' }}>
+                                <span className={`ml-badge ${badgeClass}`}>
+                                  {count} / 5
+                                </span>
+                              </div>
+                            </li>
+                          );
+                        })}
+                        {mechanicsLoad.filter(m => m.name.toLowerCase().includes(mechanicSearch.toLowerCase())).length === 0 && (
+                          <li className="no-result">{t('receptionist.modal.no_active_mechanics', 'No active mechanics found.')}</li>
+                        )}
+                      </ul>
+                    )}
+                  </>
+                )}
               </div>
 
               <div className="form-group">

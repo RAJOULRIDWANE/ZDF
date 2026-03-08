@@ -8,6 +8,7 @@ import AIDiagnostic from "../components/AIDiagnostic";
 import { useTranslation } from 'react-i18next';
 import Joyride, { STATUS } from 'react-joyride';
 import './ClientDashboard.css';
+import { isWeekend } from '../utils/dateUtils';
 
 const ClientDashboard = () => {
     const navigate = useNavigate();
@@ -24,24 +25,24 @@ const ClientDashboard = () => {
     const [tourSteps] = useState([
         {
             target: '.btn-appt',
-            content: 'Click here to request a new appointment with our garage.',
+            content: t('tour.btn_appt', 'Click here to request a new appointment with our garage.'),
             disableBeacon: true,
         },
         {
             target: '.add-vehicle-btn',
-            content: 'Easily add your vehicles here to keep track of their details and repair history.',
+            content: t('tour.add_vehicle', 'Easily add your vehicles here to keep track of their details and repair history.'),
         },
         {
             target: '.repairs-list',
-            content: 'Monitor the status of your ongoing repairs and track completed jobs.',
+            content: t('tour.repairs_list', 'Monitor the status of your ongoing repairs and track completed jobs.'),
         },
         {
             target: '.repair-actions .status-label',
-            content: 'Pay close attention to these labels to always know exactly what stage your vehicle is at!',
+            content: t('tour.status_label', 'Pay close attention to these labels to always know exactly what stage your vehicle is at!'),
         },
         {
             target: '.appointments-section',
-            content: 'View your upcoming appointments and past request history here.',
+            content: t('tour.appointments', 'View your upcoming appointments and past request history here.'),
         }
     ]);
 
@@ -76,10 +77,12 @@ const ClientDashboard = () => {
     // --- Appointment State ---
     const [appointments, setAppointments] = useState([]);
     const [showAppointmentModal, setShowAppointmentModal] = useState(false);
-    const [newAppointment, setNewAppointment] = useState({ vehicle_id: '', preferred_date: '', description: '' });
+    const [availableDays, setAvailableDays] = useState([]); // Array of {date, available, slots: []}
+    const [daysLoading, setDaysLoading] = useState(false);
+    const [startIndex, setStartIndex] = useState(0); // For scrolling the 30-day window
+    const [newAppointment, setNewAppointment] = useState({ vehicle_id: '', preferred_date: '', appointment_time: '', description: '' });
     const [submittingAppointment, setSubmittingAppointment] = useState(false);
-
-    // --- Confirmation Modal State ---
+    const [apptError, setApptError] = useState(null);
     const [confirmModal, setConfirmModal] = useState({ show: false, title: '', message: '', onConfirm: null });
 
     // --- AI Diagnostic Modal State ---
@@ -148,7 +151,7 @@ const ClientDashboard = () => {
                 localStorage.removeItem('USER_ROLE');
                 navigate('/login');
             }
-            showMessage('Failed to load data. Please refresh.', 'error');
+            showMessage(t('dashboard.messages.fetch_error', 'Failed to load data. Please refresh.'), 'error');
         } finally {
             clearTimeout(loadingTimeout);
             setLoading(false);
@@ -184,10 +187,10 @@ const ClientDashboard = () => {
                     r.id === repairId ? { ...r, status: 'In Progress' } : r
                 )
             );
-            showMessage(response.data.message || 'Job approved! Work will start soon.', 'success');
+            showMessage(response.data.message || t('dashboard.messages.job_approved', 'Job approved! Work will start soon.'), 'success');
         } catch (err) {
             console.error("Approve Error:", err);
-            showMessage(err.response?.data?.message || 'Failed to approve job.', 'error');
+            showMessage(err.response?.data?.message || t('dashboard.messages.approve_failed', 'Failed to approve job.'), 'error');
         } finally {
             setActionLoading(null);
             closeConfirm();
@@ -212,10 +215,10 @@ const ClientDashboard = () => {
                     r.id === repairId ? { ...r, status: 'In Progress' } : r
                 )
             );
-            showMessage(response.data.message || 'Estimate accepted! Work will start soon.', 'success');
+            showMessage(response.data.message || t('dashboard.messages.estimate_accepted', 'Estimate accepted! Work will start soon.'), 'success');
         } catch (err) {
             console.error("Accept Error:", err);
-            showMessage(err.response?.data?.message || 'Failed to accept estimate.', 'error');
+            showMessage(err.response?.data?.message || t('dashboard.messages.accept_failed', 'Failed to accept estimate.'), 'error');
         } finally {
             setActionLoading(null);
             closeConfirm();
@@ -239,10 +242,10 @@ const ClientDashboard = () => {
                     r.id === repairId ? { ...r, status: 'Cancelled' } : r
                 )
             );
-            showMessage(response.data.message || 'Estimate declined successfully.', 'success');
+            showMessage(response.data.message || t('dashboard.messages.estimate_declined', 'Estimate declined successfully.'), 'success');
         } catch (err) {
             console.error("Decline Error:", err);
-            showMessage(err.response?.data?.message || 'Failed to decline estimate.', 'error');
+            showMessage(err.response?.data?.message || t('dashboard.messages.decline_failed', 'Failed to decline estimate.'), 'error');
         } finally {
             setActionLoading(null);
             closeConfirm();
@@ -267,10 +270,10 @@ const ClientDashboard = () => {
                     r.id === repairId ? { ...r, status: 'Negotiation Requested' } : r
                 )
             );
-            showMessage(response.data.message || 'Discount request sent!', 'success');
+            showMessage(response.data.message || t('dashboard.messages.discount_sent', 'Discount request sent!'), 'success');
         } catch (err) {
             console.error("Negotiate Error:", err);
-            showMessage(err.response?.data?.message || 'Failed to request discount.', 'error');
+            showMessage(err.response?.data?.message || t('dashboard.messages.discount_failed', 'Failed to request discount.'), 'error');
         } finally {
             setActionLoading(null);
             closeConfirm();
@@ -278,10 +281,43 @@ const ClientDashboard = () => {
     };
 
     // --- Appointment Handlers ---
+
+    // Fetch Days whenever modal opens
+    useEffect(() => {
+        if (!showAppointmentModal) return;
+        const fetchDays = async () => {
+            setDaysLoading(true);
+            try {
+                const res = await axios.get(`http://127.0.0.1:8000/api/appointments/available-days`);
+                setAvailableDays(res.data.days || []);
+                setStartIndex(0);
+            } catch (err) {
+                console.error('Failed to fetch days', err);
+            } finally {
+                setDaysLoading(false);
+            }
+        };
+        fetchDays();
+    }, [showAppointmentModal]);
+
+    const handleScrollNext = () => {
+        if (startIndex + 4 < availableDays.length) setStartIndex(s => s + 4);
+    };
+    const handleScrollPrev = () => {
+        if (startIndex - 4 >= 0) setStartIndex(s => s - 4);
+    };
+
+    const isPastSlot = (dateStr, timeStr) => {
+        const now = new Date();
+        const slotDate = new Date(`${dateStr}T${timeStr}`);
+        return slotDate < now;
+    };
+
     const handleSubmitAppointment = async (e) => {
         e.preventDefault();
-        if (!newAppointment.preferred_date) {
-            showMessage('Please select a preferred date.', 'error');
+        setApptError(null);
+        if (!newAppointment.preferred_date || !newAppointment.appointment_time) {
+            setApptError(t('dashboard.messages.select_time_slot', 'Please select a time slot.'));
             return;
         }
         setSubmittingAppointment(true);
@@ -292,12 +328,13 @@ const ClientDashboard = () => {
                 newAppointment,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            showMessage('Appointment request submitted!', 'success');
+            showMessage(t('dashboard.messages.appt_submitted', 'Appointment request submitted!'), 'success');
             setShowAppointmentModal(false);
-            setNewAppointment({ vehicle_id: '', preferred_date: '', description: '' });
+            setNewAppointment({ vehicle_id: '', preferred_date: '', appointment_time: '', description: '' });
             fetchData();
         } catch (err) {
-            showMessage(err.response?.data?.message || 'Failed to request appointment.', 'error');
+            const errMsg = err.response?.data?.message || t('dashboard.messages.appt_failed', 'Failed to request appointment.');
+            setApptError(errMsg);
         } finally {
             setSubmittingAppointment(false);
         }
@@ -504,7 +541,7 @@ const ClientDashboard = () => {
         doc.text("Please review this estimate carefully before approving.", 105, y, { align: "center" });
 
         doc.save(`Estimate_${estimateNum}.pdf`);
-        showMessage('Estimate downloaded successfully!', 'success');
+        showMessage(t('dashboard.messages.estimate_downloaded', 'Estimate downloaded successfully!'), 'success');
     };
 
     const handleDownloadInvoice = async (repair) => {
@@ -685,7 +722,7 @@ const ClientDashboard = () => {
         doc.text("Thank you for choosing MecaPro!", 105, y, { align: "center" });
 
         doc.save(`Invoice_${invoiceNum}.pdf`);
-        showMessage('Invoice downloaded successfully!', 'success');
+        showMessage(t('dashboard.messages.invoice_downloaded', 'Invoice downloaded successfully!'), 'success');
     };
 
     const handleAddVehicle = () => {
@@ -707,17 +744,17 @@ const ClientDashboard = () => {
         e.preventDefault();
 
         if (!newVehicle.make || !newVehicle.model || !newVehicle.year) {
-            showMessage('All fields are required', 'error');
+            showMessage(t('dashboard.messages.fields_required', 'All fields are required'), 'error');
             return;
         }
 
         if (!plate1 || !plate2 || !plate3) {
-            showMessage('Complete license plate correctly', 'error');
+            showMessage(t('dashboard.messages.plate_required', 'Complete license plate correctly'), 'error');
             return;
         }
 
         if (newVehicle.year < 1900 || newVehicle.year > new Date().getFullYear() + 1) {
-            showMessage('Please enter a valid year', 'error');
+            showMessage(t('dashboard.messages.invalid_year', 'Please enter a valid year'), 'error');
             return;
         }
 
@@ -731,12 +768,12 @@ const ClientDashboard = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            showMessage('Vehicle added successfully!', 'success');
+            showMessage(t('dashboard.messages.vehicle_added', 'Vehicle added successfully!'), 'success');
             handleCloseVehicleModal();
             fetchData();
         } catch (err) {
             console.error('Add Vehicle Error:', err);
-            showMessage(err.response?.data?.message || 'Failed to add vehicle', 'error');
+            showMessage(err.response?.data?.message || t('dashboard.messages.add_vehicle_failed', 'Failed to add vehicle'), 'error');
         } finally {
             setSubmittingVehicle(false);
         }
@@ -821,7 +858,7 @@ const ClientDashboard = () => {
                         </div>
                         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
                             <button className="btn-ai-diagnostic" onClick={() => setShowAIModal(true)}>
-                                <i className="fa-solid fa-robot"></i> AI Diagnostic
+                                <i className="fa-solid fa-robot"></i> {t('dashboard.btn_ai_diagnostic', 'AI Diagnostic')}
                             </button>
                             <button className="btn-appt" onClick={() => setShowAppointmentModal(true)}>
                                 <i className="fa-solid fa-calendar-plus"></i> {t('dashboard.request_appointment', 'Request Appointment')}
@@ -1191,17 +1228,112 @@ const ClientDashboard = () => {
                 </div>
             )}
 
-            {/* Appointment Request Modal */}
+            {/* Appointment Request Modal (2-Step) */}
             {showAppointmentModal && (
                 <div className="modal-overlay" onClick={() => setShowAppointmentModal(false)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                    <div className="modal-content appointment-modal" onClick={(e) => e.stopPropagation()}>
                         <h2><i className="fa-solid fa-calendar-plus"></i> {t('dashboard.request_appointment', 'Request Appointment')}</h2>
-                        <form onSubmit={handleSubmitAppointment}>
+
+                        {apptError && (
+                            <div className="alert-message error" style={{ marginBottom: '15px' }}>
+                                <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '8px' }}></i>
+                                {apptError}
+                            </div>
+                        )}
+
+
+
+                        {daysLoading ? (
+                            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)' }}>
+                                <i className="fa-solid fa-spinner fa-spin fa-2x"></i>
+                                <p style={{ marginTop: '10px' }}>Loading calendar...</p>
+                            </div>
+                        ) : availableDays.length > 0 ? (
+                            <div className="doctolib-scheduler">
+                                <div className="doctolib-header-wrapper">
+                                    <button
+                                        type="button"
+                                        className="doc-nav-btn prev"
+                                        onClick={handleScrollPrev}
+                                        disabled={startIndex === 0}
+                                    >
+                                        <i className="fa-solid fa-chevron-left"></i>
+                                    </button>
+
+                                    <div className="doc-days-headers">
+                                        {availableDays.slice(startIndex, startIndex + 4).map(day => {
+                                            const d = new Date(day.date);
+                                            return (
+                                                <div key={day.date} className="doc-day-col-header">
+                                                    <strong>{d.toLocaleDateString(t('locale', 'en'), { weekday: 'long' })}</strong>
+                                                    <span>{d.toLocaleDateString(t('locale', 'en'), { day: 'numeric', month: 'short' })}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        className="doc-nav-btn next"
+                                        onClick={handleScrollNext}
+                                        disabled={startIndex + 4 >= availableDays.length}
+                                    >
+                                        <i className="fa-solid fa-chevron-right"></i>
+                                    </button>
+                                </div>
+
+                                <div className="doc-slots-body">
+                                    <div className="doc-slots-columns">
+                                        {availableDays.slice(startIndex, startIndex + 4).map(day => (
+                                            <div key={day.date} className="doc-slots-col">
+                                                {day.slots.map(slot => {
+                                                    const isPast = isPastSlot(day.date, slot.time);
+                                                    const isAvail = slot.available && !isPast && !isWeekend(day.date);
+                                                    const isSelected = newAppointment.preferred_date === day.date && newAppointment.appointment_time === slot.time;
+
+                                                    if (!isAvail) {
+                                                        return (
+                                                            <div key={`${day.date}-${slot.time}`} className="doc-slot-btn disabled">
+                                                                &mdash;
+                                                            </div>
+                                                        );
+                                                    }
+
+                                                    return (
+                                                        <button
+                                                            key={`${day.date}-${slot.time}`}
+                                                            type="button"
+                                                            className={`doc-slot-btn ${isSelected ? 'selected' : ''}`}
+                                                            onClick={() => setNewAppointment(prev => ({ ...prev, preferred_date: day.date, appointment_time: slot.time }))}
+                                                        >
+                                                            {slot.time}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div style={{ textAlign: 'center', marginTop: '12px' }}>
+                                        <button
+                                            type="button"
+                                            className="doc-more-slots-btn"
+                                            onClick={handleScrollNext}
+                                            disabled={startIndex + 4 >= availableDays.length}
+                                        >
+                                            {t('dashboard.more_slots', 'Voir plus de créneaux')}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : null}
+
+                        <form onSubmit={handleSubmitAppointment} className="appointment-step-2" style={{ marginTop: '20px' }}>
                             <div className="form-group">
                                 <label>{t('dashboard.vehicle_optional', 'Vehicle (optional)')}</label>
                                 <select
                                     value={newAppointment.vehicle_id}
                                     onChange={(e) => setNewAppointment({ ...newAppointment, vehicle_id: e.target.value })}
+                                    className="form-control"
                                 >
                                     <option value="">-- {t('dashboard.no_specific_vehicle', 'No specific vehicle')} --</option>
                                     {vehicles.map(v => (
@@ -1209,17 +1341,7 @@ const ClientDashboard = () => {
                                     ))}
                                 </select>
                             </div>
-                            <div className="form-group">
-                                <label>{t('dashboard.preferred_date', 'Preferred Date')} <span className="required">*</span></label>
-                                <input
-                                    type="date"
-                                    min={new Date().toISOString().split('T')[0]}
-                                    max={new Date(new Date().setMonth(new Date().getMonth() + 2)).toISOString().split('T')[0]}
-                                    value={newAppointment.preferred_date}
-                                    onChange={(e) => setNewAppointment({ ...newAppointment, preferred_date: e.target.value })}
-                                    required
-                                />
-                            </div>
+
                             <div className="form-group">
                                 <label>{t('dashboard.description_issue', 'Description / Issue')}</label>
                                 <textarea
@@ -1227,13 +1349,17 @@ const ClientDashboard = () => {
                                     value={newAppointment.description}
                                     onChange={(e) => setNewAppointment({ ...newAppointment, description: e.target.value })}
                                     rows={3}
-                                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db', fontFamily: 'inherit', fontSize: '0.95rem', resize: 'vertical' }}
+                                    className="form-control"
+                                    style={{ height: 'auto', resize: 'vertical' }}
                                 />
                             </div>
-                            <div className="modal-actions">
-                                <button type="button" className="cancel-btn" onClick={() => setShowAppointmentModal(false)} disabled={submittingAppointment}>{t('dashboard.modal_cancel', 'Cancel')}</button>
-                                <button type="submit" className="save-btn" disabled={submittingAppointment}>
-                                    {submittingAppointment ? <><i className="fa-solid fa-spinner fa-spin"></i> {t('dashboard.submitting', 'Submitting...')}</> : t('dashboard.submit_request', 'Submit Request')}
+
+                            <div className="modal-actions" style={{ marginTop: '20px' }}>
+                                <button type="button" className="cancel-btn align-left" onClick={() => setShowAppointmentModal(false)}>
+                                    {t('receptionist.modal.cancel', 'Cancel')}
+                                </button>
+                                <button type="submit" className="save-btn" disabled={submittingAppointment || !newAppointment.appointment_time}>
+                                    {submittingAppointment ? <><i className="fa-solid fa-spinner fa-spin"></i> {t('dashboard.submitting', 'Submitting...')}</> : t('dashboard.confirm_appointment', 'Confirm Appointment')}
                                 </button>
                             </div>
                         </form>

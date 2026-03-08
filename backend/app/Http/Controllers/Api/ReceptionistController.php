@@ -14,6 +14,24 @@ use Illuminate\Support\Facades\DB;
 
 class ReceptionistController extends Controller
 {
+    /**
+     * GET /receptionist/mechanics-load
+     * Returns active mechanics sorted by today's repair count (least busy first)
+     */
+    public function mechanicsLoad()
+    {
+        $mechanics = User::where('role', 'mechanic')
+            ->where('is_active', 1)
+            ->withCount(['repairs as repairs_today' => function ($query) {
+                $query->whereDate('date_entry', today())
+                      ->where('status', '!=', 'Canceled');
+            }])
+            ->orderBy('repairs_today', 'asc')
+            ->get();
+
+        return response()->json($mechanics);
+    }
+
     public function dashboard()
     {
         $mechanics = User::whereIn('role', ['Mechanic', 'mechanic', 'MECHANIC'])
@@ -102,6 +120,18 @@ class ReceptionistController extends Controller
         ], [
             'description.regex' => 'Description must contain letters, and only use letters, numbers, periods, and commas.',
         ]);
+
+        // 1b. Daily cap check — max 5 repairs per mechanic per day
+        $repairsToday = Repair::where('mechanic_id', $request->mechanic_id)
+                      ->whereDate('date_entry', today())
+                      ->where('status', '!=', 'Canceled')
+                      ->count();
+
+        if ($repairsToday >= 5) {
+            return response()->json([
+                'message' => 'This mechanic already has 5 repairs today.'
+            ], 422);
+        }
 
         // Check if "General Diagnostic" is in the selected services
         $isDiagnostic = Service::whereIn('id', $validated['service_ids'])

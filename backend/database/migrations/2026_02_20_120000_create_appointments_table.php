@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('vehicle_id')->nullable()->constrained('vehicles')->onDelete('set null');
             $table->date('preferred_date');
+            $table->string('appointment_time')->nullable(); // Valid values: '08:00', '10:00', '14:00', '16:00'
             $table->string('description')->nullable();
             $table->enum('status', ['Pending', 'Approved', 'Declined'])->default('Pending');
             $table->text('receptionist_notes')->nullable();

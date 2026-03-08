@@ -1253,3 +1253,165 @@ select.form-group option,
         min-height: 44px;
     }
 }
+
+/* ─────────────────────────────────────────
+   DOCTOLIB STYLE SCHEDULER (Client Dashboard)
+───────────────────────────────────────── */
+.doctolib-scheduler {
+    max-width: 600px;
+    margin: 0 auto;
+    background: var(--charcoal);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 10px;
+}
+
+.doctolib-header-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.doc-days-headers {
+    display: flex;
+    flex: 1;
+    justify-content: space-around;
+    padding: 0 40px;
+}
+
+.doc-day-col-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 25%;
+    color: var(--white);
+}
+
+.doc-day-col-header strong {
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    color: var(--red);
+}
+
+.doc-day-col-header span {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 2px;
+}
+
+.doc-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--black);
+    border: 1px solid var(--border);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--red);
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.doc-nav-btn.prev {
+    left: 10px;
+}
+
+.doc-nav-btn.next {
+    right: 10px;
+}
+
+.doc-nav-btn:hover:not(:disabled) {
+    background: var(--red);
+    color: white;
+    border-color: var(--red);
+}
+
+.doc-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    color: var(--muted);
+}
+
+.doc-slots-body {
+    position: relative;
+}
+
+.doc-slots-columns {
+    display: flex;
+    justify-content: space-around;
+    padding: 0 40px;
+}
+
+.doc-slots-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 25%;
+}
+
+.doc-slot-btn {
+    background: var(--red-glow);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--white);
+    font-weight: 600;
+    font-size: 0.9rem;
+    width: 90%;
+    padding: 10px 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.doc-slot-btn:hover:not(.disabled):not(.selected) {
+    background: var(--steel);
+    border-color: var(--red);
+    color: var(--red);
+    transform: translateY(-1px);
+}
+
+.doc-slot-btn.selected {
+    background: var(--red);
+    color: white;
+    box-shadow: 0 4px 12px var(--red-glow);
+}
+
+.doc-slot-btn.disabled {
+    background: transparent;
+    color: var(--muted);
+    cursor: default;
+    opacity: 0.5;
+    font-weight: 400;
+}
+
+.doc-more-slots-btn {
+    background: transparent;
+    border: none;
+    color: var(--red);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 8px 16px;
+    transition: color 0.2s;
+    text-decoration: none;
+}
+
+.doc-more-slots-btn:hover:not(:disabled) {
+    text-decoration: underline;
+    color: var(--red-dark);
+}
+
+.doc-more-slots-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}

@@ -37,6 +37,10 @@ Route::prefix('ai')->group(function () {
     Route::post('/predict', [AiController::class, 'predict']);
 });
 
+// Appointment Availability — PUBLIC (no auth, used by clients before login)
+Route::get('/appointments/available-slots', [AppointmentController::class, 'availableSlots']);
+Route::get('/appointments/available-days',  [AppointmentController::class, 'availableDays']);
+
 /*
 |--------------------------------------------------------------------------
 | Protected Routes (Requires Login)
@@ -79,6 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // --- RECEPTIONIST ROUTES ---
     Route::prefix('receptionist')->group(function () {
         Route::get('/dashboard', [ReceptionistController::class, 'dashboard']);
+        Route::get('/mechanics-load', [ReceptionistController::class, 'mechanicsLoad']);
         Route::get('/clients/search', [ReceptionistController::class, 'searchClients']);
         Route::get('/clients/{id}/vehicles', [ReceptionistController::class, 'getClientVehicles']);
         Route::get('/clients-summary', [ReceptionistController::class, 'getClientsWithRepairs']);

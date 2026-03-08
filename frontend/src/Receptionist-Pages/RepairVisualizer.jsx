@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom'; // Added Link
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import DashboardNavbar from '../components/DashboardNavbar';
 import './RepairVisualizer.css';
@@ -7,21 +8,21 @@ import './RepairVisualizer.css';
 // --- 1. IMAGE CONFIGURATION ---
 const CAR_IMAGES = {
   sedan: {
-    front:  "/car-views/front.png",
-    back:   "/car-views/back.png",
-    left:   "/car-views/side.png", 
-    right:  "/car-views/side.png",
-    top:    "/car-views/top.png",
+    front: "/car-views/front.png",
+    back: "/car-views/back.png",
+    left: "/car-views/side.png",
+    right: "/car-views/side.png",
+    top: "/car-views/top.png",
     bottom: "/car-views/bottom.png",
   }
 };
 
 // --- 2. COLORS ---
 const STATUS_COLORS = {
-  'Pending':      'rgba(255, 165, 0, 0.6)', 
-  'In Progress':  'rgba(0, 123, 255, 0.6)',
-  'Completed':    'rgba(40, 167, 69, 0.6)',
-  'Cancelled':    'rgba(220, 53, 69, 0.6)',
+  'Pending': 'rgba(255, 165, 0, 0.6)',
+  'In Progress': 'rgba(0, 123, 255, 0.6)',
+  'Completed': 'rgba(40, 167, 69, 0.6)',
+  'Cancelled': 'rgba(220, 53, 69, 0.6)',
 };
 
 // --- 3. ZONE MAPPING ---
@@ -29,7 +30,7 @@ const ZONE_MAP = {
   sedan: {
     front: {
       LIGHTS: [
-        { top: '48%', left: '10%', width: '12%', height: '10%', borderRadius: '50%' }, 
+        { top: '48%', left: '10%', width: '12%', height: '10%', borderRadius: '50%' },
         { top: '48%', left: '78%', width: '12%', height: '10%', borderRadius: '50%' }
       ]
     },
@@ -42,23 +43,23 @@ const ZONE_MAP = {
     },
     right: {
       WHEELS: [
-        { top: '56%', left: '14%', width: '17%', height: '24%', borderRadius: '50%' }, 
-        { top: '56%', left: '69%', width: '17%', height: '24%', borderRadius: '50%' }  
+        { top: '56%', left: '14%', width: '17%', height: '24%', borderRadius: '50%' },
+        { top: '56%', left: '69%', width: '17%', height: '24%', borderRadius: '50%' }
       ]
     },
     left: {
       WHEELS: [
-        { top: '56%', left: '14%', width: '17%', height: '24%', borderRadius: '50%' }, 
-        { top: '56%', left: '69%', width: '17%', height: '24%', borderRadius: '50%' } 
+        { top: '56%', left: '14%', width: '17%', height: '24%', borderRadius: '50%' },
+        { top: '56%', left: '69%', width: '17%', height: '24%', borderRadius: '50%' }
       ]
     },
     top: {
       ENGINE: { top: '12%', left: '25%', width: '50%', height: '25%', borderRadius: '15%' },
-      BODY:   { top: '38%', left: '20%', width: '60%', height: '40%', borderRadius: '5px' }
+      BODY: { top: '38%', left: '20%', width: '60%', height: '40%', borderRadius: '5px' }
     },
     bottom: {
-      ENGINE: { top: '15%', left: '30%', width: '40%', height: '20%', borderRadius: '5px' }, 
-      BODY:   { top: '40%', left: '25%', width: '50%', height: '30%', borderRadius: '5px' },
+      ENGINE: { top: '15%', left: '30%', width: '40%', height: '20%', borderRadius: '5px' },
+      BODY: { top: '40%', left: '25%', width: '50%', height: '30%', borderRadius: '5px' },
       WHEELS: [
         { top: '22%', left: '8%', width: '12%', height: '15%', borderRadius: '10%' },
         { top: '22%', left: '80%', width: '12%', height: '15%', borderRadius: '10%' },
@@ -69,14 +70,15 @@ const ZONE_MAP = {
   }
 };
 
-const RepairVisualizer = () => {
+const RepairVisualizer = ({ repairJob }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { repairId } = useParams();
-  
+
   const [user] = useState({ name: localStorage.getItem('USER_NAME') || 'Receptionist', role: 'Receptionist' });
   const [repairs, setRepairs] = useState([]);
   const [selectedRepair, setSelectedRepair] = useState(null);
-  const [currentView, setCurrentView] = useState('front'); 
+  const [currentView, setCurrentView] = useState('front');
 
   useEffect(() => {
     fetchRepairs();
@@ -87,18 +89,18 @@ const RepairVisualizer = () => {
     try {
       const token = localStorage.getItem('ACCESS_TOKEN');
       const res = await axios.get('http://127.0.0.1:8000/api/receptionist/dashboard', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token} ` }
       });
       console.log("FIRST REPAIR DATA:", JSON.stringify(res.data.repairs[0], null, 2));
       console.log("FULL API DATA:", res.data);
-      
+
       const allRepairs = res.data.repairs || [];
 
       if (repairId) {
         const targetRepair = allRepairs.find(r => r.id.toString() === repairId.toString());
         if (targetRepair) {
-          setRepairs([targetRepair]); 
-          setSelectedRepair(targetRepair); 
+          setRepairs([targetRepair]);
+          setSelectedRepair(targetRepair);
         } else {
           setRepairs([]);
           setSelectedRepair(null);
@@ -119,7 +121,7 @@ const RepairVisualizer = () => {
 
   // --- 4. CATEGORY LOGIC (DB Driven) ---
   const getCategory = (repair) => {
-    if (!repair || !repair.service || !repair.service.zone) return 'BODY'; 
+    if (!repair || !repair.service || !repair.service.zone) return 'BODY';
     return repair.service.zone.toUpperCase();
   };
 
@@ -130,12 +132,12 @@ const RepairVisualizer = () => {
 
   const renderZone = () => {
     if (!selectedRepair) return null;
-    const vehicleType = 'sedan'; 
-    
+    const vehicleType = 'sedan';
+
     const category = getCategory(selectedRepair);
     if (!ZONE_MAP[vehicleType] || !ZONE_MAP[vehicleType][currentView]) return null;
     const coords = ZONE_MAP[vehicleType][currentView][category];
-    if (!coords) return null; 
+    if (!coords) return null;
 
     const statusKey = selectedRepair.status?.trim() || 'Pending';
     let finalColor = STATUS_COLORS['Pending'];
@@ -156,7 +158,7 @@ const RepairVisualizer = () => {
     const zonesToRender = Array.isArray(coords) ? coords : [coords];
 
     return zonesToRender.map((pos, index) => (
-      <div 
+      <div
         key={index}
         className="visual-overlay-box"
         style={{
@@ -167,109 +169,110 @@ const RepairVisualizer = () => {
           height: pos.height,
           borderRadius: pos.borderRadius || '5px'
         }}
-        title={`${category}: ${statusKey}`}
+        title={`${category}: ${statusKey} `}
       >
         <span className="zone-label">{category}</span>
       </div>
     ));
   };
 
-return (
+  return (
     <div className="visualizer-page">
       <DashboardNavbar user={user} onLogout={handleLogout} />
 
       <div className="visualizer-content">
-        
+
         {/* --- LEFT SIDEBAR --- */}
         <div className="repair-sidebar">
           <div className="repair-sidebar-header">
-             <h3>{repairId ? "Tracking Repair" : "Active Workshop Jobs"}</h3>
+            <h3>{repairId ? t('receptionist.visualizer.tracking_repair', 'Tracking Repair') : t('receptionist.visualizer.active_workshop_jobs', 'Active Workshop Jobs')}</h3>
           </div>
 
           <div className="repair-list">
             {repairs.map(repair => (
-              <div 
-                key={repair.id} 
-                className={`repair-item ${selectedRepair?.id === repair.id ? 'active' : ''}`}
+              <div
+                key={repair.id}
+                className={`repair - item ${selectedRepair?.id === repair.id ? 'active' : ''} `}
                 onClick={() => setSelectedRepair(repair)}
               >
                 <div className="repair-header">
                   <span className="vehicle-title">{repair.vehicle?.make} {repair.vehicle?.model}</span>
-                  <span className={`badge ${repair.status?.toLowerCase().replace(/\s+/g, '-')}`}>
+                  <span className={`badge ${repair.status?.toLowerCase().replace(/\s+/g, '-')} `}>
                     {repair.status}
                   </span>
                 </div>
-                
+
                 <div className="repair-desc">
                   {repair.service?.name}
                 </div>
                 <span className="repair-sub-desc">
-                   {repair.description ? (repair.description.length > 50 ? repair.description.substring(0,50)+'...' : repair.description) : 'No notes provided'}
+                  {repair.description ? (repair.description.length > 50 ? repair.description.substring(0, 50) + '...' : repair.description) : t('receptionist.visualizer.no_notes_provided', 'No notes provided')}
                 </span>
               </div>
             ))}
-            {repairs.length === 0 && <div style={{padding:'20px', color:'#94a3b8', textAlign:'center'}}>No active repairs found.</div>}
+            {repairs.length === 0 && <div style={{ padding: '20px', color: '#94a3b8', textAlign: 'center' }}>{t('receptionist.visualizer.no_active_repairs', 'No active repairs found.')}</div>}
           </div>
-          
+
           {repairId && selectedRepair && (
-              <Link 
-                to={`/receptionist/client/${selectedRepair.vehicle?.client_id}/${selectedRepair.vehicle?.owner_name}`} 
-                className="back-link-container"
-              >
-                <i className="fa-solid fa-arrow-left" style={{marginRight:'8px'}}></i>
-                Back to Client
-              </Link>
+            <Link
+              to={`/receptionist/client/${selectedRepair.vehicle?.client_id}/${selectedRepair.vehicle?.owner_name}`}
+              className="back-link-container"
+            >
+              <i className="fa-solid fa-arrow-left" style={{ marginRight: '8px' }}></i>
+              {t('receptionist.visualizer.back_to_client', 'Back to Client')}
+            </Link>
           )}
-        </div>
+        </div >
 
         {/* --- RIGHT STAGE --- */}
-        <div className="visualizer-stage">
-          {selectedRepair ? (
-            <div className="car-card-wrapper">
-              
-              <div className="stage-header">
-                <div>
-                    <h2 style={{margin:0, fontSize:'1.1rem'}}>{selectedRepair.vehicle?.plate_number}</h2>
-                    <span style={{color:'#64748b', fontSize:'0.85rem'}}>Visualizing Vehicle Status</span>
+        < div className="visualizer-stage" >
+          {
+            selectedRepair ? (
+              <div className="car-card-wrapper" >
+
+                <div className="stage-header">
+                  <div>
+                    <h2 style={{ margin: 0, fontSize: '1.1rem' }}>{selectedRepair.vehicle?.plate_number}</h2>
+                    <span style={{ color: '#64748b', fontSize: '0.85rem' }}>{t('receptionist.visualizer.visualizing_status', 'Visualizing Vehicle Status')}</span>
+                  </div>
+
+                  {/* MOVED: View Controls inside the header for cleaner look */}
+                  <div className="control-bar">
+                    {['front', 'left', 'right', 'back', 'top', 'bottom'].map(view => (
+                      <button
+                        key={view}
+                        className={`view-btn ${currentView === view ? 'active' : ''}`}
+                        onClick={() => setCurrentView(view)}
+                      >
+                        {t(`receptionist.visualizer.view_${view}`, view.charAt(0).toUpperCase() + view.slice(1))}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                
-                {/* MOVED: View Controls inside the header for cleaner look */}
-                 <div className="control-bar">
-                  {['front', 'left', 'right', 'back', 'top', 'bottom'].map(view => (
-                    <button 
-                      key={view} 
-                      className={`view-btn ${currentView === view ? 'active' : ''}`}
-                      onClick={() => setCurrentView(view)}
-                    >
-                      {view.charAt(0).toUpperCase() + view.slice(1)}
-                    </button>
-                  ))}
+
+                <div className="car-container">
+                  <img
+                    src={CAR_IMAGES.sedan[currentView]}
+                    alt={`${currentView} View`}
+                    className="vehicle-image"
+                    style={getImageStyle()}
+                  />
+                  {renderZone()}
                 </div>
-              </div>
 
-              <div className="car-container">
-                <img 
-                  src={CAR_IMAGES.sedan[currentView]} 
-                  alt={`${currentView} View`} 
-                  className="vehicle-image"
-                  style={getImageStyle()} 
-                />
-                {renderZone()}
-              </div>
+                <div className="legend">
+                  <div className="legend-item"><span className="dot pending" style={{ background: 'orange' }}></span> {t('common.status.pending')}</div>
+                  <div className="legend-item"><span className="dot progress" style={{ background: '#0d6efd' }}></span> {t('common.status.in_progress')}</div>
+                  <div className="legend-item"><span className="dot completed" style={{ background: '#28a745' }}></span> {t('common.status.completed')}</div>
+                </div>
 
-              <div className="legend">
-                 <div className="legend-item"><span className="dot pending" style={{background:'orange'}}></span> Pending</div>
-                 <div className="legend-item"><span className="dot progress" style={{background:'#0d6efd'}}></span> In Progress</div>
-                 <div className="legend-item"><span className="dot completed" style={{background:'#28a745'}}></span> Completed</div>
               </div>
-
-            </div>
-          ) : (
-             <div className="empty-state">Select a repair to visualize details.</div>
-          )}
-        </div>
-      </div>
-    </div>
+            ) : (
+              <div className="empty-state">{t('receptionist.visualizer.select_repair_prompt', 'Select a repair to visualize details.')}</div>
+            )}
+        </div >
+      </div >
+    </div >
   );
 };
 
