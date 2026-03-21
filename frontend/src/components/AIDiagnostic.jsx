@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import "./AIDiagnostic.css";
 
-const API_BASE = "http://127.0.0.1:8000/api";
+// Flask AI backend for AI predictions and options
+const AI_API_BASE = "http://127.0.0.1:5000";
 
 const SEVERITY_COLOR = {
   low: "#22c55e",
@@ -45,7 +46,7 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const res = await fetch(`${API_BASE}/ai/options`, {
+        const res = await fetch(`${AI_API_BASE}/ai/options`, {
           headers: { Accept: "application/json" },
         });
         if (!res.ok) throw new Error(t('ai.messages.load_options_failed', "Failed to load AI options"));
@@ -81,7 +82,7 @@ export default function AIDiagnostic({ token = null, onClose = null, inModal = f
     };
 
     try {
-      const res = await fetch(`${API_BASE}/ai/predict`, {
+      const res = await fetch(`${AI_API_BASE}/ai/predict`, {
         method: "POST",
         headers: buildHeaders(),
         body: JSON.stringify(payload),

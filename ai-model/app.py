@@ -9,7 +9,15 @@ from datetime import datetime
 np.set_printoptions(suppress=True)
 
 app = Flask(__name__)
-CORS(app)
+
+# Enable CORS for frontend requests from localhost:5173
+CORS(app, resources={
+    r"/ai/*": {
+        "origins": ["http://localhost:5173", "http://127.0.0.1:5173"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 
 repair_model   = joblib.load('models/repair_model.pkl')
 cost_min_model = joblib.load('models/cost_min_model.pkl')
@@ -88,12 +96,12 @@ def health():
     return jsonify({'status': 'ok', 'message': 'Auto Repair AI is running'})
 
 
-@app.route('/options', methods=['GET'])
+@app.route('/ai/options', methods=['GET'])
 def get_options():
     return jsonify(options)
 
 
-@app.route('/predict', methods=['POST'])
+@app.route('/ai/predict', methods=['POST'])
 def predict():
     try:
         body = request.json
